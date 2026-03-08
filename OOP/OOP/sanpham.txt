@@ -1,0 +1,11 @@
+T001, Omeprazole, Vien nang, 50000.0, 80000.0, 38, Stella, 0, Omeprazole, Vien nang, 12/2026
+T002, Paracetamol, Vien nen, 10000.0, 15000.0, 100, Hau Giang, 0, Paracetamol, Vien nen, 12/2027
+TPCN001, Omega 3 Fish Oil, Hop, 150000.0, 250000.0, 20, Nature Made, 0, DHA;EPA, Bo sung Omega 3, Noi kho, 12/2026
+TPCN002, Blackmores Bio C, Hop, 180000.0, 300000.0, 25, Blackmores, 0, Vitamin C;Citrus bioflavonoids, Tang cuong de khang, Noi kho, 12/2026
+TPCN003, Ginkgo Biloba Extract, Hop, 120000.0, 200000.0, 40, Schiff, 0, Ginkgo Biloba, Ho tro tri nho, Noi kho, 12/2026
+DC001, Nhiet ke dien tu, Cai, 50000.0, 80000.0, 5, Omron, 0, Nhiet ke, Nhua y te, 12/2027
+DC002, May do huyet ap, Cai, 300000.0, 500000.0, 10, Omron, 0, May do huyet ap, Nhua + Kim loai, 06/2028
+DC003, Bang ga y te, Cuon, 15000.0, 25000.0, 100, Urgo, 0, Bang cuon, Vai, 12/2027
+MP001, Kem duong am Neutrogena, Chai, 120000.0, 200000.0, 8, Neutrogena, 0, Duong am; lam mem da, Da kho, 12/2026
+MP002, Sua rua mat Cetaphil, Chai, 150000.0, 250000.0, 18, Cetaphil, 0, Lam sach da; khong gay kho, Moi loai da, 12/2026
+MP003, Kem chong nang La Roche Posay, Chai, 200000.0, 350000.0, 1, La Roche Posay, 0, Chong nang SPF 50+, Da nhay cam, 12/2025
