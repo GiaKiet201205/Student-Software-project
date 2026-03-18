@@ -1,6 +1,4 @@
-
 services:
-
   mysql:
     image: mysql:8.0
     container_name: admission_mysql
@@ -16,6 +14,18 @@ services:
 
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d
+
+  adminer:
+    image: adminer
+    container_name: admission_adminer
+    restart: always
+
+    ports:
+      - "8080:8080"
+
+    depends_on:
+      - mysql
 
 volumes:
   mysql_data:
