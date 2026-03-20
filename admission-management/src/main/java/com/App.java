@@ -1,13 +1,18 @@
 package com;
 
-import com.ui.frame.TestFrame;
+import com.exception.GlobalExceptionHandler;
+import com.ui.MainUI;
+import javax.swing.SwingUtilities;
 
-public class App 
+public class App
 {
     public static void main( String[] args )
     {
-        javax.swing.SwingUtilities.invokeLater(() -> {
-            new TestFrame().setVisible(true);
+        Thread.setDefaultUncaughtExceptionHandler(new GlobalExceptionHandler());
+
+        SwingUtilities.invokeLater(() -> {
+            MainUI mainUI = new MainUI();
+            mainUI.setVisible(true);
         });
     }
 }
