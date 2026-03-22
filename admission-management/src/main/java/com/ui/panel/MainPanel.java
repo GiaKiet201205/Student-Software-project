@@ -11,6 +11,7 @@ public class MainPanel extends JPanel {
     setLayout(cardLayout);
 
     add(new TestFrame(), "TEST FRAME");
+    add(new DiemCongXetTuyenPanel(), "EXTRA POINTS");
     // Todo: Add Screens
   }
 
