@@ -1,107 +1,46 @@
 package com.entity;
 
 import jakarta.persistence.*;
-
+import lombok.*;
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "xt_diemcongxetuyen")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class DiemCongXetTuyen {
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Integer iddiemcong;
+  @Column(name = "iddiemcong")
+  private Long idDiemCong;
 
-  private String ts_cccd;
-  private String manganh;
-  private String matohop;
-  private String phuongthuc;
+  @Column(name = "ts_cccd", nullable = false, length = 45)
+  private String cccd;
 
+  @Column(name = "manganh", length = 20)
+  private String maNganh;
+
+  @Column(name = "matohop", length = 10)
+  private String maToHop;
+
+  @Column(name = "phuongthuc", length = 45)
+  private String phuongThuc;
+
+  @Column(name = "diemCC", precision = 6, scale = 2)
   private BigDecimal diemCC;
-  private BigDecimal diemUtxt;
+
+  @Column(name = "diemUtxt", precision = 6, scale = 2)
+  private BigDecimal diemUuTienXT;
+
+  @Column(name = "diemTong", precision = 6, scale = 2)
   private BigDecimal diemTong;
 
-  private String ghichu;
+  @Column(name = "ghichu", columnDefinition = "TEXT")
+  private String ghiChu;
 
-  @Column(unique = true)
-  private String dc_keys;
-
-  public Integer getIddiemcong() {
-    return iddiemcong;
-  }
-
-  public void setIddiemcong(Integer iddiemcong) {
-    this.iddiemcong = iddiemcong;
-  }
-
-  public String getTs_cccd() {
-    return ts_cccd;
-  }
-
-  public void setTs_cccd(String ts_cccd) {
-    this.ts_cccd = ts_cccd;
-  }
-
-  public String getManganh() {
-    return manganh;
-  }
-
-  public void setManganh(String manganh) {
-    this.manganh = manganh;
-  }
-
-  public String getMatohop() {
-    return matohop;
-  }
-
-  public void setMatohop(String matohop) {
-    this.matohop = matohop;
-  }
-
-  public String getPhuongthuc() {
-    return phuongthuc;
-  }
-
-  public void setPhuongthuc(String phuongthuc) {
-    this.phuongthuc = phuongthuc;
-  }
-
-  public BigDecimal getDiemCC() {
-    return diemCC;
-  }
-
-  public void setDiemCC(BigDecimal diemCC) {
-    this.diemCC = diemCC;
-  }
-
-  public BigDecimal getDiemUtxt() {
-    return diemUtxt;
-  }
-
-  public void setDiemUtxt(BigDecimal diemUtxt) {
-    this.diemUtxt = diemUtxt;
-  }
-
-  public BigDecimal getDiemTong() {
-    return diemTong;
-  }
-
-  public void setDiemTong(BigDecimal diemTong) {
-    this.diemTong = diemTong;
-  }
-
-  public String getGhichu() {
-    return ghichu;
-  }
-
-  public void setGhichu(String ghichu) {
-    this.ghichu = ghichu;
-  }
-
-  public String getDc_keys() {
-    return dc_keys;
-  }
-
-  public void setDc_keys(String dc_keys) {
-    this.dc_keys = dc_keys;
-  }
+  @Column(name = "dc_keys", nullable = false, length = 45, unique = true)
+  private String dcKeys;
 }

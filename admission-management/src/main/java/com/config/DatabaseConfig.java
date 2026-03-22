@@ -9,8 +9,14 @@ public class DatabaseConfig {
 
     configuration.configure("hibernate.cfg.xml");
 
-    // TODO: Add entity
-    // configuration.addAnnotatedClass(com.entity.ThiSinh.class);
+    configuration.addAnnotatedClass(com.entity.BangQuyDoi.class);
+    configuration.addAnnotatedClass(com.entity.DiemCongXetTuyen.class);
+    configuration.addAnnotatedClass(com.entity.DiemThiXetTuyen.class);
+    configuration.addAnnotatedClass(com.entity.Nganh.class);
+    configuration.addAnnotatedClass(com.entity.NganhToHop.class);
+    configuration.addAnnotatedClass(com.entity.ThiSinhXetTuyen25.class);
+    configuration.addAnnotatedClass(com.entity.ToHopMonThi.class);
+    configuration.addAnnotatedClass(com.entity.NguyenVongXetTuyen.class);
 
     return configuration;
   }
