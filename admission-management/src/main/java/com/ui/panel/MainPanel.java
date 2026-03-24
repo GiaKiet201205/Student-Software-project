@@ -12,6 +12,7 @@ public class MainPanel extends JPanel {
 
     add(new TestFrame(), "TEST FRAME");
     add(new DiemCongXetTuyenPanel(), "EXTRA POINTS");
+    add(new NguyenVongXetTuyenPanel(), "APPLICATION REFERENCES");
     // Todo: Add Screens
   }
 

@@ -21,6 +21,7 @@ public class NavBarPanel extends BasePanel {
     addLogo();
     addNavButton("Test Frame", "TEST FRAME");
     addNavButton("Extra Points", "EXTRA POINTS");
+    addNavButton("Application References", "APPLICATION REFERENCES");
     // TODO: Add screens
 
     addLogoutButton();

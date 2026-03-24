@@ -21,6 +21,7 @@ import com.controller.DiemCongXetTuyenController;
 import com.entity.DiemCongXetTuyen;
 import com.ui.common.BasePanel;
 import com.ui.common.BaseTable;
+import com.ui.data_form.DataFormDiemCongXetTuyen;
 import com.ui.common.BaseButton;
 
 public class DiemCongXetTuyenPanel extends BasePanel {
@@ -140,20 +141,20 @@ public class DiemCongXetTuyenPanel extends BasePanel {
         DataFormDiemCongXetTuyen form = new DataFormDiemCongXetTuyen();
         form.txtIdDiemCong.setText("Hệ thống sẽ tự thêm vào trường này, người dùng không cần nhập!");
         form.btnSave.addActionListener(e -> {
-            String cccd = form.txtCccd.getText();
-            String manganh = form.txtMaNganh.getText();
-            String matohop = form.txtMaToHop.getText();
-            String phuongthuc = form.txtPhuongThuc.getText();
-            String diemCC = form.txtDiemCC.getText();
+            String cccd = form.txtCccd.getText().trim();
+            String manganh = form.txtMaNganh.getText().trim();
+            String matohop = form.txtMaToHop.getText().trim();
+            String phuongthuc = form.txtPhuongThuc.getText().trim();
+            String diemCC = form.txtDiemCC.getText().trim();
             if(diemCC.isEmpty()) diemCC = "0";
-            String diemUtxt = form.txtDiemUtxt.getText();
+            String diemUtxt = form.txtDiemUtxt.getText().trim();
             if(diemUtxt.isEmpty()) diemUtxt = "0";
-            String diemTong = form.txtDiemTong.getText();
-            String ghichu = form.txtGhiChu.getText();
-            String dcKeys = form.txtDcKeys.getText();
+            String diemTong = form.txtDiemTong.getText().trim();
+            String ghichu = form.txtGhiChu.getText().trim();
+            String dcKeys = form.txtDcKeys.getText().trim();
 
             if(!validateInput(cccd, manganh, matohop, diemCC, diemUtxt, phuongthuc, diemTong, dcKeys)) {
-                JOptionPane.showMessageDialog(form, "Vui lòng kiểm tra lại thông tin nhập vào!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(form, "Vui lòng nhập đầy đủ và đúng định dạng các trường dữ liệu!", "Lỗi", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
@@ -221,7 +222,7 @@ public class DiemCongXetTuyenPanel extends BasePanel {
             String dcKeys = form.txtDcKeys.getText();
 
             if(!validateInput(cccd, manganh, matohop, diemCC, diemUtxt, phuongthuc, diemTong, dcKeys)) {
-                JOptionPane.showMessageDialog(form, "Vui lòng kiểm tra lại thông tin nhập vào!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(form, "Vui lòng nhập đầy đủ và đúng định dạng các trường dữ liệu!", "Lỗi", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
@@ -278,20 +279,26 @@ public class DiemCongXetTuyenPanel extends BasePanel {
         }
 
         List<DiemCongXetTuyen> searchResults = controller.searchDiemCongXetTuyen(keyString);
-        model.setRowCount(0);
-        for(DiemCongXetTuyen dc : searchResults){
-            model.addRow(new Object[]{
-                    dc.getIdDiemCong(),
-                    dc.getCccd(),
-                    dc.getMaNganh(),
-                    dc.getMaToHop(),
-                    dc.getPhuongThuc(),
-                    dc.getDiemCC(),
-                    dc.getDiemUuTienXT(),
-                    dc.getDiemTong(),
-                    dc.getGhiChu(),
-                    dc.getDcKeys()
-            });
+        if(searchResults.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy kết quả nào phù hợp với từ khóa: " + keyString, "Kết quả tìm kiếm", JOptionPane.INFORMATION_MESSAGE);
+            loadTable();
+            return;
+        } else {
+            model.setRowCount(0);
+            for(DiemCongXetTuyen dc : searchResults){
+                model.addRow(new Object[]{
+                        dc.getIdDiemCong(),
+                        dc.getCccd(),
+                        dc.getMaNganh(),
+                        dc.getMaToHop(),
+                        dc.getPhuongThuc(),
+                        dc.getDiemCC(),
+                        dc.getDiemUuTienXT(),
+                        dc.getDiemTong(),
+                        dc.getGhiChu(),
+                        dc.getDcKeys()
+                });
+            }
         }
      }
     
@@ -304,6 +311,7 @@ public class DiemCongXetTuyenPanel extends BasePanel {
             try (FileInputStream fis = new FileInputStream(file);
                 Workbook workbook = new XSSFWorkbook(fis)) {
                 Sheet sheet = workbook.getSheetAt(0);
+                int countError = 0;
                 for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                     Row row = sheet.getRow(i);
                     if (row == null) continue;
@@ -318,19 +326,24 @@ public class DiemCongXetTuyenPanel extends BasePanel {
                     String ghichu = row.getCell(7).getStringCellValue();
                     String dcKeys = row.getCell(8).getStringCellValue();
 
-                    DiemCongXetTuyen entity = new DiemCongXetTuyen();
-                    entity.setCccd(cccd);
-                    entity.setMaNganh(manganh);
-                    entity.setMaToHop(matohop);
-                    entity.setPhuongThuc(phuongthuc);
-                    entity.setDiemCC(BigDecimal.valueOf(diemCC));
-                    entity.setDiemUuTienXT(BigDecimal.valueOf(diemUtxt));
-                    entity.setDiemTong(BigDecimal.valueOf(diemTong));
-                    entity.setGhiChu(ghichu);
-                    entity.setDcKeys(dcKeys);
-                    controller.addDiemCongXetTuyen(entity);
+                    if(validateInput(cccd, manganh, matohop, String.valueOf(diemCC), String.valueOf(diemUtxt), phuongthuc, String.valueOf(diemTong), dcKeys)){
+                        DiemCongXetTuyen entity = new DiemCongXetTuyen();
+                        entity.setCccd(cccd);
+                        entity.setMaNganh(manganh);
+                        entity.setMaToHop(matohop);
+                        entity.setPhuongThuc(phuongthuc);
+                        entity.setDiemCC(BigDecimal.valueOf(diemCC));
+                        entity.setDiemUuTienXT(BigDecimal.valueOf(diemUtxt));
+                        entity.setDiemTong(BigDecimal.valueOf(diemTong));
+                        entity.setGhiChu(ghichu);
+                        entity.setDcKeys(dcKeys);
+
+                        controller.addDiemCongXetTuyen(entity);
+                    } else {
+                        countError++;
+                    }
                 }
-                JOptionPane.showMessageDialog(this, "Import Excel thành công!");
+                JOptionPane.showMessageDialog(this, "Import Excel thành công! Số lỗi: " + countError);
                 loadTable();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -365,14 +378,15 @@ public class DiemCongXetTuyenPanel extends BasePanel {
             return false;
         }
         try {
-            Long.parseLong(cccd);
+            if(Long.parseLong(cccd) < 0 || cccd.length() != 12) {
+                return false;
+            }
         } catch (NumberFormatException e) {
             return false;
         }
         if(!diemCC.isEmpty()) {
             try {
-                Double.parseDouble(diemCC);
-                if(Double.parseDouble(diemCC) < 0) {
+                if(Double.parseDouble(diemCC) < 0 || Double.parseDouble(diemCC) > 2) {
                     return false;
                 }
             } catch (NumberFormatException e) {
@@ -381,8 +395,7 @@ public class DiemCongXetTuyenPanel extends BasePanel {
         }
         if(!diemUtxt.isEmpty()) {
             try {
-                Double.parseDouble(diemUtxt);
-                if(Double.parseDouble(diemUtxt) < 0) {
+                if(Double.parseDouble(diemUtxt) < 0 || Double.parseDouble(diemUtxt) > 0.75) {
                     return false;
                 }
             } catch (NumberFormatException e) {
@@ -390,8 +403,7 @@ public class DiemCongXetTuyenPanel extends BasePanel {
             }
         }
         try {
-            Double.parseDouble(diemTong);
-            if(Double.parseDouble(diemTong) < 0) {
+            if(Double.parseDouble(diemTong) < 0 || Double.parseDouble(diemTong) > 32.75) {
                 return false;
             }
         } catch (NumberFormatException e) {

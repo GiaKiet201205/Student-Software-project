@@ -1,4 +1,4 @@
-package com.ui.panel;
+package com.ui.data_form;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -14,18 +14,20 @@ import javax.swing.JTextField;
 
 import com.ui.common.BaseButton;
 
-public class DataFormDiemCongXetTuyen extends JDialog {
+public class DataFormNguyenVongXetTuyen extends JDialog {
 
-    public JTextField txtIdDiemCong;
+    public JTextField txtIdNv;
     public JTextField txtCccd;
     public JTextField txtMaNganh;
-    public JTextField txtMaToHop;
+    public JTextField txtThuTu;
+    public JTextField txtDiemThXT;
+    public JTextField txtDiemUuTienQD;
+    public JTextField txtDiemCong;
+    public JTextField txtDiemXetTuyen;
+    public JTextField txtKetQua;
+    public JTextField txtNvKeys;
     public JTextField txtPhuongThuc;
-    public JTextField txtDiemCC;
-    public JTextField txtDiemUtxt;
-    public JTextField txtDiemTong;
-    public JTextField txtGhiChu;
-    public JTextField txtDcKeys;
+    public JTextField txtTtThm;
 
     public BaseButton btnSave;
     public BaseButton btnCancel;
@@ -34,56 +36,63 @@ public class DataFormDiemCongXetTuyen extends JDialog {
     private final Color LABEL_COLOR = new Color(52,73,94);
     private final Color BORDER_COLOR = new Color(220,223,225);
 
-    public DataFormDiemCongXetTuyen() {
+    public DataFormNguyenVongXetTuyen() {
 
-        setTitle("Thêm mới điểm cộng");
-        setSize(520,650);
+        setTitle("Thêm mới nguyện vọng xét tuyển");
+        setSize(520,720);
         setLocationRelativeTo(null);
         setModal(true);
         setLayout(new BorderLayout(10,10));
 
         getContentPane().setBackground(BG_COLOR);
 
-        JPanel formPanel = new JPanel(new GridLayout(10,1,12,12));
+        JPanel formPanel = new JPanel(new GridLayout(12,1,12,12));
         formPanel.setBorder(BorderFactory.createEmptyBorder(20,25,10,25));
         formPanel.setBackground(BG_COLOR);
 
-        txtIdDiemCong = new JTextField();
+        txtIdNv = new JTextField();
         txtCccd = new JTextField();
         txtMaNganh = new JTextField();
-        txtMaToHop = new JTextField();
+        txtThuTu = new JTextField();
+        txtDiemThXT = new JTextField();
+        txtDiemUuTienQD = new JTextField();
+        txtDiemCong = new JTextField();
+        txtDiemXetTuyen = new JTextField();
+        txtKetQua = new JTextField();
+        txtNvKeys = new JTextField();
         txtPhuongThuc = new JTextField();
-        txtDiemCC = new JTextField();
-        txtDiemUtxt = new JTextField();
-        txtDiemTong = new JTextField();
-        txtGhiChu = new JTextField();
-        txtDcKeys = new JTextField();
+        txtTtThm = new JTextField();
 
-        styleTextField(txtIdDiemCong);
+        styleTextField(txtIdNv);
         styleTextField(txtCccd);
         styleTextField(txtMaNganh);
-        styleTextField(txtMaToHop);
+        styleTextField(txtThuTu);
+        styleTextField(txtDiemThXT);
+        styleTextField(txtDiemUuTienQD);
+        styleTextField(txtDiemCong);
+        styleTextField(txtDiemXetTuyen);
+        styleTextField(txtKetQua);
+        styleTextField(txtNvKeys);
         styleTextField(txtPhuongThuc);
-        styleTextField(txtDiemCC);
-        styleTextField(txtDiemUtxt);
-        styleTextField(txtDiemTong);
-        styleTextField(txtGhiChu);
-        styleTextField(txtDcKeys);
+        styleTextField(txtTtThm);
 
-        formPanel.add(createRow("ID Điểm Cộng", txtIdDiemCong));
+        formPanel.add(createRow("ID Nguyện Vọng", txtIdNv));
         formPanel.add(createRow("TS CCCD", txtCccd));
         formPanel.add(createRow("Mã Ngành", txtMaNganh));
-        formPanel.add(createRow("Mã Tổ Hợp", txtMaToHop));
+        formPanel.add(createRow("Thứ Tự NV", txtThuTu));
+        formPanel.add(createRow("Điểm THXT", txtDiemThXT));
+        formPanel.add(createRow("Điểm Ưu Tiên QĐ", txtDiemUuTienQD));
+        formPanel.add(createRow("Điểm Cộng", txtDiemCong));
+        formPanel.add(createRow("Điểm Xét Tuyển", txtDiemXetTuyen));
+        formPanel.add(createRow("Kết Quả", txtKetQua));
+        formPanel.add(createRow("NV Keys", txtNvKeys));
         formPanel.add(createRow("Phương Thức", txtPhuongThuc));
-        formPanel.add(createRow("Điểm CC", txtDiemCC));
-        formPanel.add(createRow("Điểm Utxt", txtDiemUtxt));
-        formPanel.add(createRow("Điểm Tổng", txtDiemTong));
-        formPanel.add(createRow("Ghi Chú", txtGhiChu));
-        formPanel.add(createRow("DC Keys", txtDcKeys));
+        formPanel.add(createRow("TT THM", txtTtThm));
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setBackground(BG_COLOR);
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(15,10,25,10));
+
         btnSave = new BaseButton("Lưu", new Color(46,204,113));
         btnCancel = new BaseButton("Hủy", new Color(231,76,60));
 
@@ -100,6 +109,7 @@ public class DataFormDiemCongXetTuyen extends JDialog {
     }
 
     private JPanel createRow(String label, JTextField textField) {
+
         JPanel panel = new JPanel(new BorderLayout(10,0));
         panel.setOpaque(false);
 
@@ -115,6 +125,7 @@ public class DataFormDiemCongXetTuyen extends JDialog {
     }
 
     private void styleTextField(JTextField txt){
+
         txt.setPreferredSize(new Dimension(260,35));
         txt.setBackground(Color.WHITE);
         txt.setFont(new Font("Segoe UI", Font.PLAIN, 14));
