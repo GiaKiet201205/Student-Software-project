@@ -18,8 +18,7 @@ public class BaseFrame extends JFrame {
       @Override
       public void windowClosing(WindowEvent e) {
         try {
-          System.out.println("Đang đóng kết nối Database...");
-          HibernateUtil.shutdown();
+          System.exit(0);
         } catch (Exception ex) {
           System.err.println("Không thể đóng SessionFactory vì nó chưa từng được khởi tạo.");
           System.exit(0);
