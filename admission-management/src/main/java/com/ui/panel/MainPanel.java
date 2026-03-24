@@ -12,6 +12,8 @@ public class MainPanel extends JPanel {
 
     add(new TestFrame(), "TEST FRAME");
     // Todo: Add Screens
+    add(new UserManagementFrame(), "USER_MANAGEMENT");
+    add(new ExamineeManagementFrame(), "EXAMINEE_MANAGEMENT");
   }
 
   public void showCard(String cardName) {
