@@ -20,7 +20,7 @@ public class NavBarPanel extends BasePanel {
 
     addLogo();
     addNavButton("Test Frame", "TEST FRAME");
-
+    addNavButton("Bảng Quy Đổi", "QUY_DOI");
     // TODO: Add screens
 
     addLogoutButton();

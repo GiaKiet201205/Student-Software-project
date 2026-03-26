@@ -1,6 +1,9 @@
 package com.ui.panel;
 
 import javax.swing.*;
+
+import com.ui.panel.QuyDoi.BangQuyDoiPanel;
+
 import java.awt.*;
 
 public class MainPanel extends JPanel {
@@ -11,6 +14,7 @@ public class MainPanel extends JPanel {
     setLayout(cardLayout);
 
     add(new TestFrame(), "TEST FRAME");
+    add(new BangQuyDoiPanel(), "QUY_DOI");
     // Todo: Add Screens
   }
 
