@@ -7,9 +7,16 @@ import com.ui.common.BaseButton;
 import com.ui.common.BasePanel;
 import com.ui.common.BaseTable;
 
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.List;
 
 public class ToHopPanel extends BasePanel {
@@ -17,8 +24,9 @@ public class ToHopPanel extends BasePanel {
     private BaseTable baseTable;
     private final ToHopMonThiService toHopMonThiService;
 
-    // Khai báo các nút ở cấp class để dễ gọi sự kiện
+    // Khai báo các nút bấm
     private BaseButton addButton;
+    private BaseButton importButton; // Nút Import Excel
     private BaseButton editButton;
     private BaseButton deleteButton;
 
@@ -28,7 +36,7 @@ public class ToHopPanel extends BasePanel {
         setLayout(new BorderLayout());
         initializeComponents();
         loadDataIntoTable();
-        setupActionListeners(); // Gọi hàm cài đặt sự kiện
+        setupActionListeners();
     }
 
     private void initializeComponents() {
@@ -36,6 +44,7 @@ public class ToHopPanel extends BasePanel {
         mainContentPanel.setBackground(AppConfig.COLOR_BACKGROUND);
         mainContentPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
+        // --- Header Panel ---
         BasePanel headerPanel = new BasePanel(AppConfig.COLOR_WHITE, 15);
         headerPanel.setLayout(new BorderLayout(20, 0));
         headerPanel.setPreferredSize(new Dimension(0, 60));
@@ -45,10 +54,19 @@ public class ToHopPanel extends BasePanel {
         titleLabel.setForeground(AppConfig.COLOR_TEXT_MAIN);
         headerPanel.add(titleLabel, BorderLayout.WEST);
 
+        // Nút Thêm và Nút Nhập Excel
         addButton = new BaseButton(" + Thêm Tổ Hợp ");
-        headerPanel.add(addButton, BorderLayout.EAST);
+        importButton = new BaseButton(" Nhập Excel ", new Color(40, 167, 69)); // Nút màu xanh lá
+        
+        JPanel headerActionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        headerActionPanel.setOpaque(false);
+        headerActionPanel.add(importButton);
+        headerActionPanel.add(addButton);
+        
+        headerPanel.add(headerActionPanel, BorderLayout.EAST);
         mainContentPanel.add(headerPanel, BorderLayout.NORTH);
 
+        // --- Table Panel ---
         BasePanel tablePanel = new BasePanel(AppConfig.COLOR_WHITE, 15);
         tablePanel.setLayout(new BorderLayout());
 
@@ -56,7 +74,7 @@ public class ToHopPanel extends BasePanel {
         defaultTableModel = new DefaultTableModel(tableColumnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Khóa không cho edit trực tiếp trên bảng
+                return false;
             }
         };
         baseTable = new BaseTable(defaultTableModel);
@@ -68,6 +86,7 @@ public class ToHopPanel extends BasePanel {
         tablePanel.add(scrollPane, BorderLayout.CENTER);
         mainContentPanel.add(tablePanel, BorderLayout.CENTER);
 
+        // --- Footer Panel ---
         JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         footerPanel.setOpaque(false);
         
@@ -94,18 +113,17 @@ public class ToHopPanel extends BasePanel {
         }
     }
 
-    // --- CÀI ĐẶT CÁC SỰ KIỆN CLick NÚT ---
     private void setupActionListeners() {
         // 1. Chức năng Thêm
         addButton.addActionListener(e -> {
             ToHopDialog dialog = new ToHopDialog(SwingUtilities.getWindowAncestor(this), null);
-            dialog.setVisible(true); // Mở cửa sổ lên chờ nhập
+            dialog.setVisible(true);
 
-            ToHopMonThi newToHop = dialog.getToHopResult(); // Lấy data sau khi đóng cửa sổ
+            ToHopMonThi newToHop = dialog.getToHopResult();
             if (newToHop != null) {
                 try {
-                    toHopMonThiService.themToHop(newToHop); // Gọi Service lưu vào DB
-                    loadDataIntoTable(); // Tải lại bảng
+                    toHopMonThiService.themToHop(newToHop);
+                    loadDataIntoTable();
                     JOptionPane.showMessageDialog(this, "Thêm tổ hợp thành công!");
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(this, "Lỗi khi thêm: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
@@ -121,7 +139,6 @@ public class ToHopPanel extends BasePanel {
                 return;
             }
 
-            // Lấy dữ liệu từ dòng đang chọn trên bảng để nhét vào form sửa
             ToHopMonThi toHopEdit = new ToHopMonThi();
             toHopEdit.setMaToHop((String) defaultTableModel.getValueAt(selectedRow, 0));
             toHopEdit.setTenToHop((String) defaultTableModel.getValueAt(selectedRow, 1));
@@ -135,7 +152,7 @@ public class ToHopPanel extends BasePanel {
             ToHopMonThi updatedToHop = dialog.getToHopResult();
             if (updatedToHop != null) {
                 try {
-                    toHopMonThiService.capNhatToHop(updatedToHop); // Gọi Service cập nhật
+                    toHopMonThiService.capNhatToHop(updatedToHop);
                     loadDataIntoTable();
                     JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
                 } catch (Exception ex) {
@@ -153,16 +170,56 @@ public class ToHopPanel extends BasePanel {
             }
 
             String maToHop = (String) defaultTableModel.getValueAt(selectedRow, 0);
-            
-            // Hỏi xác nhận trước khi xóa
             int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn xóa tổ hợp " + maToHop + "?", "Xác nhận xóa", JOptionPane.YES_NO_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {
                 try {
-                    toHopMonThiService.xoaToHop(maToHop); // Gọi Service xóa
+                    toHopMonThiService.xoaToHop(maToHop);
                     loadDataIntoTable();
                     JOptionPane.showMessageDialog(this, "Xóa thành công!");
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(this, "Lỗi khi xóa: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        // 4. Chức năng Import Excel
+        importButton.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Chọn file Excel (.xlsx) chứa danh sách Tổ hợp");
+            int result = fileChooser.showOpenDialog(this);
+            
+            if (result == JFileChooser.APPROVE_OPTION) {
+                File selectedFile = fileChooser.getSelectedFile();
+                try (FileInputStream fis = new FileInputStream(selectedFile);
+                     Workbook workbook = new XSSFWorkbook(fis)) {
+                    
+                    Sheet sheet = workbook.getSheetAt(0);
+                    int successCount = 0;
+                    
+                    for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                        Row row = sheet.getRow(i);
+                        if (row == null) continue;
+
+                        try {
+                            ToHopMonThi toHop = new ToHopMonThi();
+                            toHop.setMaToHop(row.getCell(0).getStringCellValue());
+                            toHop.setTenToHop(row.getCell(1).getStringCellValue());
+                            toHop.setMon1(row.getCell(2).getStringCellValue());
+                            toHop.setMon2(row.getCell(3).getStringCellValue());
+                            toHop.setMon3(row.getCell(4).getStringCellValue());
+
+                            toHopMonThiService.themToHop(toHop);
+                            successCount++;
+                        } catch (Exception rowEx) {
+                            System.out.println("Lỗi ở dòng " + (i + 1) + " trong file Excel: " + rowEx.getMessage());
+                        }
+                    }
+                    
+                    loadDataIntoTable();
+                    JOptionPane.showMessageDialog(this, "Nhập thành công " + successCount + " tổ hợp từ Excel!");
+                    
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "Lỗi khi đọc file Excel: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
