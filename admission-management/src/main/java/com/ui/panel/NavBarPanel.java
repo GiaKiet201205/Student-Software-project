@@ -20,8 +20,8 @@ public class NavBarPanel extends BasePanel {
 
     addLogo();
     addNavButton("Test Frame", "TEST FRAME");
-    addNavButton("Extra Points", "EXTRA POINTS");
-    addNavButton("Application References", "APPLICATION REFERENCES");
+    addNavButton("ĐIỂM CỘNG XÉT TUYỂN", "EXTRA POINTS");
+    addNavButton("NGUYỆN VỌNG XÉT TUYỂN", "APPLICATION REFERENCES");
     // TODO: Add screens
 
     addLogoutButton();
