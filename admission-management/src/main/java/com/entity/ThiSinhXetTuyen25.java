@@ -41,7 +41,7 @@ public class ThiSinhXetTuyen25 {
   @Column(name = "gioi_tinh", length = 10)
   private String gioiTinh;
 
-  @Column(name = "email", length = 100)
+  @Column(name = "email", length = 100, unique = true)
   private String email;
 
   @Column(name = "noi_sinh", length = 45)
