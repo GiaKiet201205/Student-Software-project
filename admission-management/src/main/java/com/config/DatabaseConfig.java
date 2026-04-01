@@ -17,6 +17,7 @@ public class DatabaseConfig {
     configuration.addAnnotatedClass(com.entity.ThiSinhXetTuyen25.class);
     configuration.addAnnotatedClass(com.entity.ToHopMonThi.class);
     configuration.addAnnotatedClass(com.entity.NguyenVongXetTuyen.class);
+    configuration.addAnnotatedClass(com.entity.NguoiDung.class);
 
     return configuration;
   }
