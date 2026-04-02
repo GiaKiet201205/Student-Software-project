@@ -20,6 +20,11 @@ public class NavBarPanel extends BasePanel {
 
     addLogo();
     addNavButton("Test Frame", "TEST FRAME");
+    addNavButton("Quản lý Ngành", "NGANH_PANEL");
+    addNavButton("Quản lý Tổ hợp", "TOHOP_PANEL");
+
+    addNavButton("ĐIỂM CỘNG XÉT TUYỂN", "EXTRA POINTS");
+    addNavButton("NGUYỆN VỌNG XÉT TUYỂN", "APPLICATION REFERENCES");
     // TODO: Add screens
     addNavButton("Quản lý người dùng", "USER_MANAGEMENT");
     addNavButton("Quản lý thí sinh", "EXAMINEE_MANAGEMENT");
