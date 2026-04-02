@@ -24,77 +24,137 @@ public class EditExamineeDialog extends JDialog {
         this.userId = id;
 
         setTitle("Sửa Thí Sinh");
-        setSize(700, 500);
+        setSize(1000, 700);
         setLocationRelativeTo(null);
         setModal(true);
+        setResizable(false);
 
         initComponents();
         loadData();
     }
 
     private void initComponents() {
-        txtFirstName = new JTextField();
-        txtEmail = new JTextField();
-        txtPhone = new JTextField();
-        txtSurName = new JTextField();
-        txtAddress = new JTextField();
-        txtDateOfBirth = new JTextField();
-        comboBoxGender = new JComboBox<>(options);
-        txtDoiTuongUuTien = new JTextField();
-        txtCCCD = new JTextField();
-        txtPassword = new JTextField();
-        txtSBD = new JTextField();
         txtId = new JTextField();
-        txtUpdateAt = new JTextField();
         txtId.setEditable(false);
+        txtId.setPreferredSize(new Dimension(300, 35));
+
+        txtSurName = new JTextField();
+        txtSurName.setPreferredSize(new Dimension(300, 35));
+
+        txtFirstName = new JTextField();
+        txtFirstName.setPreferredSize(new Dimension(300, 35));
+
+        txtEmail = new JTextField();
+        txtEmail.setPreferredSize(new Dimension(300, 35));
+
+        txtPhone = new JTextField();
+        txtPhone.setPreferredSize(new Dimension(300, 35));
+
+        txtDateOfBirth = new JTextField();
+        txtDateOfBirth.setPreferredSize(new Dimension(300, 35));
+
+        comboBoxGender = new JComboBox<>(options);
+        comboBoxGender.setPreferredSize(new Dimension(300, 35));
+
+        txtAddress = new JTextField();
+        txtAddress.setPreferredSize(new Dimension(300, 35));
+
+        txtCCCD = new JTextField();
+        txtCCCD.setPreferredSize(new Dimension(300, 35));
+
+        txtPassword = new JTextField();
+        txtPassword.setPreferredSize(new Dimension(300, 35));
+
+        txtSBD = new JTextField();
+        txtSBD.setPreferredSize(new Dimension(300, 35));
+
+        txtDoiTuongUuTien = new JTextField();
+        txtDoiTuongUuTien.setPreferredSize(new Dimension(300, 35));
+
+        txtUpdateAt = new JTextField();
         txtUpdateAt.setEditable(false);
+        txtUpdateAt.setPreferredSize(new Dimension(300, 35));
 
         BaseButton btnSave = new BaseButton("Lưu");
         BaseButton btnCancel = new BaseButton("Hủy");
         btnSave.addActionListener(e -> updateUser());
         btnCancel.addActionListener(e -> dispose());
 
+        // Panel chính với padding
         JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new GridLayout(7, 2, 10, 10));
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(30, 50, 30, 50));
 
-        mainPanel.add(new JLabel("ID:"));
-        mainPanel.add(txtId);
-        mainPanel.add(new JLabel("Họ:"));
-        mainPanel.add(txtSurName);
-        mainPanel.add(new JLabel("Tên:"));
-        mainPanel.add(txtFirstName);
-        mainPanel.add(new JLabel("Email:"));
-        mainPanel.add(txtEmail);
-        mainPanel.add(new JLabel("Số điện thoại:"));
-        mainPanel.add(txtPhone);
-        mainPanel.add(new JLabel("Ngày sinh:"));
-        mainPanel.add(txtDateOfBirth);
-        mainPanel.add(new JLabel("Giới tính:"));
-        mainPanel.add(comboBoxGender);
+        // Tạo các hàng input
+        mainPanel.add(createInputRow("ID:", txtId));
+        mainPanel.add(Box.createVerticalStrut(15));
 
-        JPanel panel2 = new JPanel();
-        panel2.setLayout(new GridLayout(6, 2, 10, 10));
+        mainPanel.add(createInputRow("Họ:", txtSurName));
+        mainPanel.add(Box.createVerticalStrut(15));
 
-        panel2.add(new JLabel("Địa chỉ:"));
-        panel2.add(txtAddress);
-        panel2.add(new JLabel("CCCD:"));
-        panel2.add(txtCCCD);
-        panel2.add(new JLabel("Mật khẩu:"));
-        panel2.add(txtPassword);
-        panel2.add(new JLabel("SBD:"));
-        panel2.add(txtSBD);
-        panel2.add(new JLabel("Đối tượng ưu tiên:"));
-        panel2.add(txtDoiTuongUuTien);
-        panel2.add(new JLabel("Cập nhật lúc:"));
-        panel2.add(txtUpdateAt);
+        mainPanel.add(createInputRow("Tên:", txtFirstName));
+        mainPanel.add(Box.createVerticalStrut(15));
 
+        mainPanel.add(createInputRow("Email:", txtEmail));
+        mainPanel.add(Box.createVerticalStrut(15));
+
+        mainPanel.add(createInputRow("Số điện thoại:", txtPhone));
+        mainPanel.add(Box.createVerticalStrut(15));
+
+        mainPanel.add(createInputRow("Ngày sinh:", txtDateOfBirth));
+        mainPanel.add(Box.createVerticalStrut(15));
+
+        mainPanel.add(createInputRow("Giới tính:", comboBoxGender));
+        mainPanel.add(Box.createVerticalStrut(15));
+
+        mainPanel.add(createInputRow("Địa chỉ:", txtAddress));
+        mainPanel.add(Box.createVerticalStrut(15));
+
+        mainPanel.add(createInputRow("CCCD:", txtCCCD));
+        mainPanel.add(Box.createVerticalStrut(15));
+
+        mainPanel.add(createInputRow("Mật khẩu:", txtPassword));
+        mainPanel.add(Box.createVerticalStrut(15));
+
+        mainPanel.add(createInputRow("Số báo danh:", txtSBD));
+        mainPanel.add(Box.createVerticalStrut(15));
+
+        mainPanel.add(createInputRow("Đối tượng ưu tiên:", txtDoiTuongUuTien));
+        mainPanel.add(Box.createVerticalStrut(15));
+
+        mainPanel.add(createInputRow("Cập nhật lúc:", txtUpdateAt));
+        mainPanel.add(Box.createVerticalGlue());
+
+        // Tạo JScrollPane để có thể cuộn nếu cần
+        JScrollPane scrollPane = new JScrollPane(mainPanel);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setBorder(null);
+
+        // Panel cho buttons
         JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 20, 20));
         buttonPanel.add(btnSave);
         buttonPanel.add(btnCancel);
 
-        add(mainPanel, BorderLayout.NORTH);
-        add(panel2, BorderLayout.CENTER);
+        add(scrollPane, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
+    }
+
+    private JPanel createInputRow(String labelText, JComponent inputComponent) {
+        JPanel row = new JPanel();
+        row.setLayout(new BorderLayout(15, 0));
+        row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+
+        JLabel label = new JLabel(labelText);
+        label.setPreferredSize(new Dimension(150, 35));
+        label.setFont(new Font("Arial", Font.PLAIN, 14));
+
+        inputComponent.setFont(new Font("Arial", Font.PLAIN, 14));
+
+        row.add(label, BorderLayout.WEST);
+        row.add(inputComponent, BorderLayout.CENTER);
+
+        return row;
     }
 
     private void loadData() {

@@ -293,6 +293,34 @@ LOCK TABLES `xt_tohop_monthi` WRITE;
 /*!40000 ALTER TABLE `xt_tohop_monthi` DISABLE KEYS */;
 /*!40000 ALTER TABLE `xt_tohop_monthi` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `xt_nguoidung`
+--
+
+DROP TABLE IF EXISTS `xt_nguoidung`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `xt_nguoidung` (
+  `idnguoidung` int NOT NULL AUTO_INCREMENT,
+  `username` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `password` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `role` int NOT NULL DEFAULT 1,
+  `active` int NOT NULL DEFAULT 1,
+  PRIMARY KEY (`idnguoidung`),
+  UNIQUE KEY `username_UNIQUE` (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `xt_nguoidung`
+--
+
+LOCK TABLES `xt_nguoidung` WRITE;
+/*!40000 ALTER TABLE `xt_nguoidung` DISABLE KEYS */;
+/*!40000 ALTER TABLE `xt_nguoidung` ENABLE KEYS */;
+UNLOCK TABLES;
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

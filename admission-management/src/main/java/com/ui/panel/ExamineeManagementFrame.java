@@ -10,6 +10,7 @@ import com.ui.common.BaseTable;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import java.util.*;
 import java.awt.*;
 import java.util.List;
@@ -87,6 +88,12 @@ public class ExamineeManagementFrame extends BasePanel {
         model = new DefaultTableModel(cols, 0);
 
         table = new BaseTable(model);
+
+        JTableHeader headerTable = table.getTableHeader();
+        headerTable.setBackground(AppConfig.COLOR_PRIMARY);
+        headerTable.setForeground(Color.WHITE);
+        headerTable.setFont(new Font("Segoe UI",Font.BOLD,14));
+
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getViewport().setBackground(AppConfig.COLOR_WHITE);
