@@ -22,6 +22,10 @@ public class NavBarPanel extends BasePanel {
     addNavButton("Test Frame", "TEST FRAME");
     addNavButton("Extra Points", "EXTRA POINTS");
     addNavButton("Application References", "APPLICATION REFERENCES");
+    addNavButton(" Management", "APPLICATION MANAGEMENT");
+
+    addNavButton("Ngành - Tổ Hợp", "NGANH_TOHOP");
+    addNavButton("Điểm Thí Sinh", "DIEM_THI");
     // TODO: Add screens
 
     addLogoutButton();
