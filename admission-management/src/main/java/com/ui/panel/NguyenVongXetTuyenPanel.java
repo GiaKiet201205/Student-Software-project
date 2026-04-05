@@ -3,9 +3,7 @@ package com.ui.panel;
 import java.util.List;
 import com.config.AppConfig;
 import com.controller.NguyenVongXetTuyenController;
-import com.entity.DiemCongXetTuyen;
 import com.entity.NguyenVongXetTuyen;
-import com.ui.data_form.DataFormDiemCongXetTuyen;
 import com.ui.data_form.DataFormNguyenVongXetTuyen;
 import com.ui.common.BaseButton;
 import com.ui.common.BasePanel;
@@ -177,7 +175,8 @@ public class NguyenVongXetTuyenPanel extends BasePanel {
     //TODO: chức năng thêm, sửa, xóa, tìm kiếm, đọc file excel, 
     private void functionAddData(){
         DataFormNguyenVongXetTuyen form = new DataFormNguyenVongXetTuyen();
-        form.txtIdNv.setText("Hệ thống sẽ tự thêm vào trường này, người dùng không cần nhập!");
+        form.txtIdNv.setEditable(false);    form.txtIdNv.setFocusable(false);
+        form.txtIdNv.setBackground(Color.GRAY);
         form.btnSave.addActionListener(e->{
             NguyenVongXetTuyen nv = new NguyenVongXetTuyen();
             String cccd = form.txtCccd.getText().trim();
@@ -228,7 +227,8 @@ public class NguyenVongXetTuyenPanel extends BasePanel {
         }
         DataFormNguyenVongXetTuyen form = new DataFormNguyenVongXetTuyen();
         form.txtIdNv.setText(String.valueOf(nv.getIdNv()));
-        form.txtIdNv.setEditable(false);
+        form.txtIdNv.setEditable(false); form.txtIdNv.setFocusable(false);
+        form.txtIdNv.setBackground(Color.GRAY);
         form.txtCccd.setText(nv.getCccd());
         form.txtMaNganh.setText(nv.getMaNganh());
         form.txtThuTu.setText(String.valueOf(nv.getThuTu()));

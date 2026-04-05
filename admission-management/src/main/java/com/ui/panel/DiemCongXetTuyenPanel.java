@@ -139,7 +139,8 @@ public class DiemCongXetTuyenPanel extends BasePanel {
     //TODO: chức năng thêm, sửa, xóa, tìm kiếm, đọc file excel, load lại bảng sau khi thêm/sửa/xóa
     private void functionAddData() {
         DataFormDiemCongXetTuyen form = new DataFormDiemCongXetTuyen();
-        form.txtIdDiemCong.setText("Hệ thống sẽ tự thêm vào trường này, người dùng không cần nhập!");
+        form.txtIdDiemCong.setEditable(false); form.txtIdDiemCong.setFocusable(false);
+        form.txtIdDiemCong.setBackground(Color.GRAY);
         form.btnSave.addActionListener(e -> {
             String cccd = form.txtCccd.getText().trim();
             String manganh = form.txtMaNganh.getText().trim();
@@ -197,7 +198,8 @@ public class DiemCongXetTuyenPanel extends BasePanel {
 
         DataFormDiemCongXetTuyen form = new DataFormDiemCongXetTuyen();
         form.txtIdDiemCong.setText(entity.getIdDiemCong().toString());
-        form.txtIdDiemCong.setEditable(false);
+        form.txtIdDiemCong.setBackground(Color.GRAY);
+        form.txtIdDiemCong.setEditable(false); form.txtIdDiemCong.setFocusable(false);
         form.txtCccd.setText(entity.getCccd());
         form.txtMaNganh.setText(entity.getMaNganh());
         form.txtMaToHop.setText(entity.getMaToHop());
