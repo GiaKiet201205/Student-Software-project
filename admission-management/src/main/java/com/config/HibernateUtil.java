@@ -1,9 +1,11 @@
 package com.config;
 
 import com.exception.AppException;
+import lombok.Getter;
 import org.hibernate.SessionFactory;
 
 public class HibernateUtil {
+  @Getter
   private static final SessionFactory sessionFactory = buildSessionFactory();
 
   private static SessionFactory buildSessionFactory() {
@@ -15,11 +17,7 @@ public class HibernateUtil {
     }
   }
 
-  public static SessionFactory getSessionFactory() {
-    return sessionFactory;
-  }
-
-  public static void shutdown() {
+    public static void shutdown() {
     if (sessionFactory != null && !sessionFactory.isClosed()) {
       sessionFactory.close();
     }

@@ -2,7 +2,7 @@ package com.controller;
 
 import com.entity.Nganh;
 import com.service.NganhService;
-import com.ui.panel.NganhDialog;
+import com.ui.dialog.NganhDialog;
 import com.ui.panel.NganhPanel;
 
 import org.apache.poi.ss.usermodel.CellType;

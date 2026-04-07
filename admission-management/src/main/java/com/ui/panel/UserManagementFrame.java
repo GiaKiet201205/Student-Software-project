@@ -3,14 +3,12 @@ package com.ui.panel;
 import com.config.AppConfig;
 import com.controller.NguoiDungController;
 import com.entity.NguoiDung;
-import com.entity.ThiSinhXetTuyen25;
-import com.service.NguoiDungService;
 import com.ui.common.BaseButton;
 import com.ui.common.BasePanel;
 import com.ui.common.BaseTable;
+import com.ui.dialog.EditUserDialog;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import java.awt.*;

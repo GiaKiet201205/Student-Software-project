@@ -3,15 +3,14 @@ package com.ui.panel;
 import com.config.AppConfig;
 import com.controller.ThiSinhXetTuyen25Controller;
 import com.entity.ThiSinhXetTuyen25;
-import com.service.ThiSinhXetTuyen25Service;
 import com.ui.common.BaseButton;
 import com.ui.common.BasePanel;
 import com.ui.common.BaseTable;
+import com.ui.dialog.EditExamineeDialog;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
-import java.util.*;
 import java.awt.*;
 import java.util.List;
 

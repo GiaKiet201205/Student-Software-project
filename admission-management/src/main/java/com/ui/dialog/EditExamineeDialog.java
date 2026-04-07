@@ -1,8 +1,7 @@
-package com.ui.panel;
+package com.ui.dialog;
 
 import com.controller.ThiSinhXetTuyen25Controller;
 import com.entity.ThiSinhXetTuyen25;
-import com.service.ThiSinhXetTuyen25Service;
 import com.ui.common.BaseButton;
 import com.utils.ValidateUtil;
 
