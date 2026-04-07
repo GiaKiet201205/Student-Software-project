@@ -6,7 +6,7 @@
         </property>
 
         <property name="hibernate.connection.url">
-            jdbc:mysql://localhost:3306/admission_db?useUnicode=true&amp;characterEncoding=UTF-8&amp;rewriteBatchedStatements=true&amp;useServerPrepStmts=true&amp;cachePrepStmts=true
+            jdbc:mysql://localhost:3306/admission_db?useUnicode=true&amp;characterEncoding=UTF-8&amp;rewriteBatchedStatements=true
         </property>
 
         <property name="hibernate.connection.username">admin</property>
@@ -17,7 +17,7 @@
         </property>
 
         <!-- BATCH -->
-        <property name="hibernate.jdbc.batch_size">50</property>
+        <property name="hibernate.jdbc.batch_size">1000</property>
         <property name="hibernate.order_inserts">true</property>
         <property name="hibernate.order_updates">true</property>
         <property name="hibernate.jdbc.batch_versioned_data">true</property>
