@@ -1,5 +1,0 @@
-NV001, 15/03/1990, Quan ly, 1.5E7, Nguyen Van Khanh, 0981234567, 111 Ly Tu Trong, admin, admin123
-NV002, 22/07/1995, Duoc sy, 1.2E7, Tran Thi Lan, 0982345678, 222 Hai Ba Trung, duocsy1, duocsy123
-NV003, 10/11/1998, Thu ngan, 8000000.0, Le Van Minh, 0983456789, 333 Nguyen Thi Minh Khai, thungan1, thungan123
-NV004, 05/05/1992, Duoc sy, 1.1E7, Pham Thi Nga, 0984567890, 444 Le Van Sy, duocsy2, duocsy2
-NV005, 18/09/1996, Thu kho, 9000000.0, Hoang Van Tuan, 0985678901, 555 Phan Xich Long, thukho, thukho123

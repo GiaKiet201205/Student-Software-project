@@ -1,6 +1,0 @@
-KH001, 150, Nguyen Van An, 0901234567, 123 Nguyen Trai - Q1 - HCM
-KH002, 80, Tran Thi Binh, 0912345678, 456 Le Loi - Q3 - HCM
-KH003, 200, Le Van Cuong, 0923456789, 789 Tran Hung Dao -Q5 - HCM
-KH004, 45, Pham Thi Dung, 0934567890, 321 Vo Van Tan - Q3 - HCM
-KH005, 120, Hoang Van Em, 0945678901, 654 Nguyen Dinh Chieu - Q1 - HCM
-KH006, 30, Vu Thi Phuong, 0956789012, 987 Cach Mang Thang 8 - Q10 - HCM

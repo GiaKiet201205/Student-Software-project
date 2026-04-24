@@ -1,3 +1,0 @@
-NCC001, Cong ty Duoc pham ABC, 123 Le Loi, HCM, 0901234567
-NCC002, Cong ty Duoc lieu XYZ, 456 Tran Hung Dao, Ha Noi, 0902345678
-NCC003, Cong ty Y te 123, 789 Nguyen Hue, Da Nang, 0903456789

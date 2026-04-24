@@ -20,6 +20,10 @@ public class MainPanel extends JPanel {
     add(new ToHopPanel(), "TOHOP_PANEL");
     add(new UserManagementFrame(), "USER_MANAGEMENT");
     add(new ExamineeManagementFrame(), "EXAMINEE_MANAGEMENT");
+
+    //Nam
+    add(new NganhToHopPanel(), "NGANH_TOHOP");
+    add(new DiemThiPanel(), "DIEM_THI");
   }
 
   public void showCard(String cardName) {
