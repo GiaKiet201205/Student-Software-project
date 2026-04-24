@@ -422,7 +422,7 @@ public class DiemCongXetTuyenPanel extends BasePanel {
         }
         if(!diemUtxt.isEmpty()) {
             try {
-                if(Double.parseDouble(diemUtxt) < 0 || Double.parseDouble(diemUtxt) > 0.75) {
+                if(Double.parseDouble(diemUtxt) < 0 || Double.parseDouble(diemUtxt) > 2.75) {
                     return false;
                 }
             } catch (NumberFormatException e) {
@@ -430,7 +430,7 @@ public class DiemCongXetTuyenPanel extends BasePanel {
             }
         }
         try {
-            if(Double.parseDouble(diemTong) < 0 || Double.parseDouble(diemTong) > 32.75) {
+            if(Double.parseDouble(diemTong) < 0 || Double.parseDouble(diemTong) > 4.75) {
                 return false;
             }
         } catch (NumberFormatException e) {
