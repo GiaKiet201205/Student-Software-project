@@ -1,0 +1,12 @@
+﻿# Ignore compiled classes and build folders
+/main/bin/
+/main/sources.txt
+*.class
+*.jar
+
+# IDE and system files
+.vscode/
+.idea/
+*.log
+*.DS_Store
+Thumbs.db

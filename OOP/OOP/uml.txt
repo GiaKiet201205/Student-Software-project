@@ -1,0 +1,632 @@
+@startuml
+
+' Cấu hình hiển thị ký hiệu + - thay vì hình vuông/tròn
+skinparam classAttributeIconSize 0
+hide circle
+hide empty members
+' Tắt gạch chân cho static (nếu muốn giữ theo chuẩn UML thì comment dòng dưới)
+' skinparam noUnderlineForStaticMembers true
+
+' ========== INTERFACES ==========
+interface INhapXuat <<interface>> {
+  +sc : Scanner
+  +NhapDanhSach()
+  +XuatDanhSach()
+}
+
+interface IQuanLy<T> <<interface>> {
+  +them(T obj)
+  +xoa(String ma)
+  +timKiem(String ma) : T
+  +hienThiDanhSach()
+}
+
+interface IThongKe <<interface>> {
+  +TinhDoanhThuThang()
+  +TinhLoiNhuan()
+}
+
+interface ITinhTien <<interface>> {
+  +tinhTongTien() : double
+}
+
+' ========== ABSTRACT CLASSES ==========
+abstract class ConNguoi {
+  -HoTen : String
+  -SoDT : String
+  -DiaChi : String
+  +ConNguoi()
+  +ConNguoi(String HoTen, String SoDT, String DiaChi)
+  +getHoTen() : String
+  +getSoDT() : String
+  +getDiaChi() : String
+  +setHoTen(String HoTen)
+  +setSoDT(String SoDT)
+  +setDiaChi(String DiaChi)
+  +hienThiThongTin()
+}
+
+abstract class GiaoDich {
+  -Ma : String
+  -Ngay : String
+  -TongTien : double
+  +GiaoDich()
+  +GiaoDich(String Ma, String Ngay, double TongTien)
+  +getMa() : String
+  +getNgay() : String
+  +getTongTien() : double
+  +setMa(String Ma)
+  +setNgay(String Ngay)
+  +setTongTien(double TongTien)
+  +tinhTongTien() : double
+}
+
+abstract class SanPham {
+  -MaSP : String
+  -TenSP : String
+  -DonViTinh : String
+  -GiaNhap : Double
+  -GiaBanLe : Double
+  -SoLuongTon : int
+  -NhaSanXuat : String
+  -demSanPham : int {static}
+  +SanPham()
+  +SanPham(String maSP, String tenSP, String donViTinh, Double giaNhap, Double giaBanLe, int soLuongTon, String nhaSanXuat, int demSanPham)
+  +tinhGiaBan() : double
+  +getDemSanPham() : int
+  +getDonViTinh() : String
+  +getGiaBanLe() : Double
+  +getGiaNhap() : Double
+  +getMaSP() : String
+  +getNhaSanXuat() : String
+  +getSoLuongTon() : int
+  +getTenSP() : String
+  +setDemSanPham(int demSanPham)
+  +setDonViTinh(String donViTinh)
+  +setGiaBanLe(Double giaBanLe)
+  +setGiaNhap(Double giaNhap)
+  +setMaSP(String maSP)
+  +setNhaSanXuat(String nhaSanXuat)
+  +setSoLuongTon(int soLuongTon)
+  +setTenSP(String tenSP)
+}
+
+' ========== CONCRETE CLASSES ==========
+class BaoCaoThongKe {
+  -DoanhThuNgay : double
+  -DoanhThuThang : double
+  -DoanhThuNam : double
+  -TongChi : double
+  -ThuocSapHetHan : String
+  -LoiNhuan : String
+  -danhSachHoaDon : HoaDon[]
+  -soLuongHoaDon : int
+  -danhSachPhieuNhap : PhieuNhap[]
+  -soLuongPhieuNhap : int
+  +BaoCaoThongKe()
+  +getDoanhThuNgay() : double
+  +setDoanhThuNgay(double doanhThuNgay)
+  +getDoanhThuThang() : double
+  +setDoanhThuThang(double doanhThuThang)
+  +getDoanhThuNam() : double
+  +setDoanhThuNam(double doanhThuNam)
+  +getTongChi() : double
+  +setTongChi(double tongChi)
+  +getThuocSapHetHan() : String
+  +setThuocSapHetHan(String thuocSapHetHan)
+  +getLoiNhuan() : String
+  +setLoiNhuan(String loiNhuan)
+  +getDanhSachHoaDon() : HoaDon[]
+  +getSoLuongHoaDon() : int
+  +getDanhSachPhieuNhap() : PhieuNhap[]
+  +getSoLuongPhieuNhap() : int
+  +themHoaDon(HoaDon hoaDon)
+  +themPhieuNhap(PhieuNhap phieuNhap)
+  +tinhDoanhThuNgay(String ngay) : double
+  +TinhDoanhThuThang()
+  +tinhDoanhThuThang(int thang, int nam) : double
+  +tinhTongChi() : double
+  +tinhTongChiThang(int thang, int nam) : double
+  +TinhLoiNhuan()
+  +tinhLoiNhuanThang(int thang, int nam)
+  +hienThiBaoCaoTongHop()
+  +hienThiBaoCaoChiTietPhieuNhap()
+  +thongKeTheoNhaCungCap(String maNCC)
+  +topNhaCungCapNhapNhieuNhat(int top)
+  -tinhTongDoanhThu() : double
+}
+
+class ChiTietGiaoDich {
+  #MaSP : String
+  #SoLuong : int
+  #DonGia : double
+  #ThanhTien : double
+  #sanPham : SanPham
+  +ChiTietGiaoDich()
+  +ChiTietGiaoDich(String maSP, int soLuong, double donGia, SanPham sanPham)
+  +getMaSP() : String
+  +setMaSP(String maSP)
+  +getSoLuong() : int
+  +setSoLuong(int soLuong)
+  +getDonGia() : double
+  +setDonGia(double donGia)
+  +getThanhTien() : double
+  +getSanPham() : SanPham
+  +setSanPham(SanPham sanPham)
+  +tinhThanhTien() : double
+  +hienThiChiTiet()
+}
+
+class ChiTietPhieuNhap {
+  -MaPN : String
+  -SoLuongNhap : int
+  -DonGiaNhap : double
+  -NgaySanXuat : String
+  -HanSuDung : String
+  -phieuNhap : PhieuNhap
+  +ChiTietPhieuNhap()
+  +ChiTietPhieuNhap(String MaPN, String MaSP, int SoLuongNhap, double DonGiaNhap, String NgaySanXuat, String HanSuDung, SanPham sanPham, PhieuNhap phieuNhap)
+  +getMaPN() : String
+  +setMaPN(String MaPN)
+  +getSoLuongNhap() : int
+  +setSoLuongNhap(int SoLuongNhap)
+  +getDonGiaNhap() : double
+  +setDonGiaNhap(double DonGiaNhap)
+  +getNgaySanXuat() : String
+  +setNgaySanXuat(String NgaySanXuat)
+  +getHanSuDung() : String
+  +setHanSuDung(String HanSuDung)
+  +getPhieuNhap() : PhieuNhap
+  +setPhieuNhap(PhieuNhap phieuNhap)
+  +capNhatTonKho()
+  +hienThiChiTiet()
+  +kiemTraHetHan() : boolean
+}
+
+class DanhSachHoaDon {
+  -hoaDons : HoaDon[]
+  -soLuong : int
+  -{static} MAX_SIZE : int {readOnly}
+  +DanhSachHoaDon()
+  +DanhSachHoaDon(int kichThuoc)
+  +getHoaDons() : HoaDon[]
+  +getSoLuong() : int
+  +NhapDanhSach()
+  +XuatDanhSach()
+  +them(HoaDon hd)
+  +xoa(String ma)
+  +timKiem(String ma) : HoaDon
+  +hienThiDanhSach()
+  +TinhDoanhThuThang()
+  +TinhLoiNhuan()
+  +tinhTongTien() : double
+  +nhapDanhSach(int n)
+  +xuatDanhSach()
+  +themPhanTu(HoaDon hd)
+  +xoaTheoMa(String ma)
+  +timKiemTheoMa(String ma) : HoaDon
+  +tinhDoanhThuThang(int thang, int nam) : double
+  +timKiemVaHienThi(String key)
+  +thongKeNgay(String ngay)
+  +docFile()
+  +ghiFile()
+  +docChiTietFile(DanhSachSanPham dssp)
+  +ghiChiTietFile()
+  +lienKetKhachHangVaNhanVien(DanhSachKhachHang dsKH, DanhSachNhanVien dsNV)
+}
+
+class DanhSachKhachHang {
+  -khachHangs : KhachHang[]
+  -soLuong : int
+  -{static} MAX_SIZE : int {readOnly}
+  +DanhSachKhachHang()
+  +DanhSachKhachHang(int kichThuoc)
+  +getKhachHangs() : KhachHang[]
+  +getSoLuong() : int
+  +NhapDanhSach()
+  +XuatDanhSach()
+  +them(KhachHang kh)
+  +xoa(String ma)
+  +timKiem(String ma) : KhachHang
+  +hienThiDanhSach()
+  +nhapDanhSach(int n)
+  +xuatDanhSach()
+  +themPhanTu(KhachHang kh)
+  +suaTheoMa(String ma)
+  +xoaTheoMa(String ma)
+  +timKiemTheoMa(String ma) : KhachHang
+  +timKiemVaHienThi(String key)
+  +thongKeDiem()
+  +docFile()
+  +ghiFile()
+}
+
+class DanhSachNhanVien {
+  -nhanViens : NhanVien[]
+  -soLuong : int
+  -{static} MAX_SIZE : int {readOnly}
+  +DanhSachNhanVien()
+  +DanhSachNhanVien(int kichThuoc)
+  +getNhanViens() : NhanVien[]
+  +getSoLuong() : int
+  +NhapDanhSach()
+  +XuatDanhSach()
+  +them(NhanVien nv)
+  +xoa(String ma)
+  +timKiem(String ma) : NhanVien
+  +hienThiDanhSach()
+  +nhapDanhSach(int n)
+  +xuatDanhSach()
+  +themPhanTu(NhanVien nv)
+  +suaTheoMa(String ma)
+  +xoaTheoMa(String ma)
+  +timKiemTheoMa(String ma) : NhanVien
+  +timKiemVaHienThi(String key)
+  +thongKeChucVu()
+  +docFile()
+  +ghiFile()
+}
+
+class DanhSachSanPham {
+  -sanPhams : SanPham[]
+  -soLuong : int
+  -{static} MAX_SIZE : int {readOnly}
+  +DanhSachSanPham()
+  +DanhSachSanPham(int kichThuoc)
+  +getSanPhams() : SanPham[]
+  +getSoLuong() : int
+  +NhapDanhSach()
+  +XuatDanhSach()
+  +them(SanPham sp)
+  +xoa(String ma)
+  +timKiem(String ma) : SanPham
+  +hienThiDanhSach()
+  +nhapDanhSach(int n)
+  +xuatDanhSach()
+  +themPhanTu(SanPham sp)
+  +suaTheoMa(String ma)
+  +xoaTheoMa(String ma)
+  +timKiemTheoMa(String ma) : SanPham
+  +timKiemVaHienThi(String key)
+  +thongKe(String key)
+  +kiemTraTonKho()
+  +docFile()
+  +ghiFile()
+}
+
+class DanhSachNhaCungCap {
+  -nhaCungCaps : NhaCungCap[]
+  -soLuong : int
+  -{static} MAX_SIZE : int {readOnly}
+  +DanhSachNhaCungCap()
+  +getNhaCungCaps() : NhaCungCap[]
+  +getSoLuong() : int
+  +NhapDanhSach()
+  +XuatDanhSach()
+  +them(NhaCungCap ncc)
+  +xoa(String ma)
+  +timKiem(String ma) : NhaCungCap
+  +hienThiDanhSach()
+  +suaTheoMa(String ma)
+  +timKiemVaHienThi(String keyword)
+  +docFile()
+  +ghiFile()
+}
+
+class DanhSachPhieuNhap {
+  -phieuNhaps : PhieuNhap[]
+  -soLuong : int
+  -{static} MAX_SIZE : int {readOnly}
+  +DanhSachPhieuNhap()
+  +getPhieuNhaps() : PhieuNhap[]
+  +getSoLuong() : int
+  +NhapDanhSach()
+  +XuatDanhSach()
+  +them(PhieuNhap pn)
+  +xoa(String ma)
+  +timKiem(String ma) : PhieuNhap
+  +hienThiDanhSach()
+  +tinhTongTien() : double
+  +nhapDanhSach(int n)
+  +xuatDanhSach()
+  +timKiemVaHienThi(String keyword)
+  +thongKeNgay(String ngay)
+  +thongKeTheoNCC(String maNCC)
+  +tinhChiPhiThang(int thang, int nam) : double
+  +docFile()
+  +ghiFile()
+  +docChiTietFile(DanhSachSanPham dssp)
+  +ghiChiTietFile()
+  +lienKetNhaCungCapVaNhanVien(DanhSachNhaCungCap dsNCC, DanhSachNhanVien dsNV)
+}
+
+class DungCuYTe {
+  -LoaiDungCu : String
+  -VatLieu : String
+  -HanBaoHanh : String
+  +DungCuYTe()
+  +DungCuYTe(String maSP, String tenSP, String donViTinh, Double giaNhap, Double giaBanLe, int soLuongTon, String nhaSanXuat, int demSanPham, String loaiDungCu, String vatLieu, String hanBaoHanh)
+  +getLoaiDungCu() : String
+  +getVatLieu() : String
+  +getHanBaoHanh() : String
+  +setLoaiDungCu(String loaiDungCu)
+  +setVatLieu(String vatLieu)
+  +setHanBaoHanh(String hanBaoHanh)
+  +tinhGiaBan() : double
+}
+
+class HoaDon {
+  -PhuongThucTT : String
+  -ChietKhauTichDiem : int
+  -khachHang : KhachHang
+  -nhanVien : NhanVien
+  -chiTiet : ChiTietGiaoDich[]
+  -soLuongChiTiet : int
+  +HoaDon()
+  +HoaDon(String Ma, String Ngay, double TongTien, String PhuongThucTT, int ChietKhauTichDiem, KhachHang khachHang, NhanVien nhanVien)
+  +getPhuongThucTT() : String
+  +getChietKhauTichDiem() : int
+  +getKhachHang() : KhachHang
+  +getNhanVien() : NhanVien
+  +getChiTiet() : ChiTietGiaoDich[]
+  +getSoLuongChiTiet() : int
+  +setPhuongThucTT(String PhuongThucTT)
+  +setChietKhauTichDiem(int ChietKhauTichDiem)
+  +setKhachHang(KhachHang khachHang)
+  +setNhanVien(NhanVien nhanVien)
+  +themChiTiet(ChiTietGiaoDich ct)
+  +tinhTongTien() : double
+}
+
+class KhachHang {
+  -MaKH : String
+  -TichDiem : int
+  +KhachHang()
+  +KhachHang(String MaKH, int TichDiem, String HoTen, String SoDT, String DiaChi)
+  +getMaKH() : String
+  +getTichDiem() : int
+  +setMaKH(String MaKH)
+  +setTichDiem(int TichDiem)
+  +hienThiThongTin()
+}
+
+class Main {
+  -{static} sc : Scanner
+  -{static} dsSanPham : DanhSachSanPham
+  -{static} dsKhachHang : DanhSachKhachHang
+  -{static} dsNhanVien : DanhSachNhanVien
+  -{static} dsHoaDon : DanhSachHoaDon
+  -{static} dsPhieuNhap : DanhSachPhieuNhap
+  -{static} dsNhaCungCap : DanhSachNhaCungCap
+  -{static} baoCaoThongKe : BaoCaoThongKe
+  -{static} thongBao : ThongBao
+  -{static} nhanVienDangNhap : NhanVien
+  -{static} khachHangHienTai : KhachHang
+  +{static} main(String[] args)
+  +{static} docDuLieuTuFile()
+  +{static} luuDuLieuKhiThoat()
+  +{static} luuDuLieuRaFile()
+  +{static} menuLuaChonVaiTro()
+  +{static} dangNhapNhanVien() : boolean
+  +{static} menuNhanVien()
+  +{static} menuKhachHang()
+  +{static} xemDanhSachSanPhamKhachHang()
+  +{static} timKiemSanPhamKhachHang()
+  +{static} taoHoaDonMuaHang()
+  +{static} xemThongTinKhachHang()
+  +{static} dangKyKhachHangMoi()
+  +{static} menuQuanLySanPham()
+  +{static} menuQuanLyKhachHang()
+  +{static} menuQuanLyNhanVien()
+  +{static} menuQuanLyNhaCungCap()
+  +{static} menuQuanLyHoaDon()
+  +{static} menuQuanLyPhieuNhap()
+  +{static} menuQuanLyBaoCao()
+  +{static} taoPhieuNhapMoi()
+  +{static} dongBoDuLieuBaoCao()
+}
+
+class NhaCungCap {
+  -MANCC : String
+  -TenNCC : String
+  -DiaChi : String
+  -SDT : String
+  +NhaCungCap()
+  +NhaCungCap(String mANCC, String tenNCC, String diaChi, String sDT)
+  +getDiaChi() : String
+  +getMANCC() : String
+  +getSDT() : String
+  +getTenNCC() : String
+  +setDiaChi(String diaChi)
+  +setMANCC(String mANCC)
+  +setSDT(String sDT)
+  +setTenNCC(String tenNCC)
+  +NhapDanhSach()
+  +XuatDanhSach()
+}
+
+class NhanVien {
+  -MaNV : String
+  -NgaySinh : String
+  -ChucVu : String
+  -LuongCoBan : double
+  -taiKhoan : TaiKhoan
+  +NhanVien()
+  +NhanVien(String MaNV, String NgaySinh, String ChucVu, double LuongCoBan, String HoTen, String SoDT, String DiaChi)
+  +NhanVien(String MaNV, String NgaySinh, String ChucVu, double LuongCoBan, String HoTen, String SoDT, String DiaChi, TaiKhoan taiKhoan)
+  +getMaNV() : String
+  +getNgaySinh() : String
+  +getChucVu() : String
+  +getLuongCoBan() : double
+  +getTaiKhoan() : TaiKhoan
+  +setMaNV(String MaNV)
+  +setNgaySinh(String NgaySinh)
+  +setChucVu(String ChucVu)
+  +setLuongCoBan(double LuongCoBan)
+  +setTaiKhoan(TaiKhoan taiKhoan)
+  +hienThiThongTin()
+}
+
+class PhieuNhap {
+  -MaPN : String
+  -MaNCC : String
+  -nhaCungCap : NhaCungCap
+  -nhanVien : NhanVien
+  -danhSachCTPM : ChiTietPhieuNhap[]
+  -soLuongChiTiet : int
+  -GhiChu : String
+  +PhieuNhap()
+  +PhieuNhap(String Ma, String Ngay, double TongTien, String MaPN, String MaNCC, NhaCungCap nhaCungCap, NhanVien nhanVien, String GhiChu)
+  +getMaPN() : String
+  +setMaPN(String MaPN)
+  +getMaNCC() : String
+  +setMaNCC(String MaNCC)
+  +getNhaCungCap() : NhaCungCap
+  +setNhaCungCap(NhaCungCap nhaCungCap)
+  +getNhanVien() : NhanVien
+  +setNhanVien(NhanVien nhanVien)
+  +getDanhSachCTPM() : ChiTietPhieuNhap[]
+  +getSoLuongChiTiet() : int
+  +getGhiChu() : String
+  +setGhiChu(String GhiChu)
+  +themChiTiet(ChiTietPhieuNhap chiTiet)
+  +xoaChiTiet(String maSP)
+  +timChiTiet(String maSP) : ChiTietPhieuNhap
+  +tinhTongTien() : double
+  +hienThiPhieuNhap()
+}
+
+class SanPhamChamSocSacDep {
+  -CongDung : String
+  -LoaiDaPhuHop : String
+  -HanSuDung : String
+  +SanPhamChamSocSacDep()
+  +SanPhamChamSocSacDep(String maSP, String tenSP, String donViTinh, Double giaNhap, Double giaBanLe, int soLuongTon, String nhaSanXuat, int demSanPham, String congDung, String loaiDaPhuHop, String hanSuDung)
+  +getCongDung() : String
+  +getLoaiDaPhuHop() : String
+  +getHanSuDung() : String
+  +setCongDung(String congDung)
+  +setLoaiDaPhuHop(String loaiDaPhuHop)
+  +setHanSuDung(String hanSuDung)
+  +tinhGiaBan() : double
+}
+
+class TaiKhoan {
+  -Username : String
+  -Password : String
+  -Quyen : String
+  +TaiKhoan()
+  +TaiKhoan(String Username, String Password, String Quyen)
+  +getPassword() : String
+  +getQuyen() : String
+  +getUsername() : String
+  +setPassword(String password)
+  +setQuyen(String quyen)
+  +setUsername(String username)
+}
+
+class ThongBao {
+  -tieuDe : String
+  -noiDung : String
+  -ngayGui : String
+  +ThongBao()
+  +ThongBao(String tieuDe, String noiDung)
+  +getTieuDe() : String
+  +setTieuDe(String tieuDe)
+  +getNoiDung() : String
+  +setNoiDung(String noiDung)
+  +getNgayGui() : String
+  +guiThongBaoThapTon(SanPham sp)
+  +guiEmail(String noiDung)
+  +guiThongBaoSapHetHan(SanPham sp, String ngayHetHan)
+  +guiThongBaoChung(String tieuDe, String noiDung)
+  +hienThiThongBao()
+  -layThoiGianHienTai() : String
+}
+
+class ThucPhamChucNang {
+  -ThanhPhan : String
+  -CongDung : String
+  -HinhThucBaoQuan : String
+  -HanSuDung : String
+  +ThucPhamChucNang()
+  +ThucPhamChucNang(String maSP, String tenSP, String donViTinh, Double giaNhap, Double giaBanLe, int soLuongTon, String nhaSanXuat, int demSanPham, String thanhPhan, String congDung, String hinhThucBaoQuan)
+  +getThanhPhan() : String
+  +getCongDung() : String
+  +getHinhThucBaoQuan() : String
+  +getHanSuDung() : String
+  +setHanSuDung(String hanSuDung)
+  +setThanhPhan(String thanhPhan)
+  +setCongDung(String congDung)
+  +setHinhThucBaoQuan(String hinhThucBaoQuan)
+  +tinhGiaBan() : double
+}
+
+class Thuoc {
+  -HoatChat : String
+  -DangBaoChe : String
+  -HanSuDung : String
+  +Thuoc()
+  +Thuoc(String maSP, String tenSP, String donViTinh, Double giaNhap, Double giaBanLe, int soLuongTon, String nhaSanXuat, int demSanPham, String HoatChat, String dangBaoChe, String hanSuDung)
+  +getHoatChat() : String
+  +setHoatChat(String HoatChat)
+  +getDangBaoChe() : String
+  +setDangBaoChe(String dangBaoChe)
+  +getHanSuDung() : String
+  +setHanSuDung(String hanSuDung)
+  +tinhGiaBan() : double
+}
+
+' ========== RELATIONSHIPS ==========
+ConNguoi <|-- KhachHang
+ConNguoi <|-- NhanVien
+
+GiaoDich <|-- HoaDon
+GiaoDich <|-- PhieuNhap
+
+SanPham <|-- DungCuYTe
+SanPham <|-- SanPhamChamSocSacDep
+SanPham <|-- ThucPhamChucNang
+SanPham <|-- Thuoc
+
+INhapXuat <|.. DanhSachHoaDon
+IQuanLy <|.. DanhSachHoaDon
+IThongKe <|.. DanhSachHoaDon
+ITinhTien <|.. DanhSachHoaDon
+
+INhapXuat <|.. DanhSachKhachHang
+IQuanLy <|.. DanhSachKhachHang
+
+INhapXuat <|.. DanhSachNhanVien
+IQuanLy <|.. DanhSachNhanVien
+
+INhapXuat <|.. DanhSachSanPham
+IQuanLy <|.. DanhSachSanPham
+
+INhapXuat <|.. DanhSachNhaCungCap
+IQuanLy <|.. DanhSachNhaCungCap
+
+INhapXuat <|.. DanhSachPhieuNhap
+IQuanLy <|.. DanhSachPhieuNhap
+ITinhTien <|.. DanhSachPhieuNhap
+
+IThongKe <|.. BaoCaoThongKe
+
+INhapXuat <|.. NhaCungCap
+
+ChiTietGiaoDich <|-- ChiTietPhieuNhap
+
+HoaDon "1" *-- "0..*" ChiTietGiaoDich : contains
+PhieuNhap "1" *-- "0..*" ChiTietPhieuNhap : contains
+
+KhachHang "1" -- "0..*" HoaDon : orders
+NhanVien "1" -- "0..*" HoaDon : processes
+NhanVien "1" -- "0..*" PhieuNhap : handles
+NhaCungCap "1" -- "0..*" PhieuNhap : supplies
+
+NhanVien "1" -- "1" TaiKhoan : has
+
+SanPham "1" -- "0..*" ChiTietGiaoDich : is_part_of
+SanPham "1" -- "0..*" ChiTietPhieuNhap : is_part_of
+
+@enduml
