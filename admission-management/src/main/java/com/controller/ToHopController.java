@@ -2,7 +2,7 @@ package com.controller;
 
 import com.entity.ToHopMonThi;
 import com.service.ToHopMonThiService;
-import com.ui.panel.ToHopDialog;
+import com.ui.dialog.ToHopDialog;
 import com.ui.panel.ToHopPanel;
 
 import org.apache.poi.ss.usermodel.Row;

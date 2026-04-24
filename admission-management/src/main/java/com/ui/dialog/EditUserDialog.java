@@ -1,15 +1,12 @@
-package com.ui.panel;
+package com.ui.dialog;
 
 import com.controller.NguoiDungController;
 import com.dto.Status;
 import com.entity.NguoiDung;
-import com.entity.ThiSinhXetTuyen25;
-import com.service.NguoiDungService;
 import com.ui.common.BaseButton;
 
 import javax.swing.*;
 import java.awt.*;
-import java.time.LocalDate;
 
 public class EditUserDialog extends JDialog {
 

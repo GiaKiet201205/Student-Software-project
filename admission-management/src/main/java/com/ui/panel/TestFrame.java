@@ -1,13 +1,20 @@
 package com.ui.panel;
 
 import com.config.AppConfig;
+import com.entity.NguoiDung;
+import com.service.GenericImportService;
+import com.service.mapper.NguoiDungRowMapper;
+import com.service.mapper.RowMapper;
 import com.ui.common.BaseButton;
 import com.ui.common.BasePanel;
 import com.ui.common.BaseTable;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.io.File;
 
 public class TestFrame extends BasePanel {
 
@@ -31,8 +38,16 @@ public class TestFrame extends BasePanel {
     lblTitle.setForeground(AppConfig.COLOR_TEXT_MAIN);
     headerPanel.add(lblTitle, BorderLayout.WEST);
 
+    // --- BỔ SUNG: Panel chứa các nút Header ---
+    JPanel headerActions = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+    headerActions.setOpaque(false);
+
+    BaseButton btnImport = new BaseButton(" Nhập Excel ");
     BaseButton btnAdd = new BaseButton(" + Thêm Người Dùng ");
-    headerPanel.add(btnAdd, BorderLayout.EAST);
+
+    headerActions.add(btnImport);
+    headerActions.add(btnAdd);
+    headerPanel.add(headerActions, BorderLayout.EAST);
 
     mainContent.add(headerPanel, BorderLayout.NORTH);
 
@@ -41,9 +56,9 @@ public class TestFrame extends BasePanel {
 
     String[] cols = {"ID", "Tài khoản", "Họ tên", "Quyền", "Trạng thái"};
     DefaultTableModel model = new DefaultTableModel(cols, 0);
+
     // Test dữ liệu
     model.addRow(new Object[]{"1", "admin", "Nguyễn Văn Quản Trị", "ADMIN", "Hoạt động"});
-    model.addRow(new Object[]{"2", "staff_01", "Trần Thị Tuyển Sinh", "STAFF", "Hoạt động"});
 
     BaseTable table = new BaseTable(model);
     JScrollPane scrollPane = new JScrollPane(table);
@@ -53,7 +68,7 @@ public class TestFrame extends BasePanel {
     tablePanel.add(scrollPane, BorderLayout.CENTER);
     mainContent.add(tablePanel, BorderLayout.CENTER);
 
-    // --- 3. Footer / Action Panel ---
+    // --- Footer ---
     JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT));
     footer.setOpaque(false);
 
@@ -65,5 +80,53 @@ public class TestFrame extends BasePanel {
     mainContent.add(footer, BorderLayout.SOUTH);
 
     add(mainContent, BorderLayout.CENTER);
+
+    btnImport.addActionListener((ActionEvent e) -> handleImportExcel());
+  }
+
+  private void handleImportExcel() {
+    JFileChooser fileChooser = new JFileChooser();
+    fileChooser.setDialogTitle("Chọn file Excel");
+    FileNameExtensionFilter filter = new FileNameExtensionFilter("Excel Files (*.xlsx)", "xlsx");
+    fileChooser.setFileFilter(filter);
+
+    int userSelection = fileChooser.showOpenDialog(this);
+    if (userSelection == JFileChooser.APPROVE_OPTION) {
+      File fileToImport = fileChooser.getSelectedFile();
+      executeImportInBackground(fileToImport);
+    }
+  }
+
+  private void executeImportInBackground(File file) {
+    System.out.println("Bắt đầu xử lý import bằng SAX & StatelessSession...");
+
+    SwingWorker<Boolean, Void> worker = new SwingWorker<Boolean, Void>() {
+      @Override
+      protected Boolean doInBackground() throws Exception {
+
+        RowMapper<NguoiDung> mapper = new NguoiDungRowMapper();
+        GenericImportService importService = new GenericImportService();
+
+        return importService.importFromExcel(file, mapper);
+      }
+
+      @Override
+      protected void done() {
+        try {
+          boolean success = get();
+          if (success) {
+            JOptionPane.showMessageDialog(TestFrame.this,
+                    "Import dữ liệu thành công với tốc độ cao!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+          } else {
+            JOptionPane.showMessageDialog(TestFrame.this,
+                    "Có lỗi xảy ra trong quá trình Import. Vui lòng xem Log console.", "Thất bại", JOptionPane.ERROR_MESSAGE);
+          }
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+      }
+    };
+
+    worker.execute();
   }
 }

@@ -19,7 +19,6 @@ services:
   adminer:
     image: adminer
     container_name: admission_adminer
-    restart: always
 
     ports:
       - "8080:8080"

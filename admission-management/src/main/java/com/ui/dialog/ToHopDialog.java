@@ -1,4 +1,4 @@
-package com.ui.panel;
+package com.ui.dialog;
 
 import com.config.AppConfig;
 import com.entity.ToHopMonThi;

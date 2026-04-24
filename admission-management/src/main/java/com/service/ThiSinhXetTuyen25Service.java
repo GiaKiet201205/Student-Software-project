@@ -6,6 +6,9 @@ import com.repository.ThiSinhXetTuyen25Repository;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.List;
+
+import com.service.mapper.RowMapper;
+import com.service.mapper.ThiSinhXetTuyen25RowMapper;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -132,5 +135,11 @@ public class ThiSinhXetTuyen25Service {
 
 
         }
+    }
+
+    public boolean importFromExcelFast(File file){
+        RowMapper<ThiSinhXetTuyen25> mapper = new ThiSinhXetTuyen25RowMapper();
+        GenericImportService importService = new GenericImportService();
+        return importService.importFromExcel(file, mapper);
     }
 }

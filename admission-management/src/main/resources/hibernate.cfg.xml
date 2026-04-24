@@ -6,22 +6,24 @@
         </property>
 
         <property name="hibernate.connection.url">
-            jdbc:mysql://localhost:3306/admission_db?useUnicode=true&amp;characterEncoding=UTF-8
+            jdbc:mysql://localhost:3306/admission_db?useUnicode=true&amp;characterEncoding=UTF-8&amp;rewriteBatchedStatements=true
         </property>
 
-        <property name="hibernate.connection.username">
-            admin
-        </property>
-
-        <property name="hibernate.connection.password">
-            admin123
-        </property>
+        <property name="hibernate.connection.username">admin</property>
+        <property name="hibernate.connection.password">admin123</property>
 
         <property name="hibernate.dialect">
             org.hibernate.dialect.MySQLDialect
         </property>
 
-        <property name="hibernate.show_sql">true</property>
-        <property name="hibernate.connection.pool_size">10</property>
+        <!-- BATCH -->
+        <property name="hibernate.jdbc.batch_size">1000</property>
+        <property name="hibernate.order_inserts">true</property>
+        <property name="hibernate.order_updates">true</property>
+        <property name="hibernate.jdbc.batch_versioned_data">true</property>
+
+        <!-- PERFORMANCE -->
+        <property name="hibernate.show_sql">false</property>
+
     </session-factory>
 </hibernate-configuration>
