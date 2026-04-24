@@ -52,7 +52,6 @@ public class DiemCongXetTuyenController {
                 || dc.getMaNganh() != null && dc.getMaNganh().toLowerCase().contains(keyString.toLowerCase())
                 || dc.getMaToHop() != null && dc.getMaToHop().toLowerCase().contains(keyString.toLowerCase())
                 || dc.getCccd() != null && dc.getCccd().toLowerCase().contains(keyString.toLowerCase())
-                || dc.getPhuongThuc() != null && dc.getPhuongThuc().toLowerCase().contains(keyString.toLowerCase())
             ) {
                 result.add(dc);
             }
