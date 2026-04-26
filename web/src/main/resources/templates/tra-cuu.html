@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tra Cứu Kết Quả Xét Tuyển – Tuyển Sinh ĐH</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" th:href="@{/css/base.css}">
+  <link rel="stylesheet" th:href="@{/css/navbar.css}">
+  <link rel="stylesheet" th:href="@{/css/home.css}">
+</head>
+<body>
+
+<!-- ══════════ NAVBAR ══════════ -->
+<nav class="main-nav">
+  <div class="nav-inner">
+    <a class="nav-logo" th:href="@{/}">Tuyển Sinh <span>ĐH</span></a>
+    <div class="nav-tabs">
+      <a class="nav-tab" th:href="@{/}">🏠 Trang Chủ</a>
+      <div class="nav-divider"></div>
+      <a class="nav-tab" th:href="@{/tinh-diem}">🧮 Tính Điểm</a>
+      <div class="nav-divider"></div>
+      <a class="nav-tab active" th:href="@{/tra-cuu}">🔐 Tra Cứu Kết Quả</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════════ LOGIN FORM ══════════ -->
+<div class="login-wrap" id="login-form-wrap">
+  <div class="login-card">
+    <span class="login-icon">🎓</span>
+    <h2>Tra Cứu Kết Quả</h2>
+    <p class="sub">
+      Nhập thông tin đăng nhập để xem kết quả xét tuyển đại học
+    </p>
+
+    <div class="field">
+      <label>Số Căn Cước Công Dân <span class="req">*</span></label>
+      <input type="text" id="login-cccd"
+             placeholder="Nhập số CCCD (9–12 chữ số)"
+             maxlength="12" inputmode="numeric">
+      <span class="hint">Username = số CCCD của thí sinh</span>
+    </div>
+
+    <div class="field">
+      <label>Mật Khẩu – Ngày Sinh <span class="req">*</span></label>
+      <input type="password" id="login-pass"
+             placeholder="ddmmyyyy – 8 chữ số"
+             maxlength="8" inputmode="numeric">
+      <span class="hint">Ví dụ: ngày 05/03/2006 → 05032006</span>
+    </div>
+
+    <!-- Error box -->
+    <div id="login-err" class="alert alert-error" style="display:none"></div>
+
+    <button class="btn btn-primary btn-block" onclick="doLogin()">
+      🔍 Tra Cứu Kết Quả
+    </button>
+
+    <hr class="divider" style="margin:1.25rem 0">
+
+    <!-- Demo hint -->
+    <div class="login-demo">
+      💡 <strong>Tài khoản demo:</strong><br>
+      CCCD <strong>012345678901</strong> / pass <strong>05032006</strong>
+      → Trúng tuyển<br>
+      CCCD <strong>098765432109</strong> / pass <strong>15092006</strong>
+      → Không trúng tuyển<br>
+      CCCD <strong>001234567890</strong> / pass <strong>22112005</strong>
+      → Trúng tuyển Y đa khoa
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ KẾT QUẢ (ẩn ban đầu) ══════════ -->
+<div class="container" id="tracuu-result-wrap" style="display:none">
+
+  <!-- Breadcrumb + toolbar -->
+  <nav class="breadcrumb">
+    <a th:href="@{/}">Trang chủ</a>
+    <span class="sep">›</span>
+    <span>Tra cứu kết quả</span>
+  </nav>
+
+  <div class="result-toolbar">
+    <button class="btn btn-outline btn-sm" onclick="doLogout()">
+      ← Đăng xuất
+    </button>
+    <span class="info">Kết quả xét tuyển đại học</span>
+  </div>
+
+  <!-- Nội dung kết quả (render bởi tracuu.js) -->
+  <div id="tracuu-content" class="tracuu-result"></div>
+
+</div>
+
+
+<!-- ══════════ SCRIPTS ══════════ -->
+<script src="static/js/data.js"></script>
+<script src="static/js/tracuu.js"></script>
+
+</body>
+</html>

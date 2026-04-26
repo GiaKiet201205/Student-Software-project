@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tính Điểm Xét Tuyển – Tuyển Sinh ĐH</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" th:href="@{/css/base.css}">
+  <link rel="stylesheet" th:href="@{/css/navbar.css}">
+  <link rel="stylesheet" th:href="@{/css/home.css}">
+</head>
+<body>
+
+<!-- ══════════ NAVBAR ══════════ -->
+<nav class="main-nav">
+  <div class="nav-inner">
+    <a class="nav-logo" th:href="@{/}">Tuyển Sinh <span>ĐH</span></a>
+    <div class="nav-tabs">
+      <a class="nav-tab" th:href="@{/}">🏠 Trang Chủ</a>
+      <div class="nav-divider"></div>
+      <a class="nav-tab active" th:href="@{/tinh-diem}">🧮 Tính Điểm</a>
+      <div class="nav-divider"></div>
+      <a class="nav-tab" th:href="@{/tra-cuu}">🔐 Tra Cứu Kết Quả</a>
+    </div>
+    <!-- Sub-tabs -->
+    <div class="nav-sub">
+      <button class="nav-sub-tab active" id="sub-btn-dgnl"
+              onclick="switchTab('dgnl')">ĐGNL</button>
+      <button class="nav-sub-tab" id="sub-btn-vsat"
+              onclick="switchTab('vsat')">VSAT / THPT</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════════ PANEL: ĐGNL ══════════ -->
+<div id="panel-dgnl" class="calc-panel active">
+  <div class="container">
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb">
+      <a th:href="@{/}">Trang chủ</a>
+      <span class="sep">›</span>
+      <a th:href="@{/tinh-diem}">Tính điểm</a>
+      <span class="sep">›</span>
+      <span>ĐGNL</span>
+    </nav>
+
+    <div class="page-header">
+      <h2>Tính Điểm – Phương Thức ĐGNL</h2>
+      <p>Đánh giá năng lực – thang điểm 1200. Môn thi không có điểm: nhập 0.</p>
+    </div>
+
+    <div class="alert alert-info">
+      ℹ️ Điểm ĐGNL tối đa 1200 điểm. Hệ thống quy đổi về thang 30
+      theo tổ hợp gốc của từng ngành theo bảng tra tuyến tính.
+    </div>
+
+    <!-- Thông tin xét tuyển -->
+    <div class="card">
+      <div class="card-title">
+        <span class="ico ico-blue">📋</span>Thông tin xét tuyển
+      </div>
+      <div class="g2">
+        <div class="field">
+          <label>Chọn ngành xét tuyển <span class="req">*</span></label>
+          <select id="dgnl-nganh" onchange="dgnlCalc()">
+            <!-- populated by JS -->
+          </select>
+        </div>
+        <div class="field">
+          <label>Điểm thi ĐGNL <span class="req">*</span></label>
+          <input type="number" id="dgnl-diem"
+                 placeholder="0 – 1200" min="0" max="1200"
+                 oninput="dgnlCalc()">
+        </div>
+      </div>
+    </div>
+
+    <!-- Ưu tiên & điểm cộng -->
+    <div class="card">
+      <div class="card-title">
+        <span class="ico ico-teal">⭐</span>Điểm ưu tiên &amp; cộng thêm
+      </div>
+      <div class="g3">
+        <div class="field">
+          <label>Khu vực ưu tiên</label>
+          <select id="dgnl-kvut" onchange="dgnlCalc()">
+            <option value="0.75">KV1 (+0.75)</option>
+            <option value="0.5" >KV2-NT (+0.50)</option>
+            <option value="0.25" selected>KV2 (+0.25)</option>
+            <option value="0"  >KV3 (không)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Đối tượng ưu tiên</label>
+          <select id="dgnl-dtut" onchange="dgnlCalc()">
+            <option value="0" selected>Không đối tượng</option>
+            <option value="2">ĐT 1 (+2.0)</option>
+            <option value="1">ĐT 2 (+1.0)</option>
+            <option value="0.5">ĐT 3 (+0.5)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Điểm cộng thêm (≤ 3.0)</label>
+          <input type="number" id="dgnl-cong"
+                 placeholder="VD: 2.0" min="0" max="3" step="0.5" value="0"
+                 oninput="dgnlCalc()">
+          <span class="hint">Chứng chỉ ngoại ngữ, giải thưởng…</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary btn-block"
+            onclick="dgnlCalc(true)">
+      ⚡ Tính điểm xét tuyển
+    </button>
+
+    <!-- Kết quả -->
+    <div id="dgnl-result-area" class="result-area" style="display:none"></div>
+
+  </div>
+</div><!-- /panel-dgnl -->
+
+
+<!-- ══════════ PANEL: VSAT / THPT ══════════ -->
+<div id="panel-vsat" class="calc-panel">
+  <div class="container">
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb">
+      <a th:href="@{/}">Trang chủ</a>
+      <span class="sep">›</span>
+      <a th:href="@{/tinh-diem}">Tính điểm</a>
+      <span class="sep">›</span>
+      <span>VSAT / THPT</span>
+    </nav>
+
+    <div class="page-header">
+      <h2>Tính Điểm – VSAT / THPT Quốc Gia</h2>
+      <p>Nhập điểm từng môn và chọn ngành để xem điểm xét tuyển theo từng tổ hợp.</p>
+    </div>
+
+    <div class="info-note">
+      ⚠️ VSAT (V-SAT) là kỳ thi đánh giá tư duy của ĐHBK HN – thang 150.
+      THPT Quốc gia sử dụng thang 10.
+    </div>
+
+    <!-- Phương thức & ngành -->
+    <div class="card">
+      <div class="card-title">
+        <span class="ico ico-blue">📋</span>Chọn phương thức &amp; ngành
+      </div>
+      <div class="g2">
+        <div class="field">
+          <label>Phương thức thi</label>
+          <select id="vsat-method" onchange="vsatMethodChange()">
+            <option value="thpt">THPT Quốc gia (thang 10)</option>
+            <option value="vsat">V-SAT – ĐHBK HN (thang 150)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Chọn ngành xét tuyển <span class="req">*</span></label>
+          <select id="vsat-nganh" onchange="vsatCalc()">
+            <!-- populated by JS -->
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Điểm từng môn -->
+    <div class="card" id="card-mon">
+      <div class="card-title">
+        <span class="ico ico-teal">📝</span>
+        Điểm từng môn
+        <span id="thang-label">(Thang 10)</span>
+      </div>
+      <div class="g4">
+        <div class="field">
+          <label>Toán</label>
+          <input type="number" id="m-toan" placeholder="0 – 10"
+                 min="0" max="10" step="0.1" oninput="vsatCalc()">
+        </div>
+        <div class="field">
+          <label>Ngữ Văn</label>
+          <input type="number" id="m-van" placeholder="0 – 10"
+                 min="0" max="10" step="0.1" oninput="vsatCalc()">
+        </div>
+        <div class="field">
+          <label>Vật Lý</label>
+          <input type="number" id="m-ly" placeholder="0 – 10"
+                 min="0" max="10" step="0.1" oninput="vsatCalc()">
+        </div>
+        <div class="field">
+          <label>Hóa Học</label>
+          <input type="number" id="m-hoa" placeholder="0 – 10"
+                 min="0" max="10" step="0.1" oninput="vsatCalc()">
+        </div>
+        <div class="field">
+          <label>Sinh Học</label>
+          <input type="number" id="m-sinh" placeholder="0 – 10"
+                 min="0" max="10" step="0.1" oninput="vsatCalc()">
+        </div>
+        <div class="field">
+          <label>Lịch Sử</label>
+          <input type="number" id="m-su" placeholder="0 – 10"
+                 min="0" max="10" step="0.1" oninput="vsatCalc()">
+        </div>
+        <div class="field">
+          <label>Địa Lý</label>
+          <input type="number" id="m-dia" placeholder="0 – 10"
+                 min="0" max="10" step="0.1" oninput="vsatCalc()">
+        </div>
+        <div class="field">
+          <label>Tiếng Anh</label>
+          <input type="number" id="m-anh" placeholder="0 – 10"
+                 min="0" max="10" step="0.1" oninput="vsatCalc()">
+        </div>
+      </div>
+
+      <!-- Tiếng Anh quy đổi (VSAT / chứng chỉ) -->
+      <div id="anh-qd-wrap" style="display:none; margin-top:.75rem">
+        <div class="field" style="max-width:300px">
+          <label>Điểm Tiếng Anh quy đổi (thay thế)</label>
+          <input type="number" id="m-anh-qd"
+                 placeholder="VD: 9.0" min="0" max="10" step="0.1"
+                 oninput="vsatCalc()">
+          <span class="hint">
+            IELTS / TOEFL quy đổi sang thang 10 – ghi đè điểm thi Tiếng Anh
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ưu tiên & điểm cộng -->
+    <div class="card">
+      <div class="card-title">
+        <span class="ico ico-green">⭐</span>Điểm ưu tiên &amp; cộng thêm
+      </div>
+      <div class="g3">
+        <div class="field">
+          <label>Khu vực ưu tiên</label>
+          <select id="vsat-kvut" onchange="vsatCalc()">
+            <option value="0.75">KV1 (+0.75)</option>
+            <option value="0.5" >KV2-NT (+0.50)</option>
+            <option value="0.25" selected>KV2 (+0.25)</option>
+            <option value="0"  >KV3 (không)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Đối tượng ưu tiên</label>
+          <select id="vsat-dtut" onchange="vsatCalc()">
+            <option value="0" selected>Không đối tượng</option>
+            <option value="2">ĐT 1 (+2.0)</option>
+            <option value="1">ĐT 2 (+1.0)</option>
+            <option value="0.5">ĐT 3 (+0.5)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Điểm cộng thêm (≤ 3.0)</label>
+          <input type="number" id="vsat-cong"
+                 placeholder="VD: 1.5" min="0" max="3" step="0.5" value="0"
+                 oninput="vsatCalc()">
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- Điểm cộng theo môn -->
+      <div class="card-title" style="font-size:.82rem;margin-bottom:.75rem">
+        Điểm cộng theo môn thi (tự bổ sung)
+      </div>
+      <div class="g4" id="bonus-fields">
+        <!-- populated by buildBonusFields() in calc-vsat.js -->
+      </div>
+    </div>
+
+    <button class="btn btn-teal btn-block"
+            onclick="vsatCalc(true)">
+      ⚡ Tính điểm xét tuyển
+    </button>
+
+    <!-- Kết quả -->
+    <div id="vsat-result-area" class="result-area" style="display:none"></div>
+
+  </div>
+</div><!-- /panel-vsat -->
+
+
+<!-- ══════════ SCRIPTS ══════════ -->
+<script th:src="@{/js/data.js}"></script>
+<script th:src="@{/js/calc-dgnl.js}"></script>
+<script th:src="@{/js/calc-vsat.js}"></script>
+<script>
+/* ── Tab switching ── */
+function switchTab(tab) {
+  ['dgnl', 'vsat'].forEach(t => {
+    document.getElementById('panel-' + t).classList.toggle('active', t === tab);
+    document.getElementById('sub-btn-' + t).classList.toggle('active', t === tab);
+  });
+}
+
+/* ── Init on load ── */
+document.addEventListener('DOMContentLoaded', () => {
+  /* Populate selects */
+  populateNganhSelect('dgnl-nganh');
+  populateNganhSelect('vsat-nganh');
+
+  /* Bonus fields (VSAT/THPT) */
+  buildBonusFields();
+
+  /* Read ?tab= param to auto-switch */
+  const params = new URLSearchParams(window.location.search);
+  const tab = params.get('tab');
+  if (tab === 'vsat') switchTab('vsat');
+});
+</script>
+
+</body>
+</html>

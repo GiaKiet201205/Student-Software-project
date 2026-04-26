@@ -1,0 +1,61 @@
+/* ═══════════════════════════════════════════════
+   calc.css – trang tính điểm (tinh-diem.html)
+   ═══════════════════════════════════════════════ */
+
+/* Sub-tab panel toggling */
+.calc-panel { display: none; }
+.calc-panel.active { display: block; animation: fadeUp .25s ease; }
+
+/* Anh quy doi */
+#anh-qd-wrap { margin-top: .75rem; }
+
+/* Score result section */
+.result-area {
+  margin-top: 1.25rem;
+  animation: fadeUp .3s ease;
+}
+
+/* Score status rows */
+.pass-status {
+  display: flex; align-items: center; gap: .75rem;
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius);
+  margin-bottom: .75rem;
+  font-weight: 600;
+}
+.pass-status.pass {
+  background: var(--green-light);
+  border: 1.5px solid #86efac;
+  color: var(--green);
+}
+.pass-status.fail {
+  background: var(--red-light);
+  border: 1.5px solid #fca5a5;
+  color: var(--red);
+}
+.pass-status .ps-icon { font-size: 1.5rem; flex-shrink: 0; }
+.pass-status .ps-text strong { display: block; font-size: .95rem; }
+.pass-status .ps-text span   { font-size: .82rem; font-weight: 400; opacity: .8; }
+
+/* Thang label */
+#thang-label {
+  font-size: .78rem;
+  color: var(--muted);
+  font-weight: 400;
+  margin-left: .25rem;
+}
+
+/* Bonus per subject row */
+#bonus-fields .field label { font-size: .74rem; }
+
+/* Info note */
+.info-note {
+  display: flex; gap: .5rem; align-items: flex-start;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: var(--radius-sm);
+  padding: .7rem 1rem;
+  font-size: .82rem;
+  color: #856404;
+  margin-bottom: 1rem;
+}

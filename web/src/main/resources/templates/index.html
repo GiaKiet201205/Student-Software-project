@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tuyển Sinh Đại Học – Trang Chủ</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" th:href="@{/css/base.css}">
+  <link rel="stylesheet" th:href="@{/css/navbar.css}">
+  <link rel="stylesheet" th:href="@{/css/home.css}">
+</head>
+<body>
+
+<!-- ══════════ NAVBAR ══════════ -->
+<nav class="main-nav">
+  <div class="nav-inner">
+    <a class="nav-logo" th:href="@{/}">Tuyển Sinh <span>ĐH</span></a>
+    <div class="nav-tabs">
+      <a class="nav-tab active" th:href="@{/}">🏠 Trang Chủ</a>
+      <div class="nav-divider"></div>
+      <a class="nav-tab" th:href="@{/tinh-diem}">🧮 Tính Điểm</a>
+      <div class="nav-divider"></div>
+      <a class="nav-tab" th:href="@{/tra-cuu}">🔐 Tra Cứu Kết Quả</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════════ HERO ══════════ -->
+<section class="hero">
+  <div class="hero-inner">
+    <h1>Hệ Thống <span>Tuyển Sinh</span><br>Đại Học Việt Nam</h1>
+    <p>
+      Tra cứu kết quả xét tuyển, tính điểm theo phương thức ĐGNL và VSAT/THPT
+      một cách chính xác và nhanh chóng.
+    </p>
+    <div class="hero-actions">
+      <a th:href="@{/tra-cuu}" class="btn btn-primary btn-lg">
+        🔐 Tra Cứu Kết Quả
+      </a>
+      <a th:href="@{/tinh-diem}" class="btn btn-ghost btn-lg"
+         style="color:#fff;border-color:rgba(255,255,255,.4)">
+        🧮 Tính Điểm Xét Tuyển
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ STATS ══════════ -->
+<section class="stats-row">
+  <div class="stats-inner">
+    <div class="stat-item">
+      <span class="sv">63</span>
+      <div class="sl">Trường đại học</div>
+    </div>
+    <div class="stat-item">
+      <span class="sv">1.240</span>
+      <div class="sl">Ngành xét tuyển</div>
+    </div>
+    <div class="stat-item">
+      <span class="sv">3</span>
+      <div class="sl">Phương thức xét tuyển</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ FEATURES ══════════ -->
+<section class="features">
+  <div class="page-header">
+    <h2 class="features-title">Chức năng hệ thống</h2>
+    <p class="features-sub">
+      Các tiện ích hỗ trợ thí sinh trong quá trình xét tuyển đại học
+    </p>
+  </div>
+
+  <div class="features-grid">
+
+    <!-- Card 1 -->
+    <a th:href="@{/tra-cuu}" class="feature-card">
+      <span class="fc-icon">🔐</span>
+      <h3>Tra Cứu Kết Quả Xét Tuyển</h3>
+      <p>
+        Thí sinh đăng nhập bằng số CCCD và ngày sinh để xem kết quả
+        trúng tuyển, điểm xét tuyển và thông tin ngành được trúng tuyển.
+      </p>
+      <span class="fc-link">Tra cứu ngay →</span>
+    </a>
+
+    <!-- Card 2 -->
+    <a href="tinh-diem.html?tab=dgnl" class="feature-card">
+      <span class="fc-icon">🧠</span>
+      <h3>Tính Điểm ĐGNL</h3>
+      <p>
+        Nhập điểm thi Đánh giá năng lực (thang 1200), chọn ngành và
+        đối tượng ưu tiên. Hệ thống tự động quy đổi về thang 30 và
+        so sánh với điểm chuẩn.
+      </p>
+      <span class="fc-link">Tính điểm ĐGNL →</span>
+    </a>
+
+    <!-- Card 3 -->
+    <a href="tinh-diem.html?tab=vsat" class="feature-card">
+      <span class="fc-icon">📝</span>
+      <h3>Tính Điểm VSAT / THPT</h3>
+      <p>
+        Nhập điểm từng môn theo thang 10 (THPT) hoặc thang 150 (VSAT).
+        Tính điểm tổ hợp cho từng ngành với đầy đủ điểm ưu tiên và
+        điểm cộng.
+      </p>
+      <span class="fc-link">Tính điểm VSAT/THPT →</span>
+    </a>
+
+  </div>
+</section>
+
+<!-- ══════════ HƯỚNG DẪN ══════════ -->
+<section style="background:#fff; border-top:1px solid var(--gray-border); padding:2.5rem 1.5rem">
+  <div style="max-width:940px;margin:0 auto">
+    <h3 style="font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--navy);margin-bottom:1.25rem">
+      Hướng dẫn sử dụng
+    </h3>
+    <div class="g3">
+      <div>
+        <div style="font-weight:700;color:var(--blue);margin-bottom:.4rem">
+          01. Tra cứu kết quả
+        </div>
+        <p style="font-size:.84rem;color:var(--muted);line-height:1.65">
+          Vào mục <strong>Tra Cứu Kết Quả</strong>, nhập số căn cước công dân
+          làm username và 8 chữ số ngày sinh (ddmmyyyy) làm mật khẩu.
+        </p>
+      </div>
+      <div>
+        <div style="font-weight:700;color:var(--teal);margin-bottom:.4rem">
+          02. Tính điểm ĐGNL
+        </div>
+        <p style="font-size:.84rem;color:var(--muted);line-height:1.65">
+          Chọn tab <strong>ĐGNL</strong> trong mục Tính Điểm. Nhập điểm thi,
+          chọn ngành, khu vực và đối tượng ưu tiên để xem điểm quy đổi.
+        </p>
+      </div>
+      <div>
+        <div style="font-weight:700;color:var(--green);margin-bottom:.4rem">
+          03. Tính điểm VSAT/THPT
+        </div>
+        <p style="font-size:.84rem;color:var(--muted);line-height:1.65">
+          Chọn tab <strong>VSAT/THPT</strong>, nhập điểm từng môn, chọn ngành
+          và các điểm cộng thêm để xem điểm xét tuyển theo từng tổ hợp.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer style="background:var(--navy);color:rgba(255,255,255,.5);text-align:center;
+               padding:1.25rem;font-size:.8rem">
+  © 2024 Hệ thống Tuyển Sinh Đại Học &nbsp;|&nbsp;
+  Dữ liệu mang tính tham khảo
+</footer>
+
+</body>
+</html>
