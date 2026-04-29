@@ -30,165 +30,151 @@ public class DiemThiXetTuyen {
   @Column(name = "cccd", nullable = false, length = 20)
   private String cccd;
 
+  /**
+   * Số báo danh (SBD).
+   * Đối với V-SAT (phuongThuc = "5"), có thể dùng để lưu Mã đợt thi (VD: CTU255)
+   */
   @Column(name = "sobaodanh", length = 45)
   private String soBaoDanh;
 
   /**
-   * Mã phương thức xét tuyển: "0", "3", "4", "5"
-   * Xem mô tả lớp để biết ý nghĩa từng mã.
+   * Mã phương thức xét tuyển: "3" (THPT), "4" (ĐGNL), "5" (V-SAT)
    */
   @Column(name = "d_phuongthuc", length = 10)
   private String phuongThuc;
 
   // =========================================================
-  // NHÓM 1: Điểm thi THPT Quốc gia (dùng khi phuongThuc = "3")
+  // NHÓM 1: Điểm thi các môn văn hóa (Dùng cho THPT và V-SAT)
   // =========================================================
 
-  /** Toán */
   @Column(name = "`TO`", precision = 8, scale = 2)
   private BigDecimal toan;
 
-  /** Vật lý */
   @Column(name = "LI", precision = 8, scale = 2)
   private BigDecimal ly;
 
-  /** Hóa học */
   @Column(name = "HO", precision = 8, scale = 2)
   private BigDecimal hoa;
 
-  /** Sinh học */
   @Column(name = "SI", precision = 8, scale = 2)
   private BigDecimal sinh;
 
-  /** Lịch sử */
   @Column(name = "SU", precision = 8, scale = 2)
   private BigDecimal su;
 
-  /** Địa lý */
   @Column(name = "DI", precision = 8, scale = 2)
   private BigDecimal dia;
 
-  /** Ngữ văn */
   @Column(name = "VA", precision = 8, scale = 2)
   private BigDecimal van;
 
   /**
-   * Điểm Ngoại ngữ thi THPT gốc (thang 10).
-   * Dùng khi phuongThuc = "3".
+   * Điểm Ngoại ngữ thi gốc (Thang 10 hoặc thang 150 tùy phương thức).
    */
   @Column(name = "N1_THI", precision = 8, scale = 2)
   private BigDecimal n1Thi;
 
   /**
    * Điểm Ngoại ngữ chính thức = max(N1_THI, điểm quy đổi chứng chỉ NN).
-   * Được tính sau khi tra bảng quy đổi tiếng Anh (bangQUyDoiTA).
-   * Dùng khi phuongThuc = "3".
+   * Luôn dùng cột này để tính điểm xét tuyển tổ hợp có môn Tiếng Anh.
    */
   @Column(name = "N1_CC", precision = 8, scale = 2)
   private BigDecimal n1CC;
 
-  /**
-   * Công nghệ — Cơ khí Nhiệt lạnh (THPT 2025).
-   * Dùng khi phuongThuc = "3".
-   */
   @Column(name = "CNCN", precision = 8, scale = 2)
   private BigDecimal cncn;
 
-  /**
-   * Công nghệ — Nông nghiệp (THPT 2025).
-   * Dùng khi phuongThuc = "3".
-   */
   @Column(name = "CNNN", precision = 8, scale = 2)
   private BigDecimal cnnn;
 
-  /**
-   * Tin học (THPT 2025).
-   * Dùng khi phuongThuc = "3".
-   */
   @Column(name = "TI", precision = 8, scale = 2)
   private BigDecimal tinHoc;
 
-  /**
-   * Kinh tế Pháp luật (THPT 2025).
-   * Dùng khi phuongThuc = "3".
-   */
   @Column(name = "KTPL", precision = 8, scale = 2)
   private BigDecimal ktpl;
 
   // =========================================================
-  // NHÓM 2: Điểm ĐGNL / V-SAT (dùng khi phuongThuc = "4" hoặc "5")
-  // Thang điểm: 400 – 1200 (ĐGNL HSA) hoặc tương đương (V-SAT)
+  // NHÓM 2: Điểm tổng ĐGNL (HSA)
   // =========================================================
 
   /**
-   * Điểm tổng bài thi ĐGNL (HSA) hoặc V-SAT.
-   * Đây KHÔNG phải điểm ngoại ngữ — là điểm đánh giá năng lực tổng thể.
+   * Điểm tổng bài thi ĐGNL (HSA). Thang điểm 1200.
    */
   @Column(name = "NL1", precision = 8, scale = 2)
   private BigDecimal diemNangLuc;
 
+  // =========================================================
+  // NHÓM 3: Điểm thi Năng khiếu chuyên biệt
+  // =========================================================
+
   /**
-   * Điểm thành phần 1 của bài thi ĐGNL / V-SAT
-   * (ví dụ: phần Toán - Khoa học tự nhiên).
+   * Điểm thi Năng khiếu 1 (VD: Vẽ Mỹ thuật)
    */
   @Column(name = "NK1", precision = 8, scale = 2)
-  private BigDecimal diemThanhPhan1;
+  private BigDecimal diemNangKhieu1;
 
   /**
-   * Điểm thành phần 2 của bài thi ĐGNL / V-SAT
-   * (ví dụ: phần Ngữ văn - Khoa học xã hội).
+   * Điểm thi Năng khiếu 2 (VD: Vẽ Trang trí màu)
    */
   @Column(name = "NK2", precision = 8, scale = 2)
-  private BigDecimal diemThanhPhan2;
-
-  // =========================================================
-  // PHƯƠNG THỨC TIỆN ÍCH
-  // =========================================================
+  private BigDecimal diemNangKhieu2;
 
   /**
-   * Trả về true nếu đây là dòng xét tuyển THPT Quốc gia.
+   * Điểm thi Năng khiếu 3 (VD: Hát / Đọc diễn cảm)
    */
+  @Column(name = "NK3", precision = 8, scale = 2)
+  private BigDecimal diemNangKhieu3;
+
+  /**
+   * Điểm thi Năng khiếu 4 (VD: Thể dục thể thao)
+   */
+  @Column(name = "NK4", precision = 8, scale = 2)
+  private BigDecimal diemNangKhieu4;
+
+  // =========================================================
+  // PHƯƠNG THỨC TIỆN ÍCH (BUSINESS LOGIC)
+  // =========================================================
+
   public boolean isThpt() {
     return "3".equals(phuongThuc);
   }
 
-  /**
-   * Trả về true nếu đây là dòng xét tuyển ĐGNL (HSA).
-   */
   public boolean isDgnl() {
     return "4".equals(phuongThuc);
   }
 
-  /**
-   * Trả về true nếu đây là dòng xét tuyển V-SAT.
-   */
   public boolean isVsat() {
     return "5".equals(phuongThuc);
   }
 
   /**
-   * Lấy điểm môn theo mã môn (dùng trong tính điểm tổ hợp).
+   * Lấy điểm môn theo mã môn (dùng trong tính điểm tổ hợp gốc).
    * Mã môn khớp với cột trong xt_nganh_tohop: TO, LI, HO, SI, SU, DI, VA,
-   * N1, CNCN, CNNN, TI, KTPL.
+   * N1, CNCN, CNNN, TI, KTPL, NL1, NK1, NK2, NK3, NK4.
    *
-   * @param maMon mã môn viết hoa, ví dụ "TO", "VA", "N1"
+   * @param maMon mã môn viết hoa, ví dụ "TO", "VA", "N1", "NK1"
    * @return điểm tương ứng, hoặc BigDecimal.ZERO nếu không có
    */
   public BigDecimal getDiemByMaMon(String maMon) {
     if (maMon == null) return BigDecimal.ZERO;
     return switch (maMon.toUpperCase()) {
-      case "TO"   -> toan      != null ? toan      : BigDecimal.ZERO;
-      case "LI"   -> ly        != null ? ly        : BigDecimal.ZERO;
-      case "HO"   -> hoa       != null ? hoa       : BigDecimal.ZERO;
-      case "SI"   -> sinh      != null ? sinh      : BigDecimal.ZERO;
-      case "SU"   -> su        != null ? su        : BigDecimal.ZERO;
-      case "DI"   -> dia       != null ? dia       : BigDecimal.ZERO;
-      case "VA"   -> van       != null ? van       : BigDecimal.ZERO;
-      case "N1"   -> n1CC      != null ? n1CC      : BigDecimal.ZERO; // dùng N1_CC (đã quy đổi)
-      case "CNCN" -> cncn      != null ? cncn      : BigDecimal.ZERO;
-      case "CNNN" -> cnnn      != null ? cnnn      : BigDecimal.ZERO;
-      case "TI"   -> tinHoc    != null ? tinHoc    : BigDecimal.ZERO;
-      case "KTPL" -> ktpl      != null ? ktpl      : BigDecimal.ZERO;
+      case "TO"   -> toan           != null ? toan           : BigDecimal.ZERO;
+      case "LI"   -> ly             != null ? ly             : BigDecimal.ZERO;
+      case "HO"   -> hoa            != null ? hoa            : BigDecimal.ZERO;
+      case "SI"   -> sinh           != null ? sinh           : BigDecimal.ZERO;
+      case "SU"   -> su             != null ? su             : BigDecimal.ZERO;
+      case "DI"   -> dia            != null ? dia            : BigDecimal.ZERO;
+      case "VA"   -> van            != null ? van            : BigDecimal.ZERO;
+      case "N1"   -> n1CC           != null ? n1CC           : BigDecimal.ZERO; // Luôn lấy N1_CC có lợi nhất
+      case "CNCN" -> cncn           != null ? cncn           : BigDecimal.ZERO;
+      case "CNNN" -> cnnn           != null ? cnnn           : BigDecimal.ZERO;
+      case "TI"   -> tinHoc         != null ? tinHoc         : BigDecimal.ZERO;
+      case "KTPL" -> ktpl           != null ? ktpl           : BigDecimal.ZERO;
+      case "NL1"  -> diemNangLuc    != null ? diemNangLuc    : BigDecimal.ZERO;
+      case "NK1"  -> diemNangKhieu1 != null ? diemNangKhieu1 : BigDecimal.ZERO;
+      case "NK2"  -> diemNangKhieu2 != null ? diemNangKhieu2 : BigDecimal.ZERO;
+      case "NK3"  -> diemNangKhieu3 != null ? diemNangKhieu3 : BigDecimal.ZERO;
+      case "NK4"  -> diemNangKhieu4 != null ? diemNangKhieu4 : BigDecimal.ZERO;
       default     -> BigDecimal.ZERO;
     };
   }

@@ -53,8 +53,36 @@ public class DiemThiPanel extends BasePanel {
         searchPanel.add(searchButton);
         header.add(searchPanel, BorderLayout.CENTER);
 
+        // =====================================================================
+        // TÍCH HỢP NÚT IMPORT VỚI MENU THẢ XUỐNG
+        // =====================================================================
+        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        actionPanel.setOpaque(false);
+
+        BaseButton btnImport = new BaseButton("📥 Nhập từ Excel ▼", new Color(46, 204, 113));
+        JPopupMenu popupImport = new JPopupMenu();
+
+        // Định nghĩa 3 chức năng nạp điểm
+        JMenuItem itemTHPT = new JMenuItem("1. Nạp điểm THPT (Cấu trúc Ngang)");
+        JMenuItem itemDGNL = new JMenuItem("2. Nạp điểm ĐGNL (Cấu trúc Dọc)");
+        JMenuItem itemVSAT = new JMenuItem("3. Nạp điểm V-SAT (Cấu trúc Dọc)");
+
+        // Truyền (Loại File, Mã Phương Thức) xuống hàm xử lý
+        itemTHPT.addActionListener(e -> functionImportExcel("THPT", "3"));
+        itemDGNL.addActionListener(e -> functionImportExcel("DGNL", "4"));
+        itemVSAT.addActionListener(e -> functionImportExcel("VSAT", "5"));
+
+        popupImport.add(itemTHPT);
+        popupImport.add(itemDGNL);
+        popupImport.add(itemVSAT);
+
+        btnImport.addActionListener(e -> popupImport.show(btnImport, 0, btnImport.getHeight()));
+
         BaseButton addButton = new BaseButton("Thêm mới");
-        header.add(addButton, BorderLayout.EAST);
+
+        actionPanel.add(btnImport);
+        actionPanel.add(addButton);
+        header.add(actionPanel, BorderLayout.EAST);
         contentPanel.add(header, BorderLayout.NORTH);
 
         BasePanel tablePanel = new BasePanel(AppConfig.COLOR_WHITE, 15);
@@ -97,82 +125,47 @@ public class DiemThiPanel extends BasePanel {
         add(contentPanel, BorderLayout.CENTER);
     }
 
-    private void functionAddData() {
-        DataFormDiemThi form = new DataFormDiemThi();
-        form.txtId.setText("Tự động tạo");
-        form.txtId.setEditable(false);
+    // =====================================================================
+    // HÀM XỬ LÝ IMPORT EXCEL KẾT HỢP SWING-WORKER
+    // =====================================================================
+    private void functionImportExcel(String loaiFile, String phuongThuc) {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Chọn file Excel...");
+        int result = fileChooser.showOpenDialog(this);
 
-        form.btnSave.addActionListener(e -> {
-            try {
-                DiemThiXetTuyen entity = getEntityFromForm(form);
-                if(controller.add(entity)) {
-                    JOptionPane.showMessageDialog(form, "Thêm mới điểm thí sinh thành công!");
-                    loadTable();
-                    form.dispose();
+        if (result == JFileChooser.APPROVE_OPTION) {
+            java.io.File file = fileChooser.getSelectedFile();
+
+            // Hiện con trỏ chuột xoay tròn báo hiệu hệ thống đang bận
+            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+            SwingWorker<String, Void> worker = new SwingWorker<>() {
+                @Override
+                protected String doInBackground() throws Exception {
+                    // Gọi controller dựa trên loại file
+                    if (loaiFile.equals("THPT")) {
+                        return controller.importDiemThpt(file, phuongThuc);
+                    } else {
+                        // ĐGNL và V-SAT dùng chung hàm xử lý cấu trúc Dọc
+                        return controller.importDiemDgnlVsat(file, phuongThuc);
+                    }
                 }
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(form, "Lỗi nhập liệu: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
-            }
-        });
-        form.setVisible(true);
-    }
 
-    private void functionEditData() {
-        int row = table.getSelectedRow();
-        if(row == -1) {
-            JOptionPane.showMessageDialog(this, "Chọn một dòng để xem chi tiết/sửa!");
-            return;
-        }
-
-        Integer id = Integer.parseInt(model.getValueAt(row, 0).toString());
-        DiemThiXetTuyen entity = controller.getById(id);
-        if(entity == null) return;
-
-        DataFormDiemThi form = new DataFormDiemThi();
-        fillFormWithEntity(form, entity);
-
-        form.btnSave.addActionListener(e -> {
-            try {
-                DiemThiXetTuyen updatedEntity = getEntityFromForm(form);
-                updatedEntity.setIdDiemThi(id); // Giữ ID
-                if(controller.update(updatedEntity)) {
-                    JOptionPane.showMessageDialog(form, "Cập nhật thành công!");
-                    loadTable();
-                    form.dispose();
+                @Override
+                protected void done() {
+                    // Trả lại con trỏ chuột bình thường
+                    setCursor(Cursor.getDefaultCursor());
+                    try {
+                        String message = get();
+                        JOptionPane.showMessageDialog(DiemThiPanel.this, message, "Hoàn tất", JOptionPane.INFORMATION_MESSAGE);
+                        loadTable(); // Tự động load lại bảng
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(DiemThiPanel.this, "Lỗi nạp file: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    }
                 }
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(form, "Lỗi nhập liệu: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
-            }
-        });
-        form.setVisible(true);
-    }
-
-    private void functionDeleteData() {
-        int selectedRow = table.getSelectedRow();
-        if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn một dòng để xóa.");
-            return;
+            };
+            worker.execute();
         }
-
-        int confirm = JOptionPane.showConfirmDialog(this, "Xác nhận xóa dữ liệu điểm này?", "Cảnh báo", JOptionPane.YES_NO_OPTION);
-        if (confirm == JOptionPane.YES_OPTION) {
-            Integer id = Integer.parseInt(model.getValueAt(selectedRow, 0).toString());
-            DiemThiXetTuyen entity = controller.getById(id);
-            if(entity != null && controller.delete(entity)) {
-                JOptionPane.showMessageDialog(this, "Đã xóa thành công!");
-                loadTable();
-            }
-        }
-    }
-
-    private void functionSearchData() {
-        String keyString = searchField.getText();
-        if(keyString.isEmpty()) {
-            loadTable();
-            return;
-        }
-        List<DiemThiXetTuyen> list = controller.search(keyString);
-        renderTableData(list);
     }
 
     private void loadTable() {
@@ -182,6 +175,7 @@ public class DiemThiPanel extends BasePanel {
 
     private void renderTableData(List<DiemThiXetTuyen> list) {
         model.setRowCount(0);
+        if (list == null) return;
         for(DiemThiXetTuyen item : list) {
             model.addRow(new Object[]{
                     item.getIdDiemThi(),
@@ -192,62 +186,11 @@ public class DiemThiPanel extends BasePanel {
         }
     }
 
-    // --- Mapper ---
-    private DiemThiXetTuyen getEntityFromForm(DataFormDiemThi form) {
-        return DiemThiXetTuyen.builder()
-                .cccd(form.txtCccd.getText().trim())
-                .soBaoDanh(form.txtSbd.getText().trim())
-                .phuongThuc(form.txtPhuongThuc.getText().trim())
-                .toan(parseBD(form.txtTO.getText()))
-                .ly(parseBD(form.txtLI.getText()))
-                .hoa(parseBD(form.txtHO.getText()))
-                .sinh(parseBD(form.txtSI.getText()))
-                .van(parseBD(form.txtVA.getText()))
-                .su(parseBD(form.txtSU.getText()))
-                .dia(parseBD(form.txtDI.getText()))
-                .n1Thi(parseBD(form.txtN1_THI.getText()))
-                .n1CC(parseBD(form.txtN1_CC.getText()))
-                .cncn(parseBD(form.txtCNCN.getText()))
-                .cnnn(parseBD(form.txtCNNN.getText()))
-                .tinHoc(parseBD(form.txtTI.getText()))
-                .ktpl(parseBD(form.txtKTPL.getText()))
-                .nl1(parseBD(form.txtNL1.getText()))
-                .nk1(parseBD(form.txtNK1.getText()))
-                .nk2(parseBD(form.txtNK2.getText()))
-                .build();
-    }
+    // Các hàm functionAddData, functionEditData, functionDeleteData, functionSearchData, getEntityFromForm...
+    // Bạn giữ nguyên code cũ của bạn ở các phần này nhé.
 
-    private void fillFormWithEntity(DataFormDiemThi form, DiemThiXetTuyen entity) {
-        form.txtId.setText(String.valueOf(entity.getIdDiemThi()));
-        form.txtId.setEditable(false);
-        form.txtCccd.setText(entity.getCccd());
-        form.txtSbd.setText(entity.getSoBaoDanh());
-        form.txtPhuongThuc.setText(entity.getPhuongThuc());
-
-        form.txtTO.setText(formatBD(entity.getToan()));
-        form.txtLI.setText(formatBD(entity.getLy()));
-        form.txtHO.setText(formatBD(entity.getHoa()));
-        form.txtSI.setText(formatBD(entity.getSinh()));
-        form.txtVA.setText(formatBD(entity.getVan()));
-        form.txtSU.setText(formatBD(entity.getSu()));
-        form.txtDI.setText(formatBD(entity.getDia()));
-        form.txtN1_THI.setText(formatBD(entity.getN1Thi()));
-        form.txtN1_CC.setText(formatBD(entity.getN1CC()));
-        form.txtCNCN.setText(formatBD(entity.getCncn()));
-        form.txtCNNN.setText(formatBD(entity.getCnnn()));
-        form.txtTI.setText(formatBD(entity.getTinHoc()));
-        form.txtKTPL.setText(formatBD(entity.getKtpl()));
-        form.txtNL1.setText(formatBD(entity.getNl1()));
-        form.txtNK1.setText(formatBD(entity.getNk1()));
-        form.txtNK2.setText(formatBD(entity.getNk2()));
-    }
-
-    private BigDecimal parseBD(String text) {
-        if(text == null || text.trim().isEmpty()) return BigDecimal.ZERO;
-        try { return new BigDecimal(text.trim()); } catch(Exception e) { return BigDecimal.ZERO; }
-    }
-
-    private String formatBD(BigDecimal bd) {
-        return bd != null ? bd.toString() : "0.00";
-    }
+    private void functionAddData() { /* Code cũ của bạn */ }
+    private void functionEditData() { /* Code cũ của bạn */ }
+    private void functionDeleteData() { /* Code cũ của bạn */ }
+    private void functionSearchData() { /* Code cũ của bạn */ }
 }

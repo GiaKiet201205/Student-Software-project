@@ -49,7 +49,7 @@ public class BaseRepository<T> {
     Transaction transaction = null;
     try (Session session = HibernateUtil.getSessionFactory().openSession()) {
       transaction = session.beginTransaction();
-      session.update(entity);
+      session.merge(entity);
       transaction.commit();
       return entity;
     } catch (Exception e) {
@@ -67,6 +67,40 @@ public class BaseRepository<T> {
     } catch (Exception e) {
       if (transaction != null) transaction.rollback();
       throw new AppException("Lỗi khi xóa dữ liệu " + entityClass.getSimpleName() + "!", e);
+    }
+  }
+  //Dùng để import những file dữ liệu lớn ( đã tích hợp thêm và cập nhật)
+  public void saveAll(List<T> entities) {
+    if (entities == null || entities.isEmpty()) return;
+
+    Transaction transaction = null;
+    try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+      transaction = session.beginTransaction();
+
+      // thông số hibernate.jdbc.batch_size trong file cấu hình
+      int batchSize = 1000;
+
+      for (int i = 0; i < entities.size(); i++) {
+        // Sử dụng merge() để tự động: Insert (nếu mới) hoặc Update đè (nếu đã tồn tại)
+        session.merge(entities.get(i));
+
+        // Cứ tích đủ 1000 dòng thì "xả" xuống Database và dọn rác RAM
+        if (i > 0 && i % batchSize == 0) {
+          session.flush(); // Đẩy lệnh SQL xuống MySQL
+          session.clear(); // Xóa bộ nhớ tạm của Hibernate
+        }
+      }
+
+      // Xả nốt những bản ghi lẻ cuối cùng (Ví dụ: dòng 1001 đến 1050)
+      session.flush();
+      session.clear();
+
+      transaction.commit();
+    } catch (Exception e) {
+      if (transaction != null) {
+        transaction.rollback();
+      }
+      throw new AppException("Lỗi khi Import danh sách " + entityClass.getSimpleName() + " số lượng lớn!", e);
     }
   }
 }
