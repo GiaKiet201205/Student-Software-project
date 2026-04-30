@@ -13,11 +13,17 @@ public class MainPanel extends JPanel {
     add(new TestFrame(), "TEST FRAME");
     add(new DiemCongXetTuyenPanel(), "EXTRA POINTS");
     add(new NguyenVongXetTuyenPanel(), "APPLICATION REFERENCES");
+    add(new NganhToHopPanel(), "NGANH_TOHOP");
+    add(new DiemThiPanel(), "DIEM_THI");
     // Todo: Add Screens
     add(new NganhPanel(), "NGANH_PANEL");
     add(new ToHopPanel(), "TOHOP_PANEL");
-    //add(new UserManagementFrame(), "USER_MANAGEMENT");
-    //add(new ExamineeManagementFrame(), "EXAMINEE_MANAGEMENT");
+    add(new UserManagementFrame(), "USER_MANAGEMENT");
+    add(new ExamineeManagementFrame(), "EXAMINEE_MANAGEMENT");
+
+    //Nam
+    add(new NganhToHopPanel(), "NGANH_TOHOP");
+    add(new DiemThiPanel(), "DIEM_THI");
   }
 
   public void showCard(String cardName) {

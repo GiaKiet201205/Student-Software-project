@@ -46,4 +46,8 @@ public class ThiSinhXetTuyen25Controller {
     public int importFromExcel(File file) {
         return service.importFromExcel(file);
     }
+
+    public boolean importFromExcelFast(File file){
+        return service.importFromExcelFast(file);
+    }
 }
