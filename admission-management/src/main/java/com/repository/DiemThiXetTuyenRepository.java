@@ -74,5 +74,22 @@ public class DiemThiXetTuyenRepository extends BaseRepository<DiemThiXetTuyen> {
             throw new AppException("Lỗi khi lưu thông tin điểm thi!", e);
         }
     }
+    /**
+     * Hàm tìm kiếm theo CCCD hoặc Số báo danh (Hỗ trợ tìm kiếm gần đúng LIKE)
+     */
+    public List<DiemThiXetTuyen> searchByKeyword(String keyword) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            // Sử dụng HQL để quét trên 2 cột
+            String hql = "FROM DiemThiXetTuyen WHERE cccd LIKE :kw OR soBaoDanh LIKE :kw";
+            Query<DiemThiXetTuyen> query = session.createQuery(hql, DiemThiXetTuyen.class);
+
+            // Thêm % ở 2 đầu để tìm kiếm chứa chuỗi (Ví dụ gõ "123" sẽ ra "00123456")
+            query.setParameter("kw", "%" + keyword + "%");
+
+            return query.list();
+        } catch (Exception e) {
+            throw new AppException("Lỗi cơ sở dữ liệu khi tìm kiếm điểm!", e);
+        }
+    }
 
 }

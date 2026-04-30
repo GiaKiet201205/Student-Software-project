@@ -17,7 +17,7 @@ public class DataFormDiemThi extends JDialog {
     // Khai báo 20 trường dữ liệu
     public JTextField txtId, txtCccd, txtSbd, txtPhuongThuc;
     public JTextField txtTO, txtLI, txtHO, txtSI, txtSU, txtDI, txtVA;
-    public JTextField txtN1_THI, txtN1_CC, txtCNCN, txtCNNN, txtTI, txtKTPL, txtNL1, txtNK1, txtNK2;
+    public JTextField txtN1_THI, txtN1_CC, txtCNCN, txtCNNN, txtTI, txtKTPL, txtNL1, txtNK1, txtNK2, txtNK3,txtNK4;
 
     public BaseButton btnSave, btnCancel;
 
@@ -43,6 +43,7 @@ public class DataFormDiemThi extends JDialog {
         txtCNNN = createTextField(); txtTI = createTextField();
         txtKTPL = createTextField(); txtNL1 = createTextField();
         txtNK1 = createTextField(); txtNK2 = createTextField();
+        txtNK3 = createTextField(); txtNK4 = createTextField();
 
         formPanel.add(createRow("ID Điểm Thi", txtId));
         formPanel.add(createRow("CCCD", txtCccd));
@@ -61,9 +62,11 @@ public class DataFormDiemThi extends JDialog {
         formPanel.add(createRow("Điểm CNNN", txtCNNN));
         formPanel.add(createRow("Điểm Tin Học", txtTI));
         formPanel.add(createRow("Điểm KTPL", txtKTPL));
-        formPanel.add(createRow("Điểm NL1", txtNL1));
-        formPanel.add(createRow("Điểm NK1", txtNK1));
-        formPanel.add(createRow("Điểm NK2", txtNK2));
+        formPanel.add(createRow("Điểm DGNL 1", txtNL1));
+        formPanel.add(createRow("Điểm Năng khiếu 1", txtNK1));
+        formPanel.add(createRow("Điểm Năng khiếu 2", txtNK2));
+        formPanel.add(createRow("Điểm Năng khiếu 3",txtNK3));
+        formPanel.add(createRow("Điểm năng khiếu 4", txtNK4));
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setOpaque(false);

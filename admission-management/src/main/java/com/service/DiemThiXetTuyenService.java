@@ -101,21 +101,81 @@ public class DiemThiXetTuyenService {
         }
     }
 
-    // =========================================================================
-    // 2. IMPORT V-SAT/ĐGNL - CẤU TRÚC DỌC (Đọc Sheet 0 của file VSAT)
-    // =========================================================================
-    public String importDiemDgnlVsat(File file, String phuongThuc) {
+    public String importDiemDgnl(File file, String phuongThuc) {
         Map<String, DiemThiXetTuyen> mapHoSo = new HashMap<>();
+        int soDongThanhCong = 0;
         int soDongLoi = 0;
 
-        final int COL_CCCD = 1;         // Cột B
-        final int COL_MAMONTHI = 5;     // Cột F
-        final int COL_DIEM = 7;         // Cột H
+        // VỊ TRÍ CỘT: Bạn nhớ đếm lại trên file Excel để điền cho đúng nhé
+        final int COL_CCCD = 1;         // Vị trí cột chứa CCCD (hoặc SBD)
+        final int COL_DIEM_NL1 = 8;     // Vị trí cột chứa số điểm thi (VD: 95.00)
 
         try (FileInputStream fis = new FileInputStream(file);
              Workbook workbook = new XSSFWorkbook(fis)) {
 
-            Sheet sheet = workbook.getSheetAt(0); // Luôn đọc Sheet 0 của file được chọn
+            Sheet sheet = workbook.getSheetAt(0);
+
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (row == null) continue;
+
+                try {
+                    String cccd = getCellValue(row.getCell(COL_CCCD));
+                    if (cccd.isEmpty() || cccd.equalsIgnoreCase("CMND") || cccd.equalsIgnoreCase("SBD")) continue;
+
+                    BigDecimal diemNl1 = parseToBigDecimal(getCellValue(row.getCell(COL_DIEM_NL1)));
+
+                    String key = cccd + "_" + phuongThuc;
+                    DiemThiXetTuyen profile = mapHoSo.get(key);
+
+                    if (profile == null) {
+                        profile = diemRepo.findByCccdAndPhuongThuc(cccd, phuongThuc);
+                        if (profile == null) {
+                            profile = DiemThiXetTuyen.builder().cccd(cccd).phuongThuc(phuongThuc).build();
+                        }
+                        mapHoSo.put(key, profile);
+                    }
+
+                    // ----------------------------------------------------------------
+                    // THUẬT TOÁN SUPER-SCORE: Lọc điểm cao nhất qua nhiều lần thi
+                    // ----------------------------------------------------------------
+                    if (diemNl1 != null) {
+                        // Nếu chưa có điểm (null) HOẶC điểm mới lớn hơn điểm đang lưu
+                        if (profile.getDiemNangLuc() == null || diemNl1.compareTo(profile.getDiemNangLuc()) > 0) {
+                            profile.setDiemNangLuc(diemNl1); // Ghi đè lấy điểm cao hơn
+                        }
+                        soDongThanhCong++;
+                    }
+
+                } catch (Exception ex) {
+                    soDongLoi++;
+                }
+            }
+
+            diemRepo.saveAll(new ArrayList<>(mapHoSo.values()));
+            return "Import ĐGNL hoàn tất!\n- Số đầu điểm đã xử lý: " + soDongThanhCong + "\n- Lỗi định dạng: " + soDongLoi + " dòng.";
+
+        } catch (Exception e) {
+            throw new AppException("Lỗi đọc file ĐGNL!", e);
+        }
+    }
+    // =========================================================================
+    // 3. IMPORT V-SAT (CẤU TRÚC DỌC - SIÊU PHỨC TẠP)
+    // =========================================================================
+    public String importDiemVsat(File file, String phuongThuc) {
+        Map<String, DiemThiXetTuyen> mapHoSo = new HashMap<>();
+        int soDongThanhCong = 0;
+        int soDongLoi = 0;
+
+        // CẤU HÌNH CỘT RIÊNG CHO V-SAT
+        final int COL_CCCD = 1;         // Cột B
+        final int COL_MAMONTHI = 6;     // Cột G
+        final int COL_DIEM = 8;         // Cột I
+
+        try (FileInputStream fis = new FileInputStream(file);
+             Workbook workbook = new XSSFWorkbook(fis)) {
+
+            Sheet sheet = workbook.getSheetAt(0);
 
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
@@ -125,7 +185,7 @@ public class DiemThiXetTuyenService {
                     String cccd = getCellValue(row.getCell(COL_CCCD));
                     if (cccd.isEmpty() || cccd.equalsIgnoreCase("CMND")) continue;
 
-                    String maMon = getCellValue(row.getCell(COL_MAMONTHI)).toUpperCase();
+                    String maMon = getCellValue(row.getCell(COL_MAMONTHI)).toUpperCase().replace("-", "_");
                     BigDecimal diem = parseToBigDecimal(getCellValue(row.getCell(COL_DIEM)));
 
                     String key = cccd + "_" + phuongThuc;
@@ -140,30 +200,32 @@ public class DiemThiXetTuyenService {
                     }
 
                     if (diem != null) {
-                        updateScoreIfHigher(profile, maMon, diem);
+                        updateScoreVsat(profile, maMon, diem);
+                        soDongThanhCong++;
                     }
                 } catch (Exception ex) {
                     soDongLoi++;
                 }
             }
-            List<DiemThiXetTuyen> danhSach = new ArrayList<>(mapHoSo.values());
-            diemRepo.saveAll(danhSach);
-            return "Import file V-SAT/ĐGNL thành công " + danhSach.size() + " hồ sơ thí sinh!";
+
+            diemRepo.saveAll(new ArrayList<>(mapHoSo.values()));
+            return "Import V-SAT hoàn tất! Nạp thành công: " + soDongThanhCong + " đầu điểm.";
+
         } catch (Exception e) {
-            throw new AppException("Lỗi đọc file V-SAT/ĐGNL!", e);
+            throw new AppException("Lỗi đọc file V-SAT!", e);
         }
     }
-
-    private void updateScoreIfHigher(DiemThiXetTuyen p, String code, BigDecimal val) {
+    // Hàm cập nhật điểm dành riêng cho V-SAT
+    private void updateScoreVsat(DiemThiXetTuyen p, String code, BigDecimal val) {
         switch (code) {
-            case "TO_VS": if (p.getToan() == null || val.compareTo(p.getToan()) > 0) p.setToan(val); break;
-            case "LI_VS": if (p.getLy() == null || val.compareTo(p.getLy()) > 0) p.setLy(val); break;
-            case "HO_VS": if (p.getHoa() == null || val.compareTo(p.getHoa()) > 0) p.setHoa(val); break;
-            case "SI_VS": if (p.getSinh() == null || val.compareTo(p.getSinh()) > 0) p.setSinh(val); break;
-            case "N1_VS": if (p.getN1Thi() == null || val.compareTo(p.getN1Thi()) > 0) p.setN1Thi(val); break;
-            case "SU_VS": if (p.getSu() == null || val.compareTo(p.getSu()) > 0) p.setSu(val); break;
-            case "DI_VS": if (p.getDia() == null || val.compareTo(p.getDia()) > 0) p.setDia(val); break;
-            case "TONG_DGNL": if (p.getDiemNangLuc() == null || val.compareTo(p.getDiemNangLuc()) > 0) p.setDiemNangLuc(val); break;
+            case "TO_VS": case "M1": if (p.getToan() == null || val.compareTo(p.getToan()) > 0) p.setToan(val); break;
+            case "LI_VS": case "M2": if (p.getLy() == null || val.compareTo(p.getLy()) > 0) p.setLy(val); break;
+            case "HO_VS": case "M3": if (p.getHoa() == null || val.compareTo(p.getHoa()) > 0) p.setHoa(val); break;
+            case "SI_VS": case "M4": if (p.getSinh() == null || val.compareTo(p.getSinh()) > 0) p.setSinh(val); break;
+            case "VA_VS": case "M5": if (p.getVan() == null || val.compareTo(p.getVan()) > 0) p.setVan(val); break;
+            case "SU_VS": case "M6": if (p.getSu() == null || val.compareTo(p.getSu()) > 0) p.setSu(val); break;
+            case "DI_VS": case "M7": if (p.getDia() == null || val.compareTo(p.getDia()) > 0) p.setDia(val); break;
+            case "N1_VS": case "M8": if (p.getN1Thi() == null || val.compareTo(p.getN1Thi()) > 0) p.setN1Thi(val); break;
         }
     }
 
@@ -176,5 +238,39 @@ public class DiemThiXetTuyenService {
     private BigDecimal parseToBigDecimal(String value) {
         if (value == null || value.isEmpty()) return null;
         try { return new BigDecimal(value.replace(",", ".")); } catch (Exception e) { return null; }
+    }
+    // =========================================================================
+    // CÁC HÀM XỬ LÝ CHỨC NĂNG CRUD
+    // =========================================================================
+
+    public DiemThiXetTuyen getById(Integer id) {
+        return diemRepo.findById(id);
+    }
+
+    public boolean themDiem(DiemThiXetTuyen entity) {
+        // Kiểm tra trùng lặp Khóa tổ hợp (CCCD + Phương thức)
+        DiemThiXetTuyen tonTai = diemRepo.findByCccdAndPhuongThuc(entity.getCccd(), entity.getPhuongThuc());
+        if (tonTai != null) {
+            throw new IllegalArgumentException("Thí sinh có CCCD " + entity.getCccd() +
+                    " đã có điểm ở phương thức " + entity.getPhuongThuc() + "!");
+        }
+
+        diemRepo.save(entity);
+        return true;
+    }
+
+    public boolean capNhatDiem(DiemThiXetTuyen entity) {
+        //if ()
+        diemRepo.update(entity);
+        return true;
+    }
+
+    public boolean xoaDiem(DiemThiXetTuyen entity) {
+        diemRepo.delete(entity);
+        return true;
+    }
+
+    public List<DiemThiXetTuyen> timKiem(String keyword) {
+        return diemRepo.searchByKeyword(keyword);
     }
 }
