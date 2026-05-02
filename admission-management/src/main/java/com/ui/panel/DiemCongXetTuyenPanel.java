@@ -92,7 +92,7 @@ public class DiemCongXetTuyenPanel extends BasePanel {
         // Table
         BasePanel tablePanel = new BasePanel(AppConfig.COLOR_WHITE, 15);
         tablePanel.setLayout(new BorderLayout());
-        String[] columns = {"iddiemcong", "ts_cccd", "manganh", "matohop", "phuongthuc", "diemCC", "diemUtxt", "diemTong", "ghichu", "dc_keys"};
+        String[] columns = {"ID", "CCCD", "Mã ngành", "Mã tổ hợp", "Phương thức", "Điểm CC", "Điểm Utxt", "Điểm Tổng", "Ghi chú", "Keys"};
         model = new DefaultTableModel(columns, 0);
         table = new BaseTable(model);
 
@@ -383,6 +383,7 @@ public class DiemCongXetTuyenPanel extends BasePanel {
     private void loadTable() {
         model.setRowCount(0);
         List<DiemCongXetTuyen> list = controller.getDiemCongXetTuyen();
+        if(list.isEmpty()) { return; }
         for(DiemCongXetTuyen dc : list){
             model.addRow(new Object[]{
                     dc.getIdDiemCong(),

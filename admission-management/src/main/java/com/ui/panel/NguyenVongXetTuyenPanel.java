@@ -4,6 +4,8 @@ import java.util.List;
 import com.config.AppConfig;
 import com.controller.NguyenVongXetTuyenController;
 import com.entity.NguyenVongXetTuyen;
+import com.service.NVXTImport.NguyenVongImportService;
+import com.service.NVXTImport.model.ImportResult;
 import com.ui.data_form.DataFormNguyenVongXetTuyen;
 import com.ui.common.BaseButton;
 import com.ui.common.BasePanel;
@@ -96,18 +98,18 @@ public class NguyenVongXetTuyenPanel extends BasePanel {
         BasePanel tablePanel = new BasePanel(AppConfig.COLOR_WHITE,15);
         tablePanel.setLayout(new BorderLayout());
         String[] columns = {
-                "idnv",
-                "nn_cccd",
-                "nv_manganh",
-                "nv_tt",
-                "diem_thxt",
-                "diem_utqd",
-                "diem_cong",
-                "diem_xettuyen",
-                "nv_ketqua",
-                "nv_keys",
-                "tt_phuongthuc",
-                "tt_thm"
+                "Id",
+                "CCCD",
+                "Mã ngành",
+                "Thứ tự",
+                "Điểm THXT",
+                "Điểm UTQD",
+                "Điểm Cộng",
+                "Điểm Xét Tuyển",
+                "Kết Quả",
+                "Keys",
+                "Phương Thức",
+                "TT_THM"
         };
 
         model = new DefaultTableModel(columns,0);
@@ -154,7 +156,9 @@ public class NguyenVongXetTuyenPanel extends BasePanel {
     // load lại bảng sau khi thêm/sửa/xóa
     public void loadTable(){
         model.setRowCount(0);
-        controller.getNguyenVongXetTuyen().forEach(nv -> {
+        List<NguyenVongXetTuyen> list = controller.getNguyenVongXetTuyen();
+        if(list.isEmpty()) { return; }
+        list.forEach(nv -> {
             model.addRow(new Object[]{
                     nv.getIdNv(),
                     nv.getCccd(),
@@ -327,58 +331,68 @@ public class NguyenVongXetTuyenPanel extends BasePanel {
         }
     }
 
-    private void functionReadExcel(){
-        JFileChooser fileChooser = new JFileChooser();
-        int result = fileChooser.showOpenDialog(this);
-
-        if (result == JFileChooser.APPROVE_OPTION) {
-            File file = fileChooser.getSelectedFile();
-            try (FileInputStream fis = new FileInputStream(file);
-                Workbook workbook = new XSSFWorkbook(fis)) {
-                Sheet sheet = workbook.getSheetAt(0);
-                int countError = 0;
-                for (int i = 1; i <= sheet.getLastRowNum(); i++) {
-                    Row row = sheet.getRow(i);
-                    if (row == null) continue;
-                    String cccd = row.getCell(0).getStringCellValue();
-                    String maNganh = row.getCell(1).getStringCellValue();
-                    int thuTu = (int) row.getCell(2).getNumericCellValue();
-                    double diemThXT = row.getCell(3).getNumericCellValue();
-                    double diemUuTienQD = row.getCell(4).getNumericCellValue();
-                    double diemCong = row.getCell(5).getNumericCellValue();
-                    double diemXetTuyen = row.getCell(6).getNumericCellValue();
-                    String ketQua = row.getCell(7).getStringCellValue();
-                    String nvKeys = row.getCell(8).getStringCellValue();
-                    String phuongThuc = row.getCell(9).getStringCellValue();
-                    String ttThm = row.getCell(10).getStringCellValue();
-                    
-                    if(validateInput(cccd, maNganh, String.valueOf(thuTu), String.valueOf(diemThXT), String.valueOf(diemUuTienQD), String.valueOf(diemCong), String.valueOf(diemXetTuyen), ketQua, nvKeys, phuongThuc, ttThm)) {
-                        NguyenVongXetTuyen nv = new NguyenVongXetTuyen();
-                        nv.setCccd(cccd);
-                        nv.setMaNganh(maNganh);
-                        nv.setThuTu(thuTu);
-                        nv.setDiemThXT(BigDecimal.valueOf(diemThXT));
-                        nv.setDiemUuTienQD(BigDecimal.valueOf(diemUuTienQD));
-                        nv.setDiemCong(BigDecimal.valueOf(diemCong));
-                        nv.setDiemXetTuyen(BigDecimal.valueOf(diemXetTuyen));
-                        nv.setKetQua(ketQua);
-                        nv.setNvKeys(nvKeys);
-                        nv.setPhuongThuc(phuongThuc);
-                        nv.setTtThm(ttThm);
-
-                        controller.addNguyenVongXetTuyen(nv);
-                    } else {
-                        countError++;
+    private void functionReadExcel() {
+        JFileChooser chooser = new JFileChooser();
+        
+        try {
+            // Chọn file nguyện vọng
+            JOptionPane.showMessageDialog(this, "Chọn file NGUYỆN VỌNG XÉT TUYỂN");
+            if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
+            File fileNguyenVong = chooser.getSelectedFile();
+            
+            // Chọn file tổ hợp môn
+            JOptionPane.showMessageDialog(this, "Chọn file TỔ HỢP MÔN");
+            if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
+            File fileToHop = chooser.getSelectedFile();
+            
+            // Progress dialog
+            JDialog progressDialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Đang xử lý...", true);
+            JProgressBar progressBar = new JProgressBar(0, 100);
+            progressBar.setStringPainted(true);
+            progressDialog.add(progressBar, BorderLayout.CENTER);
+            progressDialog.setSize(400, 80);
+            progressDialog.setLocationRelativeTo(this);
+            
+            SwingWorker<ImportResult, Integer> worker = new SwingWorker<>() {
+                @Override
+                protected ImportResult doInBackground() throws Exception {
+                    NguyenVongImportService service = new NguyenVongImportService();
+                    return service.importNguyenVong(fileNguyenVong, fileToHop, 
+                        progress -> {
+                            publish(progress);
+                            progressBar.setValue(progress);
+                        });
+                }
+                
+                @Override
+                protected void process(List<Integer> chunks) {
+                    int latest = chunks.get(chunks.size() - 1);
+                    progressBar.setValue(latest);
+                }
+                
+                @Override
+                protected void done() {
+                    progressDialog.dispose();
+                    try {
+                        ImportResult result = get();
+                        JOptionPane.showMessageDialog(NguyenVongXetTuyenPanel.this,
+                            result.getSummary(),
+                            "Kết quả import", JOptionPane.INFORMATION_MESSAGE);
+                        loadTable();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        JOptionPane.showMessageDialog(NguyenVongXetTuyenPanel.this,
+                            "Lỗi: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
                     }
                 }
-                JOptionPane.showMessageDialog(this, "Import Excel thành công! Số lỗi: " + countError);
-                loadTable();
-            } catch (Exception e) {
-                e.printStackTrace();
-                JOptionPane.showMessageDialog(this, "Lỗi đọc file Excel!");
-            }
+            };
+            
+            worker.execute();
+            progressDialog.setVisible(true);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
     }
 
     //kiểm tra dữ liệu nhập vào
@@ -399,7 +413,7 @@ public class NguyenVongXetTuyenPanel extends BasePanel {
             if (Double.parseDouble(diemUuTienQD) < 0 || Double.parseDouble(diemUuTienQD) > 3) {
                 return false;
             }
-            if (Double.parseDouble(diemCong) < 0 || Double.parseDouble(diemCong) > 30) {
+            if (Double.parseDouble(diemCong) < 0 || Double.parseDouble(diemCong) > 4) {
                 return false;
             }
             if (Double.parseDouble(diemXetTuyen) < 0 || Double.parseDouble(diemXetTuyen) > 32.75) {
@@ -410,4 +424,5 @@ public class NguyenVongXetTuyenPanel extends BasePanel {
         }
         return true;
     }
+    
 }

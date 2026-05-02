@@ -25,14 +25,15 @@ public class NavBarPanel extends BasePanel {
 
     addNavButton("Điểm cộng xét tuyển", "EXTRA POINTS");
     addNavButton("Nguyện vọng xét tuyển", "APPLICATION REFERENCES");
-    // TODO: Add screens
+    
     addNavButton("Quản lý người dùng", "USER_MANAGEMENT");
     addNavButton("Quản lý thí sinh", "EXAMINEE_MANAGEMENT");
-    addLogoutButton();
 
-    //Nam
     addNavButton("Ngành - Tổ Hợp", "NGANH_TOHOP");
     addNavButton("Điểm Thí Sinh", "DIEM_THI");
+
+    addLogoutButton();
+
   }
 
   private void addLogo() {

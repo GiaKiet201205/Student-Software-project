@@ -27,4 +27,5 @@ public class NguyenVongXetTuyenService {
     public void delete(NguyenVongXetTuyen entity) {
         repo.delete(entity);
     }
+    
 }
