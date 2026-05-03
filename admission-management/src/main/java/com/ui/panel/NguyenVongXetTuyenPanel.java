@@ -5,6 +5,7 @@ import com.config.AppConfig;
 import com.controller.NguyenVongXetTuyenController;
 import com.entity.NguyenVongXetTuyen;
 import com.service.NVXTImport.NguyenVongImportService;
+import com.service.NVXTImport.XetTuyenService;
 import com.service.NVXTImport.model.ImportResult;
 import com.ui.data_form.DataFormNguyenVongXetTuyen;
 import com.ui.common.BaseButton;
@@ -87,11 +88,16 @@ public class NguyenVongXetTuyenPanel extends BasePanel {
         searchButton.setFont(new Font("Segoe UI",Font.BOLD,17));
         searchPanel.add(searchField);
         searchPanel.add(searchButton);
-
         header.add(searchPanel,BorderLayout.CENTER);
 
+        BasePanel headerButtonPanel = new BasePanel(AppConfig.COLOR_WHITE,0);
+        headerButtonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT,10,0));
         BaseButton addButton = new BaseButton("Thêm mới");
-        header.add(addButton,BorderLayout.EAST);
+        BaseButton btnRefresh = new BaseButton("Tải lại");
+        headerButtonPanel.add(btnRefresh);
+        headerButtonPanel.add(addButton);
+
+        header.add(headerButtonPanel,BorderLayout.EAST);
         contentPanel.add(header,BorderLayout.NORTH);
 
         //table
@@ -131,15 +137,15 @@ public class NguyenVongXetTuyenPanel extends BasePanel {
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         footer.setOpaque(false);
 
+        BaseButton btnXetTuyen = new BaseButton("Xét tuyển", new Color(39,174,96));
+        BaseButton btnReadExcel = new BaseButton("Đọc file", new Color(39,174,96));
         BaseButton btnEdit = new BaseButton("Chỉnh sửa");
         BaseButton btnDelete = new BaseButton("Xóa", new Color(220,53,69));
-        BaseButton btnReadExcel = new BaseButton("Đọc file", new Color(39,174,96));
-        BaseButton btnRefresh = new BaseButton("Tải lại danh sách", new Color(41,128,185));
 
         footer.add(btnEdit);
         footer.add(btnDelete);
         footer.add(btnReadExcel);
-        footer.add(btnRefresh);
+        footer.add(btnXetTuyen);
 
         contentPanel.add(footer,BorderLayout.SOUTH);
 
@@ -148,6 +154,7 @@ public class NguyenVongXetTuyenPanel extends BasePanel {
         btnDelete.addActionListener(e -> functionDeleteData());
         searchButton.addActionListener(e -> functionSearchData());
         btnReadExcel.addActionListener(e -> functionReadExcel());
+        btnXetTuyen.addActionListener(e -> functionXetTuyen());
         btnRefresh.addActionListener(e -> loadTable());
 
         add(contentPanel,BorderLayout.CENTER);
@@ -392,6 +399,62 @@ public class NguyenVongXetTuyenPanel extends BasePanel {
             
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private void functionXetTuyen() {
+        JFileChooser chooser = new JFileChooser();
+        
+        try {
+            JOptionPane.showMessageDialog(this, "Chọn file ĐIỂM CHUẨN THPT");
+            if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
+            File fileThpt = chooser.getSelectedFile();
+            
+            JOptionPane.showMessageDialog(this, "Chọn file ĐIỂM CHUẨN ĐGNL");
+            if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
+            File fileDgnl = chooser.getSelectedFile();
+            
+            JOptionPane.showMessageDialog(this, "Chọn file ĐIỂM CHUẨN V-SAT");
+            if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
+            File fileVsat = chooser.getSelectedFile();
+            
+            JOptionPane.showMessageDialog(this, "Chọn file CHỈ TIÊU");
+            if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
+            File fileChiTieu = chooser.getSelectedFile();
+            
+            JDialog progressDialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Đang xét tuyển...", true);
+            JProgressBar progressBar = new JProgressBar();
+            progressBar.setIndeterminate(true);
+            progressDialog.add(progressBar);
+            progressDialog.setSize(300, 80);
+            progressDialog.setLocationRelativeTo(this);
+            
+            SwingWorker<Void, Void> worker = new SwingWorker<>() {
+                @Override
+                protected Void doInBackground() throws Exception {
+                    XetTuyenService service = new XetTuyenService();
+                    service.loadDiemChuan(fileThpt, fileDgnl, fileVsat);
+                    service.loadChiTieu(fileChiTieu);
+                    service.xetTuyen();
+                    return null;
+                }
+                
+                @Override
+                protected void done() {
+                    progressDialog.dispose();
+                    JOptionPane.showMessageDialog(NguyenVongXetTuyenPanel.this,
+                        "Xét tuyển hoàn tất!",
+                        "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                    loadTable();
+                }
+            };
+            
+            worker.execute();
+            progressDialog.setVisible(true);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi: " + e.getMessage());
         }
     }
 

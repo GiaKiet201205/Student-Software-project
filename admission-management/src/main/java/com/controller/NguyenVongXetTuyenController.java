@@ -47,16 +47,61 @@ public class NguyenVongXetTuyenController {
     public List<NguyenVongXetTuyen> searchNguyenVongXetTuyen(String keyString) {
         List<NguyenVongXetTuyen> result = new java.util.ArrayList<>();
         for (NguyenVongXetTuyen nv : service.getAll()) {
-            if (nv.getIdNv() != null && nv.getIdNv().toString().contains(keyString)
-                || nv.getPhuongThuc() != null && nv.getPhuongThuc().toLowerCase().contains(keyString.toLowerCase())
-                || nv.getKetQua() != null && nv.getKetQua().toLowerCase().contains(keyString.toLowerCase())
-                || nv.getCccd() != null && nv.getCccd().toLowerCase().contains(keyString.toLowerCase())
-                || nv.getMaNganh() != null && nv.getMaNganh().toLowerCase().contains(keyString.toLowerCase())
+            if (nv.getIdNv() != null && nv.getIdNv().toString().equals(keyString)
+                || nv.getPhuongThuc() != null && nv.getPhuongThuc().toLowerCase().equals(keyString.toLowerCase())
+                || nv.getKetQua() != null && nv.getKetQua().toLowerCase().equals(keyString.toLowerCase())
+                || nv.getCccd() != null && nv.getCccd().toLowerCase().equals(keyString.toLowerCase())
+                || nv.getMaNganh() != null && nv.getMaNganh().toLowerCase().equals(keyString.toLowerCase())
+                || nv.getKetQua() != null && nv.getKetQua().toLowerCase().equals(keyString.toLowerCase())
             ) {
                 result.add(nv);
+            }
+            if(keyString.contains(",")){
+                String[] parts = keyString.split(",");
+                boolean matchAll = true;
+
+                for (String part : parts) {
+                    String p = part.trim().toLowerCase();
+                    boolean match =
+                        (nv.getIdNv() != null && nv.getIdNv().toString().equals(p)) ||
+                        (nv.getPhuongThuc() != null && nv.getPhuongThuc().toLowerCase().equals(p)) ||
+                        (nv.getKetQua() != null && nv.getKetQua().toLowerCase().equals(p)) ||
+                        (nv.getCccd() != null && nv.getCccd().toLowerCase().equals(p)) ||
+                        (nv.getMaNganh() != null && nv.getMaNganh().toLowerCase().equals(p));
+                    
+                        if (!match) {
+                        matchAll = false;
+                        break;
+                    }
+                }
+                if (matchAll) {
+                    result.add(nv);
+                }
             }
         }
         return result;
     }
     
+      
+    public void saveBatch(List<NguyenVongXetTuyen> list) {
+        service.saveBatch(list);
+    }
+    
+    public void updateBatch(List<NguyenVongXetTuyen> list) {
+        service.updateBatch(list);
+    }
+    
+    public void deleteByIds(List<Integer> ids) {
+        service.deleteByIds(ids);
+    }
+    
+    public void deleteByKeys(List<String> keys) {
+        service.deleteByKeys(keys);
+    }
+    
+    public long count() {
+        return service.count();
+    }
+    
+
 }

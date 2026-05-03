@@ -115,7 +115,7 @@ public class DiemCongXetTuyenPanel extends BasePanel {
         BaseButton btnEdit = new BaseButton("Chỉnh sửa");
         BaseButton btnDelete = new BaseButton("Xóa", new Color(220, 53, 69));
         BaseButton btnReadExcel = new BaseButton("Đọc file", new Color(39, 174, 96));
-        BaseButton btnRefresh = new BaseButton("Tải lại danh sách", new Color(41, 128, 185));
+        BaseButton btnRefresh = new BaseButton("Tải lại", new Color(41, 128, 185));
 
         footer.add(btnEdit);
         footer.add(btnDelete);

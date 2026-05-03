@@ -193,12 +193,11 @@ public class NguyenVongImportService {
         int processed = 0;
         
         for (NguyenVongRaw raw : rawList) {
-            // Chỉ lấy 1 bản ghi tốt nhất cho nguyện vọng này
-            NguyenVongXetTuyen nv = processNguyenVong(raw);
+            List<NguyenVongXetTuyen> nvList = processNguyenVong(raw);
             
-            if (nv != null) {
-                batch.add(nv);
-                result.setSuccessRecords(result.getSuccessRecords() + 1);
+            if (nvList != null && !nvList.isEmpty()) {
+                batch.addAll(nvList);
+                result.setSuccessRecords(result.getSuccessRecords() + nvList.size());
             } else {
                 result.setSkippedNoDiem(result.getSkippedNoDiem() + 1);
             }
@@ -223,92 +222,105 @@ public class NguyenVongImportService {
         }
     }
 
-    private NguyenVongXetTuyen processNguyenVong(NguyenVongRaw raw) {
+    private List<NguyenVongXetTuyen> processNguyenVong(NguyenVongRaw raw) {
         List<DiemThiXetTuyen> diemThiList = diemThiByCccd.get(raw.getCccd());
         
         if (diemThiList == null || diemThiList.isEmpty()) {
-            if (debugLogCount < 100) {
-                System.out.println("BỎ QUA (không điểm): CCCD=" + raw.getCccd() + 
-                                ", mã ngành=" + raw.getMaNganh());
-                debugLogCount++;
-            }
-            return null;
+            return Collections.emptyList();
         }
         
         BigDecimal diemCong = getDiemCong(raw.getCccd(), raw.getMaNganh());
-        
-        NguyenVongXetTuyen bestResult = null;
-        BigDecimal bestScore = BigDecimal.ZERO;
+        List<NguyenVongXetTuyen> results = new ArrayList<>();
         
         for (DiemThiXetTuyen diemThi : diemThiList) {
             String phuongThuc = diemThi.getPhuongThuc();
             
-            BigDecimal thxt = BigDecimal.ZERO;
-            String maToHop = null;
-            
             if ("4".equals(phuongThuc)) {
-                // ĐGNL
-                thxt = convertDgnlTo30(diemThi.getDiemNangLuc());
-                maToHop = "NL1";
+                // ==================== ĐGNL ====================
+                BigDecimal thxt = convertDgnlTo30(diemThi.getDiemNangLuc());
+                if (thxt.compareTo(BigDecimal.ZERO) > 0) {
+                    BigDecimal utqd = calculateUuTienQuyDinh(thxt, diemCong);
+                    BigDecimal diemXetTuyen = thxt.add(utqd);
+                    
+                    NguyenVongXetTuyen nv = buildNguyenVongEntity(
+                        raw, phuongThuc, "NL1", thxt, utqd, diemCong, diemXetTuyen
+                    );
+                    results.add(nv);
+                }
             } else if ("5".equals(phuongThuc)) {
-                // 🔥 V-SAT: Cần quy đổi từ thang 150 sang thang 10 cho từng môn
-                ToHopProcessor.ToHopResult best = toHopProcessor.findBestToHop(diemThi, raw.getMaNganh());
-                if (best != null && best.diemThxt.compareTo(BigDecimal.ZERO) > 0) {
-                    // Lấy danh sách môn của tổ hợp
-                    String[] monList = toHopProcessor.getMonListForToHop(best.maToHop);
-                    if (monList != null && monList.length > 0) {
-                        double total = 0;
-                        for (String mon : monList) {
-                            BigDecimal diemVsat = getDiemByMon(diemThi, mon);
-                            if (diemVsat != null && diemVsat.compareTo(BigDecimal.ZERO) > 0) {
-                                // 🔥 QUAN TRỌNG: Quy đổi từ thang 150 sang thang 10
-                                BigDecimal converted = vsatConverter.convert(mon, diemVsat.doubleValue());
-                                total += converted.doubleValue();
-                            } else {
-                                total = 0;
-                                break;
-                            }
+                List<String[]> toHops = toHopProcessor.getToHopsForNganh(raw.getMaNganh());
+                
+                for (String[] toHop : toHops) {
+                    String maToHop = toHop[0];
+                    String[] monList = toHopProcessor.getMonListForToHop(maToHop);
+                    
+                    if (monList == null || monList.length == 0) continue;
+                    
+                    // Quy đổi từng môn từ thang 150 sang thang 10
+                    double totalConverted = 0;
+                    boolean duDiem = true;
+                    
+                    for (String mon : monList) {
+                        BigDecimal diemVsat = getDiemByMon(diemThi, mon);
+                        if (diemVsat == null || diemVsat.compareTo(BigDecimal.ZERO) == 0) {
+                            duDiem = false;
+                            break;
                         }
-                        thxt = BigDecimal.valueOf(total).setScale(2, RoundingMode.HALF_UP);
-                        maToHop = best.maToHop;
+                        // Quy đổi sang thang 10
+                        BigDecimal converted = vsatConverter.convert(mon, diemVsat.doubleValue());
+                        totalConverted += converted.doubleValue();
                     }
+                    
+                    if (!duDiem) continue;
+                    
+                    // Tổng điểm đã quy đổi sang thang 30
+                    BigDecimal thxt = BigDecimal.valueOf(totalConverted).setScale(2, RoundingMode.HALF_UP);
+                    BigDecimal utqd = calculateUuTienQuyDinh(thxt, diemCong);
+                    BigDecimal diemXetTuyen = thxt.add(utqd);
+                    
+                    NguyenVongXetTuyen nv = buildNguyenVongEntity(
+                        raw, phuongThuc, maToHop, thxt, utqd, diemCong, diemXetTuyen
+                    );
+                    results.add(nv);
                 }
             } else {
-                // PT3 (THPT)
-                ToHopProcessor.ToHopResult best = toHopProcessor.findBestToHop(diemThi, raw.getMaNganh());
-                if (best != null && best.diemThxt.compareTo(BigDecimal.ZERO) > 0) {
-                    thxt = best.diemThxt;
-                    maToHop = best.maToHop;
+                // ==================== THPT ====================
+                List<String[]> toHops = toHopProcessor.getToHopsForNganh(raw.getMaNganh());
+                
+                for (String[] toHop : toHops) {
+                    String maToHop = toHop[0];
+                    String[] monList = toHopProcessor.getMonListForToHop(maToHop);
+                    
+                    if (monList == null || monList.length == 0) continue;
+                    
+                    double total = 0;
+                    boolean duDiem = true;
+                    
+                    for (String mon : monList) {
+                        BigDecimal diem = diemThi.getDiemByMaMon(mon);
+                        if (diem == null || diem.compareTo(BigDecimal.ZERO) == 0) {
+                            duDiem = false;
+                            break;
+                        }
+                        total += diem.doubleValue();
+                    }
+                    
+                    if (!duDiem) continue;
+                    
+                    BigDecimal thxt = BigDecimal.valueOf(total).setScale(2, RoundingMode.HALF_UP);
+                    BigDecimal utqd = calculateUuTienQuyDinh(thxt, diemCong);
+                    BigDecimal diemXetTuyen = thxt.add(utqd);
+                    
+                    NguyenVongXetTuyen nv = buildNguyenVongEntity(
+                        raw, phuongThuc, maToHop, thxt, utqd, diemCong, diemXetTuyen
+                    );
+                    results.add(nv);
                 }
-            }
-            
-            if (thxt.compareTo(BigDecimal.ZERO) == 0) continue;
-            
-            // 🔥 Đảm bảo THXT không vượt quá 30 (sau quy đổi)
-            if (thxt.compareTo(MAX_SCORE) > 0) {
-                System.out.println("  WARN: THXT=" + thxt + " > 30, đang giới hạn về 30");
-                thxt = MAX_SCORE;
-            }
-            
-            BigDecimal utqd = calculateUuTienQuyDinh(thxt, diemCong);
-            BigDecimal diemXetTuyen = thxt.add(utqd);
-            
-            // Debug
-            if (raw.getRowIndex() <= 30) {
-                System.out.println("  Xét PT" + phuongThuc + ": THXT=" + thxt + ", UTQD=" + utqd + ", XT=" + diemXetTuyen);
-            }
-            
-            if (diemXetTuyen.compareTo(bestScore) > 0) {
-                bestScore = diemXetTuyen;
-                bestResult = buildNguyenVongEntity(
-                    raw, phuongThuc, maToHop, thxt, utqd, diemCong, diemXetTuyen
-                );
             }
         }
         
-        return bestResult;
+        return results;
     }
-
 
     // Helper lấy điểm V-SAT theo môn
     private BigDecimal getDiemByMon(DiemThiXetTuyen diemThi, String mon) {
@@ -349,7 +361,7 @@ public class NguyenVongImportService {
         return factor.multiply(diemCong).setScale(2, RoundingMode.HALF_UP);
     }
 
-    private NguyenVongXetTuyen buildNguyenVongEntity(NguyenVongRaw raw,
+   private NguyenVongXetTuyen buildNguyenVongEntity(NguyenVongRaw raw,
                                                    String phuongThuc,
                                                    String maToHop,
                                                    BigDecimal thxt,
@@ -365,9 +377,9 @@ public class NguyenVongImportService {
         nv.setDiemCong(diemCong);
         nv.setDiemXetTuyen(diemXetTuyen);
         nv.setPhuongThuc(phuongThuc);
-        nv.setTtThm(null);
-        // Key = CCCD_MANGANH_PHUONGTHUC
-        nv.setNvKeys(raw.getCccd() + "_" + raw.getMaNganh() + "_" + phuongThuc);
+        nv.setTtThm(maToHop);  // 🔥 LƯU MÃ TỔ HỢP
+        // Key = CCCD_MANGANH_PHUONGTHUC_MATOHOP
+        nv.setNvKeys(raw.getCccd() + "_" + raw.getMaNganh() + "_" + phuongThuc + "_" + maToHop);
         nv.setKetQua("CHUA_XET");
         
         return nv;
@@ -381,13 +393,8 @@ public class NguyenVongImportService {
     }
 
     private void saveBatch(List<NguyenVongXetTuyen> batch) {
-        for (NguyenVongXetTuyen nv : batch) {
-            try {
-                nguyenVongController.addNguyenVongXetTuyen(nv);
-            } catch (Exception e) {
-                System.err.println("Lỗi lưu: " + nv.getNvKeys() + " - " + e.getMessage());
-            }
-        }
+        if (batch.isEmpty()) return;
+        nguyenVongController.saveBatch(batch);
     }
 
     private int findHeaderRow(Sheet sheet) {

@@ -2,6 +2,7 @@ package com.service;
 
 import com.controller.DiemCongXetTuyenController;
 import com.entity.DiemCongXetTuyen;
+import com.repository.DiemCongXetTuyenRepository;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -9,6 +10,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ExcelImportDCXTService {
 
@@ -195,7 +197,6 @@ public class ExcelImportDCXTService {
 
     private String[] parseToHop(String raw) {
         try {
-            // raw có dạng: "B03(TO-3,VA-3,SI-1)"
             int start = raw.indexOf("(");           
             if (start == -1) {
                 System.out.println("WARN: Không tìm thấy '(' trong: " + raw);
@@ -235,8 +236,6 @@ public class ExcelImportDCXTService {
                 
                 map.computeIfAbsent(maNganh, k -> new ArrayList<>()).add(toHop);
                 count++;
-                
-
             }
             
             System.out.println("Tổng số tổ hợp đọc được: " + count);
@@ -463,18 +462,22 @@ public class ExcelImportDCXTService {
             }
         }
         
-        // Tổng không quá 2.75
         double tong = diemKV + diemDT;
         return Math.min(tong, 2.75);
     }
 
+    // ==================== TỐI ƯU: SỬ DỤNG BATCH INSERT ====================
+    
+    /**
+     * Import điểm cộng xét tuyển với batch insert tối ưu
+     */
     public int processAllWithProgress(
             File fThiSinh,
             File fUT,
             File fNV,
             File fToHop,
             java.util.function.Consumer<Integer> progressCallback,
-            DiemCongXetTuyenController controller  // Thêm controller vào tham số
+            DiemCongXetTuyenController controller
     ) throws Exception {
         
         System.gc();
@@ -507,13 +510,18 @@ public class ExcelImportDCXTService {
         }
         
         int totalSaved = 0;
-        int batchSize = 500;
+        int batchSize = 2000; // Tăng batch size lên 2000
         List<DiemCongXetTuyen> batch = new ArrayList<>(batchSize);
         
         int totalCCCD = mapNV.size();
         int processed = 0;
         
         System.out.println("Bắt đầu xử lý và lưu vào database...");
+        
+        // Xóa dữ liệu cũ trước khi import (tùy chọn)
+        // controller.truncateAll(); // Nếu muốn xóa hết dữ liệu cũ
+        
+        DiemCongXetTuyenRepository repo = new DiemCongXetTuyenRepository();
         
         for (String cccd : mapNV.keySet()) {
             ThiSinh ts = mapTS.get(cccd);
@@ -522,7 +530,6 @@ public class ExcelImportDCXTService {
             double diemUuTien = tinhDiemUuTien(ts.khuVuc, ts.doiTuong);
             
             Double diemChungChi = mapUT.get(cccd);
-
             if (diemChungChi == null) diemChungChi = 0.0;
 
             if (diemUuTien == 0 && diemChungChi == 0) continue;
@@ -550,17 +557,17 @@ public class ExcelImportDCXTService {
                     batch.add(dc);
                     totalSaved++;
                     
-                    // Lưu batch khi đủ số lượng
                     if (batch.size() >= batchSize) {
-                        saveBatchToDatabase(batch, controller);
+                        // Sử dụng batch insert từ repository
+                        repo.saveBatchOptimized(batch, batchSize);
                         batch.clear();
                         
-                        if (progressCallback != null && totalSaved % 5000 == 0) {
+                        if (progressCallback != null && totalSaved % 10000 == 0) {
                             int percent = 60 + (int)((double)processed / totalCCCD * 40);
                             progressCallback.accept(Math.min(percent, 99));
                         }
                         
-                        if (totalSaved % 10000 == 0) {
+                        if (totalSaved % 50000 == 0) {
                             System.gc();
                             System.out.println("Đã lưu " + totalSaved + " bản ghi...");
                         }
@@ -569,7 +576,7 @@ public class ExcelImportDCXTService {
             }
             
             processed++;
-            if (progressCallback != null && processed % 100 == 0) {
+            if (progressCallback != null && processed % 500 == 0) {
                 int percent = 60 + (int)((double)processed / totalCCCD * 40);
                 progressCallback.accept(Math.min(percent, 99));
             }
@@ -577,7 +584,7 @@ public class ExcelImportDCXTService {
         
         // Lưu batch cuối cùng
         if (!batch.isEmpty()) {
-            saveBatchToDatabase(batch, controller);
+            repo.saveBatchOptimized(batch, batchSize);
             batch.clear();
         }
         
@@ -589,15 +596,4 @@ public class ExcelImportDCXTService {
         System.out.println("Hoàn thành! Đã lưu " + totalSaved + " bản ghi vào database.");
         return totalSaved;
     }
-
-    private void saveBatchToDatabase(List<DiemCongXetTuyen> batch, DiemCongXetTuyenController controller) {
-        for (DiemCongXetTuyen dc : batch) {
-            try {
-                controller.addDiemCongXetTuyen(dc);
-            } catch (Exception e) {
-                System.err.println("Lỗi khi lưu: " + dc.getDcKeys() + " - " + e.getMessage());
-            }
-        }
-    }
-
 }

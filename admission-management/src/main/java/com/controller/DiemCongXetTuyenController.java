@@ -48,10 +48,10 @@ public class DiemCongXetTuyenController {
     public List<DiemCongXetTuyen> searchDiemCongXetTuyen(String keyString) {
         List<DiemCongXetTuyen> result = new ArrayList<>();
         for (DiemCongXetTuyen dc : service.getAll()) {
-            if (dc.getIdDiemCong() != null && dc.getIdDiemCong().toString().contains(keyString)
-                || dc.getMaNganh() != null && dc.getMaNganh().toLowerCase().contains(keyString.toLowerCase())
-                || dc.getMaToHop() != null && dc.getMaToHop().toLowerCase().contains(keyString.toLowerCase())
-                || dc.getCccd() != null && dc.getCccd().toLowerCase().contains(keyString.toLowerCase())
+            if (dc.getIdDiemCong() != null && dc.getIdDiemCong().toString().equals(keyString)
+                || dc.getMaNganh() != null && dc.getMaNganh().toLowerCase().equals(keyString.toLowerCase())
+                || dc.getMaToHop() != null && dc.getMaToHop().toLowerCase().equals(keyString.toLowerCase())
+                || dc.getCccd() != null && dc.getCccd().toLowerCase().equals(keyString.toLowerCase())
             ) {
                 result.add(dc);
             }

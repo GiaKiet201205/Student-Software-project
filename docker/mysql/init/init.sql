@@ -218,6 +218,7 @@ CREATE TABLE `xt_nguyenvongxettuyen` (
   `nv_keys` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
   `tt_phuongthuc` varchar(45) DEFAULT NULL,
   `tt_thm` varchar(45) DEFAULT NULL,
+  `nv_rank` int DEFAULT NULL,
   PRIMARY KEY (`idnv`),
   UNIQUE KEY `nv_keys_UNIQUE` (`nv_keys`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
