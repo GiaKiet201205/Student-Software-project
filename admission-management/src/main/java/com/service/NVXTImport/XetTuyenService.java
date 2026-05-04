@@ -1,12 +1,9 @@
 package com.service.NVXTImport;
 
-import com.config.HibernateUtil;
 import com.controller.NguyenVongXetTuyenController;
 import com.entity.NguyenVongXetTuyen;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -67,11 +64,11 @@ public class XetTuyenService {
                 String maNganh = getCellString(row.getCell(1));
                 if (maNganh == null || maNganh.isEmpty()) continue;
                 
-                // Đọc danh sách tổ hợp (cột D - index 3)
+                // Đọc danh sách tổ hợp 
                 String toHopList = getCellString(row.getCell(3));
                 if (toHopList == null || toHopList.isEmpty()) continue;
                 
-                // Đọc điểm chuẩn (cột E - index 4)
+                // Đọc điểm chuẩn
                 BigDecimal diemChuan = BigDecimal.valueOf(getCellDouble(row.getCell(4)));
                 
                 String key = maNganh + "_" + phuongThuc;
@@ -223,7 +220,6 @@ public class XetTuyenService {
         return result;
     }
 
-    // Sửa method filterBestToHop - xóa batch bằng repository
     private List<NguyenVongXetTuyen> filterBestToHop(List<NguyenVongXetTuyen> allNguyenVong) {
         Map<String, List<NguyenVongXetTuyen>> groupByKey = allNguyenVong.stream()
                 .collect(Collectors.groupingBy(nv -> 
@@ -264,7 +260,6 @@ public class XetTuyenService {
             }
         }
         
-        // Xóa batch bằng repository
         if (!idsToDelete.isEmpty()) {
             nguyenVongController.deleteByIds(idsToDelete);
             System.out.println("Đã xóa " + idsToDelete.size() + " bản ghi tổ hợp không được chọn");
@@ -273,7 +268,6 @@ public class XetTuyenService {
         return result;
     }
 
-    // Update batch tối ưu - dùng repository
     private void updateBatchOptimized(List<NguyenVongXetTuyen> list) {
         if (list.isEmpty()) return;
         nguyenVongController.updateBatch(list);

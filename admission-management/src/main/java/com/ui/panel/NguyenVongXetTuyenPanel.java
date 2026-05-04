@@ -342,17 +342,14 @@ public class NguyenVongXetTuyenPanel extends BasePanel {
         JFileChooser chooser = new JFileChooser();
         
         try {
-            // Chọn file nguyện vọng
             JOptionPane.showMessageDialog(this, "Chọn file NGUYỆN VỌNG XÉT TUYỂN");
             if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
             File fileNguyenVong = chooser.getSelectedFile();
             
-            // Chọn file tổ hợp môn
             JOptionPane.showMessageDialog(this, "Chọn file TỔ HỢP MÔN");
             if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
             File fileToHop = chooser.getSelectedFile();
             
-            // Progress dialog
             JDialog progressDialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Đang xử lý...", true);
             JProgressBar progressBar = new JProgressBar(0, 100);
             progressBar.setStringPainted(true);

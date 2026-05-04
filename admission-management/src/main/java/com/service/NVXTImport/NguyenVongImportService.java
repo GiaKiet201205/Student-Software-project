@@ -377,7 +377,7 @@ public class NguyenVongImportService {
         nv.setDiemCong(diemCong);
         nv.setDiemXetTuyen(diemXetTuyen);
         nv.setPhuongThuc(phuongThuc);
-        nv.setTtThm(maToHop);  // 🔥 LƯU MÃ TỔ HỢP
+        nv.setTtThm(maToHop);  // TẠM LƯU MÃ TỔ HỢP
         // Key = CCCD_MANGANH_PHUONGTHUC_MATOHOP
         nv.setNvKeys(raw.getCccd() + "_" + raw.getMaNganh() + "_" + phuongThuc + "_" + maToHop);
         nv.setKetQua("CHUA_XET");

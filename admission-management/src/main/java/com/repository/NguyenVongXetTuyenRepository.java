@@ -67,10 +67,8 @@ public class NguyenVongXetTuyenRepository extends BaseRepository<NguyenVongXetTu
                     }
                     stmt.executeBatch();
                 }
-            });
-            
+            });          
             tx.commit();
-            System.out.println("✓ Đã lưu batch " + list.size() + " bản ghi");
         } catch (Exception e) {
             throw new AppException("Lỗi khi lưu batch NguyenVongXetTuyen!", e);
         }

@@ -468,9 +468,6 @@ public class ExcelImportDCXTService {
 
     // ==================== TỐI ƯU: SỬ DỤNG BATCH INSERT ====================
     
-    /**
-     * Import điểm cộng xét tuyển với batch insert tối ưu
-     */
     public int processAllWithProgress(
             File fThiSinh,
             File fUT,
@@ -510,17 +507,13 @@ public class ExcelImportDCXTService {
         }
         
         int totalSaved = 0;
-        int batchSize = 2000; // Tăng batch size lên 2000
+        int batchSize = 2000; 
         List<DiemCongXetTuyen> batch = new ArrayList<>(batchSize);
         
         int totalCCCD = mapNV.size();
         int processed = 0;
         
-        System.out.println("Bắt đầu xử lý và lưu vào database...");
-        
-        // Xóa dữ liệu cũ trước khi import (tùy chọn)
-        // controller.truncateAll(); // Nếu muốn xóa hết dữ liệu cũ
-        
+        System.out.println("Bắt đầu xử lý và lưu vào database...");       
         DiemCongXetTuyenRepository repo = new DiemCongXetTuyenRepository();
         
         for (String cccd : mapNV.keySet()) {
@@ -558,7 +551,6 @@ public class ExcelImportDCXTService {
                     totalSaved++;
                     
                     if (batch.size() >= batchSize) {
-                        // Sử dụng batch insert từ repository
                         repo.saveBatchOptimized(batch, batchSize);
                         batch.clear();
                         

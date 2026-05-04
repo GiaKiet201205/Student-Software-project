@@ -4,13 +4,8 @@ import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Chuyển đổi điểm V-SAT sang thang điểm 30
- * Dựa trên bảng quy đổi theo phân vị từ file Quy doi diem thi V-SAT 2025.docx
- */
 public class VsatScoreConverter {
     
-    // Mỗi môn có bảng quy đổi riêng
     private final Map<String, Range[]> conversionTable = new HashMap<>();
     
     public VsatScoreConverter() {
