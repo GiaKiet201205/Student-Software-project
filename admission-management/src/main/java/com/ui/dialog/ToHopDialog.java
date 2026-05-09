@@ -1,99 +1,93 @@
 package com.ui.dialog;
 
-import com.config.AppConfig;
 import com.entity.ToHopMonThi;
-import com.ui.common.BaseButton;
-
 import javax.swing.*;
 import java.awt.*;
 
 public class ToHopDialog extends JDialog {
     private JTextField txtMaToHop, txtTenToHop, txtMon1, txtMon2, txtMon3;
-    private ToHopMonThi toHopResult = null; // Chứa kết quả sau khi nhập
-    private boolean isEditMode = false;
+    private ToHopMonThi resultToHop;
+    private ToHopMonThi editData;
 
-    // Constructor dùng cho cả Thêm và Sửa
-    public ToHopDialog(Window owner, ToHopMonThi toHopEdit) {
-        super(owner, "Thông tin Tổ Hợp Môn", Dialog.ModalityType.APPLICATION_MODAL);
-        this.isEditMode = (toHopEdit != null);
-
-        initComponents();
-
-        // Nếu là chế độ Sửa, điền sẵn dữ liệu cũ vào form và khóa ô Mã
-        if (isEditMode) {
-            txtMaToHop.setText(toHopEdit.getMaToHop());
-            txtMaToHop.setEditable(false); // Không cho sửa khóa chính
-            txtTenToHop.setText(toHopEdit.getTenToHop());
-            txtMon1.setText(toHopEdit.getMon1());
-            txtMon2.setText(toHopEdit.getMon2());
-            txtMon3.setText(toHopEdit.getMon3());
-        }
-
+    public ToHopDialog(Window owner, ToHopMonThi editData) {
+        super(owner, editData == null ? "Thêm Tổ Hợp" : "Sửa Tổ Hợp", ModalityType.APPLICATION_MODAL);
+        this.editData = editData;
+        initializeComponents();
+        if (editData != null) fillData();
         pack();
         setLocationRelativeTo(owner);
     }
 
-    private void initComponents() {
-        JPanel panel = new JPanel(new GridLayout(6, 2, 10, 15));
+    private void initializeComponents() {
+        setLayout(new BorderLayout(10, 10));
+        JPanel panel = new JPanel(new GridLayout(5, 2, 10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        panel.setBackground(AppConfig.COLOR_WHITE);
 
-        panel.add(new JLabel("Mã Tổ Hợp (VD: A00):"));
-        txtMaToHop = new JTextField();
+        panel.add(new JLabel("Mã tổ hợp:"));
+        txtMaToHop = new JTextField(20);
         panel.add(txtMaToHop);
 
-        panel.add(new JLabel("Tên Tổ Hợp:"));
-        txtTenToHop = new JTextField();
+        panel.add(new JLabel("Tên tổ hợp:"));
+        txtTenToHop = new JTextField(20);
         panel.add(txtTenToHop);
 
-        panel.add(new JLabel("Môn Thi 1:"));
-        txtMon1 = new JTextField();
+        panel.add(new JLabel("Môn 1:"));
+        txtMon1 = new JTextField(10);
         panel.add(txtMon1);
 
-        panel.add(new JLabel("Môn Thi 2:"));
-        txtMon2 = new JTextField();
+        panel.add(new JLabel("Môn 2:"));
+        txtMon2 = new JTextField(10);
         panel.add(txtMon2);
 
-        panel.add(new JLabel("Môn Thi 3:"));
-        txtMon3 = new JTextField();
+        panel.add(new JLabel("Môn 3:"));
+        txtMon3 = new JTextField(10);
         panel.add(txtMon3);
 
-        BaseButton btnSave = new BaseButton("Lưu");
-        BaseButton btnCancel = new BaseButton("Hủy", AppConfig.COLOR_DANGER);
+        add(panel, BorderLayout.CENTER);
 
-        btnSave.addActionListener(e -> saveAction());
+        JPanel btnPanel = new JPanel();
+        JButton btnSave = new JButton("Lưu");
+        JButton btnCancel = new JButton("Hủy");
+
+        btnSave.addActionListener(e -> handleSave());
         btnCancel.addActionListener(e -> dispose());
 
-        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        btnPanel.setBackground(AppConfig.COLOR_WHITE);
         btnPanel.add(btnSave);
         btnPanel.add(btnCancel);
-
-        setLayout(new BorderLayout());
-        add(panel, BorderLayout.CENTER);
         add(btnPanel, BorderLayout.SOUTH);
     }
 
-    private void saveAction() {
-        // Kiểm tra rỗng cơ bản
-        if (txtMaToHop.getText().trim().isEmpty() || txtTenToHop.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ Mã và Tên tổ hợp!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+    private void fillData() {
+        txtMaToHop.setText(editData.getMaToHop());
+        txtTenToHop.setText(editData.getTenToHop());
+        txtMon1.setText(editData.getMon1());
+        txtMon2.setText(editData.getMon2());
+        txtMon3.setText(editData.getMon3());
+        txtMaToHop.setEditable(false);
+    }
+
+    private void handleSave() {
+        if (txtMaToHop.getText().isEmpty() || txtTenToHop.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Mã và Tên không được để trống!");
             return;
         }
 
-        // Tạo object chứa dữ liệu mới
-        toHopResult = new ToHopMonThi();
-        toHopResult.setMaToHop(txtMaToHop.getText().trim());
-        toHopResult.setTenToHop(txtTenToHop.getText().trim());
-        toHopResult.setMon1(txtMon1.getText().trim());
-        toHopResult.setMon2(txtMon2.getText().trim());
-        toHopResult.setMon3(txtMon3.getText().trim());
+        resultToHop = new ToHopMonThi();
+        
+        if (editData != null) {
+            resultToHop.setIdToHop(editData.getIdToHop());
+        }
 
-        dispose(); // Đóng form
+        resultToHop.setMaToHop(txtMaToHop.getText().trim());
+        resultToHop.setTenToHop(txtTenToHop.getText().trim());
+        resultToHop.setMon1(txtMon1.getText().trim());
+        resultToHop.setMon2(txtMon2.getText().trim());
+        resultToHop.setMon3(txtMon3.getText().trim());
+
+        dispose();
     }
 
-    // Hàm để lấy dữ liệu sau khi cửa sổ đóng lại
     public ToHopMonThi getToHopResult() {
-        return toHopResult;
+        return resultToHop;
     }
 }
