@@ -2,19 +2,21 @@ package com.controller;
 
 import com.entity.ToHopMonThi;
 import com.service.ToHopMonThiService;
+import com.service.mapper.SimpleRow;
+import com.service.mapper.ToHopRowMapper;
 import com.ui.dialog.ToHopDialog;
 import com.ui.panel.ToHopPanel;
 
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ToHopController {
     private final ToHopPanel view;
@@ -28,7 +30,7 @@ public class ToHopController {
     public void loadData() {
         try {
             List<ToHopMonThi> list = service.getAllToHop();
-            view.hienThiDuLieuLenBang(list); // Gọi hàm của View để vẽ dữ liệu
+            view.hienThiDuLieuLenBang(list);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(view, "Lỗi tải dữ liệu: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
@@ -37,15 +39,14 @@ public class ToHopController {
     public void handleAdd() {
         ToHopDialog dialog = new ToHopDialog(SwingUtilities.getWindowAncestor(view), null);
         dialog.setVisible(true);
-
-        ToHopMonThi newToHop = dialog.getToHopResult();
-        if (newToHop != null) {
+        ToHopMonThi result = dialog.getToHopResult();
+        if (result != null) {
             try {
-                service.themToHop(newToHop);
+                service.themToHop(result);
                 loadData();
-                JOptionPane.showMessageDialog(view, "Thêm tổ hợp thành công!");
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(view, "Lỗi khi thêm: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(view, "Thêm thành công!");
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(view, "Lỗi: " + e.getMessage());
             }
         }
     }
@@ -53,29 +54,44 @@ public class ToHopController {
     public void handleEdit() {
         int selectedRow = view.getBaseTable().getSelectedRow();
         if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(view, "Vui lòng chọn một tổ hợp trên bảng để sửa!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(view, "Vui lòng chọn một dòng để sửa!");
             return;
         }
 
         DefaultTableModel model = view.getDefaultTableModel();
-        ToHopMonThi toHopEdit = new ToHopMonThi();
-        toHopEdit.setMaToHop((String) model.getValueAt(selectedRow, 0));
-        toHopEdit.setTenToHop((String) model.getValueAt(selectedRow, 1));
-        toHopEdit.setMon1((String) model.getValueAt(selectedRow, 2));
-        toHopEdit.setMon2((String) model.getValueAt(selectedRow, 3));
-        toHopEdit.setMon3((String) model.getValueAt(selectedRow, 4));
+        String maToHopCu = (String) model.getValueAt(selectedRow, 0);
 
-        ToHopDialog dialog = new ToHopDialog(SwingUtilities.getWindowAncestor(view), toHopEdit);
+        ToHopMonThi editData = new ToHopMonThi();
+
+        try {
+            List<ToHopMonThi> all = service.getAllToHop();
+            for (ToHopMonThi th : all) {
+                if (th.getMaToHop().equals(maToHopCu)) {
+                    editData.setIdToHop(th.getIdToHop()); // Đúng tên biến idToHop
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        editData.setMaToHop(maToHopCu);
+        editData.setTenToHop((String) model.getValueAt(selectedRow, 1));
+        editData.setMon1((String) model.getValueAt(selectedRow, 2));
+        editData.setMon2((String) model.getValueAt(selectedRow, 3));
+        editData.setMon3((String) model.getValueAt(selectedRow, 4));
+
+        ToHopDialog dialog = new ToHopDialog(SwingUtilities.getWindowAncestor(view), editData);
         dialog.setVisible(true);
 
-        ToHopMonThi updatedToHop = dialog.getToHopResult();
-        if (updatedToHop != null) {
+        ToHopMonThi result = dialog.getToHopResult();
+        if (result != null) {
             try {
-                service.capNhatToHop(updatedToHop);
+                service.capNhatToHop(result);
                 loadData();
                 JOptionPane.showMessageDialog(view, "Cập nhật thành công!");
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(view, "Lỗi khi cập nhật: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(view, "Lỗi cập nhật: " + e.getMessage());
             }
         }
     }
@@ -83,60 +99,72 @@ public class ToHopController {
     public void handleDelete() {
         int selectedRow = view.getBaseTable().getSelectedRow();
         if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(view, "Vui lòng chọn một tổ hợp trên bảng để xóa!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(view, "Chọn một dòng để xóa!");
             return;
         }
 
-        String maToHop = (String) view.getDefaultTableModel().getValueAt(selectedRow, 0);
-        int confirm = JOptionPane.showConfirmDialog(view, "Bạn có chắc chắn muốn xóa tổ hợp " + maToHop + "?", "Xác nhận xóa", JOptionPane.YES_NO_OPTION);
-        
-        if (confirm == JOptionPane.YES_OPTION) {
+        String id = (String) view.getDefaultTableModel().getValueAt(selectedRow, 0);
+        if (JOptionPane.showConfirmDialog(view, "Xóa " + id + "?") == JOptionPane.YES_OPTION) {
             try {
-                service.xoaToHop(maToHop);
+                service.xoaToHop(id);
                 loadData();
-                JOptionPane.showMessageDialog(view, "Xóa thành công!");
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(view, "Lỗi khi xóa: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(view, "Lỗi: " + e.getMessage());
             }
         }
     }
 
     public void handleImport() {
         JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Chọn file Excel (.xlsx) chứa danh sách Tổ hợp");
-        
         if (fileChooser.showOpenDialog(view) == JFileChooser.APPROVE_OPTION) {
-            File selectedFile = fileChooser.getSelectedFile();
-            try (FileInputStream fis = new FileInputStream(selectedFile);
+            File file = fileChooser.getSelectedFile();
+            try (FileInputStream fis = new FileInputStream(file);
                  Workbook workbook = new XSSFWorkbook(fis)) {
-                
+
                 Sheet sheet = workbook.getSheetAt(0);
-                int successCount = 0;
-                
+                ToHopRowMapper mapper = new ToHopRowMapper();
+                Map<String, ToHopMonThi> toHopMap = new HashMap<>();
+
                 for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                     Row row = sheet.getRow(i);
                     if (row == null) continue;
 
-                    try {
-                        ToHopMonThi toHop = new ToHopMonThi();
-                        toHop.setMaToHop(row.getCell(0).getStringCellValue());
-                        toHop.setTenToHop(row.getCell(1).getStringCellValue());
-                        toHop.setMon1(row.getCell(2).getStringCellValue());
-                        toHop.setMon2(row.getCell(3).getStringCellValue());
-                        toHop.setMon3(row.getCell(4).getStringCellValue());
+                    Map<Integer, String> cellData = new HashMap<>();
+                    for (int j = 0; j < row.getLastCellNum(); j++) {
+                        cellData.put(j, getCellValueSafe(row.getCell(j)));
+                    }
+                    SimpleRow simpleRow = new SimpleRow(cellData);
+                    ToHopMonThi toHop = mapper.map(simpleRow);
 
-                        service.themToHop(toHop);
-                        successCount++;
-                    } catch (Exception rowEx) {
-                        System.out.println("Lỗi bỏ qua dòng " + (i + 1) + ": " + rowEx.getMessage());
+                    if (toHop != null && toHop.getMaToHop() != null) {
+                        toHopMap.put(toHop.getMaToHop(), toHop);
                     }
                 }
+
+                int successCount = 0;
+                for (ToHopMonThi th : toHopMap.values()) {
+                    try {
+                        service.themToHop(th);
+                        successCount++;
+                    } catch (Exception ex) {
+                        System.out.println("Bỏ qua: " + th.getMaToHop());
+                    }
+                }
+
                 loadData();
-                JOptionPane.showMessageDialog(view, "Nhập thành công " + successCount + " tổ hợp từ Excel!");
-                
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(view, "Lỗi khi đọc file Excel: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(view, "Đã thêm " + successCount + " tổ hợp!");
+
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(view, "Lỗi: " + e.getMessage());
             }
         }
+    }
+
+    private String getCellValueSafe(Cell cell) {
+        if (cell == null) return "";
+        if (cell.getCellType() == CellType.NUMERIC) {
+            return String.valueOf((long) cell.getNumericCellValue());
+        }
+        return cell.getStringCellValue().trim();
     }
 }
