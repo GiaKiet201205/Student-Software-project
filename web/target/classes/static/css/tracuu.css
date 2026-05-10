@@ -1,0 +1,92 @@
+/* ═══════════════════════════════════════════════
+   tracuu.css – trang tra cứu kết quả (tra-cuu.html)
+   ═══════════════════════════════════════════════ */
+
+/* ── Login page layout ── */
+.login-wrap {
+  min-height: calc(100vh - 56px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 2rem 1rem;
+}
+.login-card {
+  background: #fff;
+  border: 1px solid var(--gray-border);
+  border-radius: 16px;
+  padding: 2.5rem;
+  width: 100%; max-width: 430px;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+  animation: fadeUp .3s ease;
+}
+.login-card .login-icon { font-size: 2.5rem; margin-bottom: .75rem; display: block; }
+.login-card h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.6rem; color: var(--navy);
+  margin-bottom: .3rem;
+}
+.login-card .sub { color: var(--muted); font-size: .85rem; margin-bottom: 1.75rem; }
+.login-card .field { text-align: left; margin-bottom: 1rem; }
+.login-card .btn   { width: 100%; justify-content: center; padding: .75rem; font-size: .95rem; margin-top: .5rem; }
+.login-demo {
+  margin-top: 1.25rem;
+  padding: .75rem;
+  background: var(--gray-light);
+  border-radius: var(--radius-sm);
+  font-size: .78rem; color: var(--muted);
+  text-align: left; line-height: 1.7;
+}
+.login-demo strong { color: var(--text); }
+
+/* ── Result layout ── */
+.tracuu-result { animation: fadeUp .3s ease; }
+
+.result-toolbar {
+  display: flex; align-items: center; gap: .75rem;
+  margin-bottom: 1.25rem;
+}
+.result-toolbar .info { font-size: .85rem; color: var(--muted); }
+
+/* ── Student info banner ── */
+.student-banner {
+  background: linear-gradient(135deg, var(--navy), #1e4080);
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+.student-banner .sname {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.5rem; margin-bottom: .3rem;
+}
+.student-banner .smeta {
+  font-size: .83rem; opacity: .72;
+  display: flex; gap: 1.5rem; flex-wrap: wrap;
+}
+
+/* ── Admission status ── */
+.admit-status {
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  display: flex; align-items: center; gap: 1rem;
+  margin-bottom: 1rem;
+}
+.admit-status.yes { background: var(--green-light); border: 2px solid #86efac; }
+.admit-status.no  { background: var(--red-light);   border: 2px solid #fca5a5; }
+.admit-status .asi { font-size: 2rem; flex-shrink: 0; }
+.admit-status .ainfo strong { display: block; font-size: 1rem; margin-bottom: .2rem; }
+.admit-status .ainfo span   { font-size: .83rem; color: var(--muted); }
+
+/* ── Not found state ── */
+.not-found {
+  text-align: center; padding: 3rem 1.5rem;
+  animation: fadeUp .25s ease;
+}
+.not-found .nf-icon { font-size: 3rem; margin-bottom: 1rem; }
+.not-found h3 { font-size: 1.1rem; color: var(--navy); margin-bottom: .5rem; }
+.not-found p  { font-size: .85rem; color: var(--muted); max-width: 360px; margin: 0 auto; }
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .login-card { padding: 1.75rem 1.25rem; }
+  .student-banner .smeta { flex-direction: column; gap: .35rem; }
+}
