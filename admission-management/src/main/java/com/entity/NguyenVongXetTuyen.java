@@ -57,4 +57,7 @@ public class NguyenVongXetTuyen {
 
   @Column(name = "nv_rank")
   private Integer thuTuXetTuyen;
+  
+  @Column(name = "nv_matohop", length = 45)
+  private String maToHop;
 }

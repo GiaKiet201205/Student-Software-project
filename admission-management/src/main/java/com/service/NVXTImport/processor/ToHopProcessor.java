@@ -1,6 +1,9 @@
 package com.service.NVXTImport.processor;
 
+import com.controller.NganhToHopController;
 import com.entity.DiemThiXetTuyen;
+import com.entity.NganhToHop;
+
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -15,9 +18,13 @@ public class ToHopProcessor {
     
     private final Map<String, List<String[]>> toHopCache = new ConcurrentHashMap<>();
     private final Map<String, String[]> toHopMonMapping = new ConcurrentHashMap<>();
-    
+    private final Map<String, Map<String, Integer>> heSoCache = new ConcurrentHashMap<>();
+    private final NganhToHopController nganhToHopController;
+
     public ToHopProcessor() {
+        this.nganhToHopController = new NganhToHopController();
         initToHopMonMapping();
+        loadHeSoFromDatabase();
     }
     
     private void initToHopMonMapping() {
@@ -79,6 +86,30 @@ public class ToHopProcessor {
         }
     }
     
+    /**
+     * Load hệ số môn từ database xt_nganh_tohop
+     */
+    private void loadHeSoFromDatabase() {
+        List<NganhToHop> list = nganhToHopController.getAll();
+        for (NganhToHop nth : list) {
+            String key = nth.getMaNganh() + "_" + nth.getMaToHop();
+            Map<String, Integer> heSoMap = new HashMap<>();
+            
+            if (nth.getMon1() != null && nth.getHeSoMon1() != null) {
+                heSoMap.put(nth.getMon1(), (int) nth.getHeSoMon1());
+            }
+            if (nth.getMon2() != null && nth.getHeSoMon2() != null) {
+                heSoMap.put(nth.getMon2(), (int) nth.getHeSoMon2());
+            }
+            if (nth.getMon3() != null && nth.getHeSoMon3() != null) {
+                heSoMap.put(nth.getMon3(), (int) nth.getHeSoMon3());
+            }
+            
+            heSoCache.put(key, heSoMap);
+        }
+        System.out.println("✓ Đã load hệ số môn cho " + heSoCache.size() + " tổ hợp");
+    }
+
     public void loadToHopFromFile(File file) throws Exception {
         try (FileInputStream fis = new FileInputStream(file);
              Workbook wb = new XSSFWorkbook(fis)) {
@@ -112,76 +143,70 @@ public class ToHopProcessor {
         return toHopMonMapping.get(maToHop);
     }
     
-    public BigDecimal calculateThxt(DiemThiXetTuyen diemThi, String[] toHop) {
-        if (diemThi == null || toHop == null || toHop.length == 0) {
+    public BigDecimal calculateThxt(DiemThiXetTuyen diemThi, String maNganh, String maToHop) {
+        if (diemThi == null || maNganh == null || maToHop == null) {
             return BigDecimal.ZERO;
         }
         
-        // 🔥 Lấy mã tổ hợp (toHop[0]) và tra danh sách môn
-        String maToHop = toHop[0];
+        String key = maNganh + "_" + maToHop;
+        Map<String, Integer> heSoMap = heSoCache.get(key);
+        
         String[] monList = getMonListForToHop(maToHop);
-        
         if (monList == null || monList.length == 0) {
-            // Debug
-            if ("33417".equals(diemThi.getCccd() != null ? diemThi.getCccd().replace("TS_", "") : "")) {
-                System.out.println("    Không tìm thấy mapping cho tổ hợp: " + maToHop);
-            }
             return BigDecimal.ZERO;
         }
         
-        double total = 0;
+        if (heSoMap == null || heSoMap.isEmpty()) {
+            // Không có hệ số, tính cộng thông thường
+            double total = 0;
+            for (String mon : monList) {
+                BigDecimal diem = diemThi.getDiemByMaMon(mon);
+                if (diem == null || diem.compareTo(BigDecimal.ZERO) == 0) {
+                    return BigDecimal.ZERO;
+                }
+                total += diem.doubleValue();
+            }
+            return BigDecimal.valueOf(total).setScale(2, RoundingMode.HALF_UP);
+        }
+        
+        // Tính theo hệ số
+        double tongDiemCoHeSo = 0;
+        int tongHeSo = 0;
+        
         for (String mon : monList) {
+            Integer heSo = heSoMap.get(mon);
+            if (heSo == null) continue;
+            
             BigDecimal diem = diemThi.getDiemByMaMon(mon);
             if (diem == null || diem.compareTo(BigDecimal.ZERO) == 0) {
                 return BigDecimal.ZERO;
             }
-            total += diem.doubleValue();
+            
+            tongDiemCoHeSo += diem.doubleValue() * heSo;
+            tongHeSo += heSo;
         }
         
-        return BigDecimal.valueOf(total).setScale(2, RoundingMode.HALF_UP);
+        if (tongHeSo == 0) {
+            return BigDecimal.ZERO;
+        }
+        
+        double result = (tongDiemCoHeSo / tongHeSo) * 3;
+        return BigDecimal.valueOf(result).setScale(2, RoundingMode.HALF_UP);
     }
     
     public ToHopResult findBestToHop(DiemThiXetTuyen diemThi, String maNganh) {
         List<String[]> toHops = toHopCache.getOrDefault(maNganh, new ArrayList<>());
-        
-        boolean debug = "33417".equals(diemThi.getCccd() != null ? diemThi.getCccd().replace("TS_", "") : "");
-        
-        if (debug) {
-            System.out.println("=== DEBUG ToHopProcessor ===");
-            System.out.println("  CCCD: " + diemThi.getCccd());
-            System.out.println("  Mã ngành: " + maNganh);
-            System.out.println("  Số tổ hợp: " + toHops.size());
-            System.out.println("  Điểm TO: " + diemThi.getToan());
-            System.out.println("  Điểm VA: " + diemThi.getVan());
-            System.out.println("  Điểm SU: " + diemThi.getSu());
-        }
         
         BigDecimal bestScore = BigDecimal.ZERO;
         String bestToHop = null;
         
         for (String[] toHop : toHops) {
             String maToHop = toHop[0];
-            String[] monList = getMonListForToHop(maToHop);
-            
-            if (monList == null) {
-                if (debug) {
-                    System.out.println("  Tổ hợp " + maToHop + ": không có mapping");
-                }
-                continue;
-            }
-            
-            BigDecimal score = calculateThxt(diemThi, toHop);
-            if (debug && score.compareTo(BigDecimal.ZERO) > 0) {
-                System.out.println("  Tổ hợp " + maToHop + " (" + Arrays.toString(monList) + ") = " + score);
-            }
+            BigDecimal score = calculateThxt(diemThi, maNganh, maToHop); 
             if (score.compareTo(bestScore) > 0) {
                 bestScore = score;
                 bestToHop = maToHop;
             }
-        }
-        
-        if (debug) {
-            System.out.println("  Kết quả: " + (bestToHop != null ? bestToHop + " = " + bestScore : "KHÔNG có tổ hợp"));
         }
         
         if (bestToHop == null) return null;

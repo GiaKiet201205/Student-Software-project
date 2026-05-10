@@ -89,85 +89,84 @@ public class XetTuyenService {
         }
     }
     
-    /**
-     * Xét tuyển theo quy tắc: mỗi thí sinh chỉ chọn 1 tổ hợp và 1 phương thức tốt nhất
-     */
-    public void xetTuyen() {
+   public void xetTuyen() {
         System.out.println("=== BẮT ĐẦU XÉT TUYỂN ===");
         long startTime = System.currentTimeMillis();
         
         List<NguyenVongXetTuyen> allNguyenVong = nguyenVongController.getNguyenVongXetTuyen();
-        System.out.println("Tổng số nguyện vọng (các tổ hợp): " + allNguyenVong.size());
+        System.out.println("Tổng số nguyện vọng: " + allNguyenVong.size());
         
-        // Bước 1: Lọc ảo - chọn tổ hợp tốt nhất cho mỗi (CCCD + Mã ngành + Phương thức)
-        List<NguyenVongXetTuyen> afterToHopFilter = filterBestToHop(allNguyenVong);
-        System.out.println("Sau lọc tổ hợp: " + afterToHopFilter.size() + " nguyện vọng");
+        // Bước 1: Lọc tổ hợp và phương thức
+        List<NguyenVongXetTuyen> afterFilter = filterBestToHop(allNguyenVong);
+        afterFilter = filterBestPhuongThuc(afterFilter);
+        System.out.println("Sau lọc: " + afterFilter.size() + " nguyện vọng");
         
-        // Bước 2: Lọc phương thức - chỉ giữ lại phương thức có điểm cao nhất cho mỗi (CCCD + Mã ngành)
-        List<NguyenVongXetTuyen> afterPhuongThucFilter = filterBestPhuongThuc(afterToHopFilter);
-        System.out.println("Sau lọc phương thức: " + afterPhuongThucFilter.size() + " nguyện vọng");
-        
-        // Bước 3: Xét điểm chuẩn
-        List<NguyenVongXetTuyen> nvToUpdate = new ArrayList<>();
-        
-        for (NguyenVongXetTuyen nv : afterPhuongThucFilter) {
-            String key = nv.getMaNganh() + "_" + nv.getPhuongThuc();
-            Map<String, BigDecimal> toHopDiemChuan = diemChuanTheoToHop.getOrDefault(key, new HashMap<>());
-            BigDecimal diemChuan = toHopDiemChuan.get(nv.getTtThm());
-            
-            if (diemChuan == null) {
-                nv.setKetQua("NO_DIEM_CHUAN");
-            } else if (nv.getDiemXetTuyen().compareTo(diemChuan) >= 0) {
-                nv.setKetQua("YES");
-            } else {
-                nv.setKetQua("NO");
-            }
-            nvToUpdate.add(nv);
-        }
-        
-        // Bước 4: Xếp hạng và xét chỉ tiêu (chỉ những NV có kết quả YES)
-        Map<String, List<NguyenVongXetTuyen>> byNganh = nvToUpdate.stream()
-                .filter(nv -> "YES".equals(nv.getKetQua()))
-                .collect(Collectors.groupingBy(NguyenVongXetTuyen::getMaNganh));
-        
-        Map<String, Integer> currentChiTieu = new ConcurrentHashMap<>(chiTieuMap);
-        
-        for (List<NguyenVongXetTuyen> nvList : byNganh.values()) {
-            String maNganh = nvList.get(0).getMaNganh();
-            int chiTieu = currentChiTieu.getOrDefault(maNganh, 0);
-            
-            nvList.sort((a, b) -> b.getDiemXetTuyen().compareTo(a.getDiemXetTuyen()));
-            for (int i = 0; i < nvList.size(); i++) {
-                if (i < chiTieu) {
-                    nvList.get(i).setKetQua("YES");
-                    nvList.get(i).setThuTuXetTuyen(i + 1);
-                } else {
-                    nvList.get(i).setKetQua("NO");
-                }
-            }
-        }
-        
-        // Bước 5: Xét thứ tự nguyện vọng
-        Map<String, List<NguyenVongXetTuyen>> byCccd = nvToUpdate.stream()
+        // 🔥 Bước 2: Sắp xếp theo thứ tự ưu tiên để xử lý tuần tự
+        // Quan trọng: Phải xử lý theo đúng thứ tự nguyện vọng của từng thí sinh
+        Map<String, List<NguyenVongXetTuyen>> byCccd = afterFilter.stream()
                 .collect(Collectors.groupingBy(NguyenVongXetTuyen::getCccd));
         
-        for (List<NguyenVongXetTuyen> nvList : byCccd.values()) {
+        // Tạo map lưu trạng thái đã trúng tuyển của thí sinh
+        Set<String> daTrungTuyen = new HashSet<>();
+        
+        // Danh sách kết quả cuối cùng
+        List<NguyenVongXetTuyen> finalResults = new ArrayList<>();
+        
+        // Xử lý từng thí sinh
+        for (Map.Entry<String, List<NguyenVongXetTuyen>> entry : byCccd.entrySet()) {
+            String cccd = entry.getKey();
+            List<NguyenVongXetTuyen> nvList = entry.getValue();
+            
+            // Sắp xếp theo thứ tự nguyện vọng
             nvList.sort(Comparator.comparing(NguyenVongXetTuyen::getThuTu));
+            
             boolean daDo = false;
             for (NguyenVongXetTuyen nv : nvList) {
                 if (daDo) {
+                    // Đã đỗ nguyện vọng trước, các NV sau không xét
                     nv.setKetQua("KHONG_XET");
-                } else if ("YES".equals(nv.getKetQua())) {
-                    daDo = true;
+                    finalResults.add(nv);
+                    continue;
                 }
+                
+                // Kiểm tra điểm chuẩn
+                String key = nv.getMaNganh() + "_" + nv.getPhuongThuc();
+                Map<String, BigDecimal> toHopDiemChuan = diemChuanTheoToHop.getOrDefault(key, new HashMap<>());
+                BigDecimal diemChuan = toHopDiemChuan.get(nv.getMaToHop());
+                
+                if (diemChuan == null) {
+                    nv.setKetQua("NO_DIEM_CHUAN");
+                    finalResults.add(nv);
+                    continue;
+                }
+                
+                if (nv.getDiemXetTuyen().compareTo(diemChuan) < 0) {
+                    nv.setKetQua("NO");
+                    finalResults.add(nv);
+                    continue;
+                }
+                
+                // Đạt sàn, cần xét chỉ tiêu
+                // 🔥 QUAN TRỌNG: Chỉ chấp nhận nếu còn chỉ tiêu
+                int chiTieu = chiTieuMap.getOrDefault(nv.getMaNganh(), 0);
+                int daChon = countAlreadySelected(finalResults, nv.getMaNganh());
+                
+                if (daChon < chiTieu) {
+                    nv.setKetQua("YES");
+                    daDo = true;
+                    daTrungTuyen.add(cccd);
+                } else {
+                    nv.setKetQua("NO");
+                }
+                finalResults.add(nv);
             }
         }
         
-        // Bước 6: UPDATE BATCH
-        updateBatchOptimized(nvToUpdate);
+        // Bước 3: Cập nhật database
+        updateBatchOptimized(finalResults);
         
-        // Bước 7: Thống kê
-        Map<String, Long> thongKe = nvToUpdate.stream()
+        // Thống kê
+        Map<String, Long> thongKe = finalResults.stream()
                 .collect(Collectors.groupingBy(NguyenVongXetTuyen::getKetQua, Collectors.counting()));
         
         System.out.println("\n=== KẾT QUẢ XÉT TUYỂN ===");
@@ -175,6 +174,12 @@ public class XetTuyenService {
         System.out.println("Tổng thời gian: " + (System.currentTimeMillis() - startTime) + "ms");
     }
 
+    // Helper đếm số thí sinh đã trúng tuyển vào ngành
+    private int countAlreadySelected(List<NguyenVongXetTuyen> list, String maNganh) {
+        return (int) list.stream()
+                .filter(nv -> nv.getMaNganh().equals(maNganh) && "YES".equals(nv.getKetQua()))
+                .count();
+    }
     /**
      * Lọc phương thức: chỉ giữ lại phương thức có điểm cao nhất cho mỗi (CCCD + Mã ngành)
      * @param list Danh sách sau khi lọc tổ hợp
@@ -237,7 +242,7 @@ public class XetTuyenService {
             Map<String, BigDecimal> toHopDiemChuan = diemChuanTheoToHop.getOrDefault(key, new HashMap<>());
             
             List<NguyenVongXetTuyen> validList = nvList.stream()
-                    .filter(nv -> nv.getTtThm() != null && toHopDiemChuan.containsKey(nv.getTtThm()))
+                    .filter(nv -> nv.getMaToHop() != null && toHopDiemChuan.containsKey(nv.getMaToHop()))
                     .collect(Collectors.toList());
             
             if (validList.isEmpty()) {

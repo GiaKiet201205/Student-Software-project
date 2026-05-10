@@ -30,15 +30,8 @@ public class NguyenVongXetTuyenRepository extends BaseRepository<NguyenVongXetTu
         
         String sql = "INSERT INTO xt_nguyenvongxettuyen " +
             "(nn_cccd, nv_manganh, nv_tt, diem_thxt, diem_utqd, diem_cong, diem_xettuyen, " +
-            "nv_keys, tt_phuongthuc, tt_thm, nv_ketqua, nv_rank) " +
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
-            "ON DUPLICATE KEY UPDATE " +
-            "diem_thxt = VALUES(diem_thxt), " +
-            "diem_utqd = VALUES(diem_utqd), " +
-            "diem_cong = VALUES(diem_cong), " +
-            "diem_xettuyen = VALUES(diem_xettuyen), " +
-            "nv_ketqua = VALUES(nv_ketqua), " +
-            "nv_rank = VALUES(nv_rank)";
+            "nv_keys, tt_phuongthuc, tt_thm,  nv_matohop, nv_ketqua, nv_rank) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " ; 
         
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Transaction tx = session.beginTransaction();
@@ -56,9 +49,10 @@ public class NguyenVongXetTuyenRepository extends BaseRepository<NguyenVongXetTu
                         stmt.setBigDecimal(7, nv.getDiemXetTuyen());
                         stmt.setString(8, nv.getNvKeys());
                         stmt.setString(9, nv.getPhuongThuc());
-                        stmt.setString(10, nv.getTtThm());
-                        stmt.setString(11, nv.getKetQua());
-                        stmt.setInt(12, nv.getThuTuXetTuyen() != null ? nv.getThuTuXetTuyen() : 0);
+                        stmt.setString(10, nv.getTtThm());  
+                        stmt.setString(11, nv.getMaToHop()); 
+                        stmt.setString(12, nv.getKetQua());
+                        stmt.setInt(13, nv.getThuTuXetTuyen() != null ? nv.getThuTuXetTuyen() : 0);
                         stmt.addBatch();
                         
                         if (++count % batchSize == 0) {
