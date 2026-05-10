@@ -9,10 +9,13 @@ import com.ui.common.BaseTable;
 import com.ui.dialog.EditExamineeDialog;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
+import java.io.File;
 import java.util.List;
+import java.awt.Window;
 
 public class ExamineeManagementFrame extends BasePanel {
 
@@ -22,9 +25,10 @@ public class ExamineeManagementFrame extends BasePanel {
     private BaseTable table;
     private DefaultTableModel model;
     private JLabel lblPaginationInfo;
+    private JDialog loadingDialog;
 
     private int currentPage = 1;
-    private int pageSize = 3;
+    private int pageSize = 20;
     private int totalPages;
     private String keywork = "";
 
@@ -134,7 +138,7 @@ public class ExamineeManagementFrame extends BasePanel {
         });
 
         btnImport.addActionListener(e -> {
-            importUserFromExcel();
+            handleImportExcel();
         });
 
         btnDelete.addActionListener(e -> {
@@ -280,6 +284,103 @@ public class ExamineeManagementFrame extends BasePanel {
                     ts.getDoiTuong(),
                     ts.getKhuVuc()
             });
+        }
+    }
+
+    private void handleImportExcel() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Chọn file Excel");
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Excel Files (*.xlsx)", "xlsx");
+        fileChooser.setFileFilter(filter);
+
+        int userSelection = fileChooser.showOpenDialog(this);
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File fileToImport = fileChooser.getSelectedFile();
+            executeImportInBackground(fileToImport);
+        }
+    }
+
+    private void executeImportInBackground(File file) {
+        System.out.println("Bắt đầu xử lý import bằng SAX & StatelessSession...");
+        setImportingState(true);
+
+        SwingWorker<Boolean, Void> worker = new SwingWorker<Boolean, Void>() {
+            @Override
+            protected Boolean doInBackground() throws Exception {
+
+                return controller.importFromExcelFast(file);
+
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    boolean success = get();
+                    if (success) {
+                        JOptionPane.showMessageDialog(ExamineeManagementFrame.this,
+                                "Import dữ liệu thành công với tốc độ cao!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                        loadData();
+                    } else {
+                        JOptionPane.showMessageDialog(ExamineeManagementFrame.this,
+                                "Có lỗi xảy ra trong quá trình Import. Vui lòng xem Log console.", "Thất bại", JOptionPane.ERROR_MESSAGE);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    hideLoadingDialog();
+                    setImportingState(false);
+                }
+            }
+        };
+
+        worker.execute();
+
+        SwingUtilities.invokeLater(this::showLoadingDialog);
+    }
+
+    private void setImportingState(boolean importing) {
+        btnImport.setEnabled(!importing);
+        btnEdit.setEnabled(!importing);
+        btnDelete.setEnabled(!importing);
+        btnSearch.setEnabled(!importing);
+        btnPrev.setEnabled(!importing);
+        btnNext.setEnabled(!importing);
+        txtSearch.setEnabled(!importing);
+        table.setEnabled(!importing);
+
+        setCursor(importing
+                ? Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR)
+                : Cursor.getDefaultCursor());
+    }
+
+    private void showLoadingDialog() {
+        Window owner = SwingUtilities.getWindowAncestor(this);
+        loadingDialog = new JDialog(owner, "Đang import", Dialog.ModalityType.APPLICATION_MODAL);
+        loadingDialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+        loadingDialog.setResizable(false);
+
+        JPanel content = new JPanel(new BorderLayout(10, 10));
+        content.setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
+
+        JLabel lbl = new JLabel("Đang import dữ liệu, vui lòng chờ...");
+        JProgressBar bar = new JProgressBar();
+        bar.setIndeterminate(true);
+
+        content.add(lbl, BorderLayout.NORTH);
+        content.add(bar, BorderLayout.CENTER);
+
+        loadingDialog.setContentPane(content);
+        loadingDialog.pack();
+        loadingDialog.setLocationRelativeTo(this);
+
+        // Modal dialog sẽ chặn thao tác các chức năng khác
+        loadingDialog.setVisible(true);
+    }
+
+    private void hideLoadingDialog() {
+        if (loadingDialog != null) {
+            loadingDialog.dispose();
+            loadingDialog = null;
         }
     }
 

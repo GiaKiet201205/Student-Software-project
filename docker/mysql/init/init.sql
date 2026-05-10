@@ -27,7 +27,7 @@ CREATE TABLE `xt_bangquydoi` (
   `d_diemc` decimal(6,2) DEFAULT NULL,
   `d_diemd` decimal(6,2) DEFAULT NULL,
   `d_maquydoi` varchar(45) DEFAULT NULL,
-  `d_phanvi` varchar(45) DEFAULT NULL,
+  `d_phanvi` varchar(45) DEFAULT NULL,n
   PRIMARY KEY (`idqd`),
   UNIQUE KEY `d_maquydoi_UNIQUE` (`d_maquydoi`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -248,7 +248,7 @@ CREATE TABLE `xt_thisinhxettuyen25` (
   `password` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL,
   `gioi_tinh` varchar(10) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
   `email` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL,
-  `noi_sinh` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
+  `noi_sinh` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
   `updated_at` date DEFAULT NULL,
   `doi_tuong` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
   `khu_vuc` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,

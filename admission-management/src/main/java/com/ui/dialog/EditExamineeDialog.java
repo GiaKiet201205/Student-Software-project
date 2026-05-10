@@ -214,20 +214,11 @@ public class EditExamineeDialog extends JDialog {
             if (txtCCCD.getText().trim().isEmpty()) {
                 showError("CCCD không được để trống"); return;
             }
-            if (!ValidateUtil.isNumber(txtCCCD.getText().trim())) {
-                showError("CCCD phải là số"); return;
-            }
             if (txtPassword.getText().trim().isEmpty()) {
                 showError("Mật khẩu không được để trống"); return;
             }
             if (txtSBD.getText().trim().isEmpty()) {
                 showError("Số báo danh không được để trống"); return;
-            }
-            if (!ValidateUtil.isNumber(txtSBD.getText().trim())) {
-                showError("Số báo danh phải là số"); return;
-            }
-            if (txtDoiTuongUuTien.getText().trim().isEmpty()) {
-                showError("Đối tượng ưu tiên không được để trống"); return;
             }
 
             ThiSinhXetTuyen25 ts = controller.getById(userId);
