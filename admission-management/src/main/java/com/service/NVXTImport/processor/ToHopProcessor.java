@@ -87,7 +87,7 @@ public class ToHopProcessor {
     }
     
     /**
-     * Load hệ số môn từ database xt_nganh_tohop
+     * Load hệ số môn từ database
      */
     private void loadHeSoFromDatabase() {
         List<NganhToHop> list = nganhToHopController.getAll();

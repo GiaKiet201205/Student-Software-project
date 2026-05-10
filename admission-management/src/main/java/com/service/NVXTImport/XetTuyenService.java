@@ -96,23 +96,21 @@ public class XetTuyenService {
         List<NguyenVongXetTuyen> allNguyenVong = nguyenVongController.getNguyenVongXetTuyen();
         System.out.println("Tổng số nguyện vọng: " + allNguyenVong.size());
         
-        // Bước 1: Lọc tổ hợp và phương thức
+        // Lọc tổ hợp và phương thức
         List<NguyenVongXetTuyen> afterFilter = filterBestToHop(allNguyenVong);
         afterFilter = filterBestPhuongThuc(afterFilter);
         System.out.println("Sau lọc: " + afterFilter.size() + " nguyện vọng");
         
-        // 🔥 Bước 2: Sắp xếp theo thứ tự ưu tiên để xử lý tuần tự
-        // Quan trọng: Phải xử lý theo đúng thứ tự nguyện vọng của từng thí sinh
+        // Sắp xếp theo thứ tự ưu tiên để xử lý tuần tự
+        // Phải xử lý theo đúng thứ tự nguyện vọng của từng thí sinh
         Map<String, List<NguyenVongXetTuyen>> byCccd = afterFilter.stream()
                 .collect(Collectors.groupingBy(NguyenVongXetTuyen::getCccd));
         
-        // Tạo map lưu trạng thái đã trúng tuyển của thí sinh
         Set<String> daTrungTuyen = new HashSet<>();
         
         // Danh sách kết quả cuối cùng
         List<NguyenVongXetTuyen> finalResults = new ArrayList<>();
         
-        // Xử lý từng thí sinh
         for (Map.Entry<String, List<NguyenVongXetTuyen>> entry : byCccd.entrySet()) {
             String cccd = entry.getKey();
             List<NguyenVongXetTuyen> nvList = entry.getValue();
@@ -123,7 +121,6 @@ public class XetTuyenService {
             boolean daDo = false;
             for (NguyenVongXetTuyen nv : nvList) {
                 if (daDo) {
-                    // Đã đỗ nguyện vọng trước, các NV sau không xét
                     nv.setKetQua("KHONG_XET");
                     finalResults.add(nv);
                     continue;
@@ -147,7 +144,6 @@ public class XetTuyenService {
                 }
                 
                 // Đạt sàn, cần xét chỉ tiêu
-                // 🔥 QUAN TRỌNG: Chỉ chấp nhận nếu còn chỉ tiêu
                 int chiTieu = chiTieuMap.getOrDefault(nv.getMaNganh(), 0);
                 int daChon = countAlreadySelected(finalResults, nv.getMaNganh());
                 
@@ -160,9 +156,7 @@ public class XetTuyenService {
                 }
                 finalResults.add(nv);
             }
-        }
-        
-        // Bước 3: Cập nhật database
+        }       
         updateBatchOptimized(finalResults);
         
         // Thống kê
@@ -174,12 +168,12 @@ public class XetTuyenService {
         System.out.println("Tổng thời gian: " + (System.currentTimeMillis() - startTime) + "ms");
     }
 
-    // Helper đếm số thí sinh đã trúng tuyển vào ngành
     private int countAlreadySelected(List<NguyenVongXetTuyen> list, String maNganh) {
         return (int) list.stream()
                 .filter(nv -> nv.getMaNganh().equals(maNganh) && "YES".equals(nv.getKetQua()))
                 .count();
     }
+    
     /**
      * Lọc phương thức: chỉ giữ lại phương thức có điểm cao nhất cho mỗi (CCCD + Mã ngành)
      * @param list Danh sách sau khi lọc tổ hợp
@@ -196,7 +190,6 @@ public class XetTuyenService {
         for (List<NguyenVongXetTuyen> nvList : groupByCccdNganh.values()) {
             if (nvList.isEmpty()) continue;
             
-            // Nếu chỉ có 1 phương thức, giữ nguyên
             if (nvList.size() == 1) {
                 result.add(nvList.get(0));
                 continue;
