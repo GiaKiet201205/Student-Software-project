@@ -1,137 +1,163 @@
 package com.ui.dialog;
 
-import com.config.AppConfig;
 import com.entity.Nganh;
-import com.ui.common.BaseButton;
-
 import javax.swing.*;
 import java.awt.*;
+import java.math.BigDecimal;
 
 public class NganhDialog extends JDialog {
-    private JTextField txtMaNganh, txtTenNganh, txtToHopGoc;
-    private JTextField txtChiTieu, txtDiemSan, txtDiemTrungTuyen;
+    private JTextField txtMaNganh, txtTenNganh, txtToHopGoc, txtChiTieu, txtDiemSan, txtDiemChuan;
+    
     private JComboBox<String> cbTuyenThang, cbDgnl, cbThpt, cbVsat;
-    private JTextField txtSlXtt, txtSlDgnl, txtSlVsat, txtSlThpt;
+    private JTextField txtSlXtt, txtSlDgnl, txtSlThpt, txtSlVsat;
+    
+    private Nganh resultNganh;
+    private Nganh editData;
 
-    private Nganh nganhResult = null;
-    private boolean isEditMode = false;
-
-    public NganhDialog(Window owner, Nganh nganhEdit) {
-        super(owner, "Thông tin Ngành Tuyển Sinh", Dialog.ModalityType.APPLICATION_MODAL);
-        this.isEditMode = (nganhEdit != null);
-
-        initComponents();
-
-        if (isEditMode) {
-            txtMaNganh.setText(nganhEdit.getMaNganh());
-            txtMaNganh.setEditable(false); // Khóa không cho sửa Mã Ngành
-            txtTenNganh.setText(nganhEdit.getTenNganh());
-            txtToHopGoc.setText(nganhEdit.getToHopGoc());
-            
-            txtChiTieu.setText(String.valueOf(nganhEdit.getChiTieu()));
-            txtDiemSan.setText(String.valueOf(nganhEdit.getDiemSan()));
-            txtDiemTrungTuyen.setText(String.valueOf(nganhEdit.getDiemTrungTuyen()));
-
-            cbTuyenThang.setSelectedItem(nganhEdit.getTuyenThang());
-            cbDgnl.setSelectedItem(nganhEdit.getDgnl());
-            cbThpt.setSelectedItem(nganhEdit.getThpt());
-            cbVsat.setSelectedItem(nganhEdit.getVsat());
-
-            txtSlXtt.setText(String.valueOf(nganhEdit.getSlXtt()));
-            txtSlDgnl.setText(String.valueOf(nganhEdit.getSlDgnl()));
-            txtSlVsat.setText(String.valueOf(nganhEdit.getSlVsat()));
-            txtSlThpt.setText(String.valueOf(nganhEdit.getSlThpt()));
-        }
-
+    public NganhDialog(Window owner, Nganh editData) {
+        super(owner, editData == null ? "Thêm Ngành Mới" : "Sửa Thông Tin Ngành", ModalityType.APPLICATION_MODAL);
+        this.editData = editData;
+        initializeComponents();
+        if (editData != null) fillData();
         pack();
         setLocationRelativeTo(owner);
     }
 
-    private void initComponents() {
-        // Tạo lưới 7 hàng, 4 cột (mỗi bên là 1 cặp Label - Input)
-        JPanel panel = new JPanel(new GridLayout(7, 4, 15, 15));
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        panel.setBackground(AppConfig.COLOR_WHITE);
+    private void initializeComponents() {
+        setLayout(new BorderLayout(10, 10));
+        
+        JPanel panel = new JPanel(new GridLayout(14, 2, 8, 8));
+        panel.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
 
-        String[] yesNoOptions = {"Y", "N"};
+        panel.add(new JLabel("Mã ngành:"));
+        txtMaNganh = new JTextField(20);
+        panel.add(txtMaNganh);
 
-        // Hàng 1
-        panel.add(new JLabel("Mã Ngành:")); txtMaNganh = new JTextField(); panel.add(txtMaNganh);
-        panel.add(new JLabel("Tên Ngành:")); txtTenNganh = new JTextField(); panel.add(txtTenNganh);
-        // Hàng 2
-        panel.add(new JLabel("Tổ Hợp Gốc:")); txtToHopGoc = new JTextField(); panel.add(txtToHopGoc);
-        panel.add(new JLabel("Chỉ Tiêu:")); txtChiTieu = new JTextField("0"); panel.add(txtChiTieu);
-        // Hàng 3
-        panel.add(new JLabel("Điểm Sàn:")); txtDiemSan = new JTextField("0.0"); panel.add(txtDiemSan);
-        panel.add(new JLabel("Điểm Trúng Tuyển:")); txtDiemTrungTuyen = new JTextField("0.0"); panel.add(txtDiemTrungTuyen);
-        // Hàng 4
-        panel.add(new JLabel("Tuyển Thẳng (Y/N):")); cbTuyenThang = new JComboBox<>(yesNoOptions); panel.add(cbTuyenThang);
-        panel.add(new JLabel("ĐGNL (Y/N):")); cbDgnl = new JComboBox<>(yesNoOptions); panel.add(cbDgnl);
-        // Hàng 5
-        panel.add(new JLabel("THPT (Y/N):")); cbThpt = new JComboBox<>(yesNoOptions); panel.add(cbThpt);
-        panel.add(new JLabel("V-SAT (Y/N):")); cbVsat = new JComboBox<>(yesNoOptions); panel.add(cbVsat);
-        // Hàng 6
-        panel.add(new JLabel("SL Xét Tuyển Thẳng:")); txtSlXtt = new JTextField("0"); panel.add(txtSlXtt);
-        panel.add(new JLabel("SL ĐGNL:")); txtSlDgnl = new JTextField("0"); panel.add(txtSlDgnl);
-        // Hàng 7
-        panel.add(new JLabel("SL V-SAT:")); txtSlVsat = new JTextField("0"); panel.add(txtSlVsat);
-        panel.add(new JLabel("SL THPT:")); txtSlThpt = new JTextField("0"); panel.add(txtSlThpt);
+        panel.add(new JLabel("Tên ngành:"));
+        txtTenNganh = new JTextField(20);
+        panel.add(txtTenNganh);
 
-        BaseButton btnSave = new BaseButton("Lưu");
-        BaseButton btnCancel = new BaseButton("Hủy", AppConfig.COLOR_DANGER);
+        panel.add(new JLabel("Tổ hợp gốc:"));
+        txtToHopGoc = new JTextField(20);
+        panel.add(txtToHopGoc);
 
-        btnSave.addActionListener(e -> saveAction());
+        panel.add(new JLabel("Chỉ tiêu:"));
+        txtChiTieu = new JTextField("0");
+        panel.add(txtChiTieu);
+
+        panel.add(new JLabel("Điểm sàn:"));
+        txtDiemSan = new JTextField("0.0");
+        panel.add(txtDiemSan);
+
+        panel.add(new JLabel("Điểm chuẩn:"));
+        txtDiemChuan = new JTextField("0.0");
+        panel.add(txtDiemChuan);
+
+        // 7-14: Các trường mở rộng (Dùng JComboBox cho đẹp)
+        String[] optionsYN = {"Y", "N"};
+
+        panel.add(new JLabel("Xét Tuyển Thẳng (Y/N):"));
+        cbTuyenThang = new JComboBox<>(optionsYN);
+        panel.add(cbTuyenThang);
+
+        panel.add(new JLabel("SL Tuyển Thẳng:"));
+        txtSlXtt = new JTextField("0");
+        panel.add(txtSlXtt);
+
+        panel.add(new JLabel("Xét ĐGNL (Y/N):"));
+        cbDgnl = new JComboBox<>(optionsYN);
+        panel.add(cbDgnl);
+
+        panel.add(new JLabel("SL ĐGNL:"));
+        txtSlDgnl = new JTextField("0");
+        panel.add(txtSlDgnl);
+
+        panel.add(new JLabel("Xét THPT (Y/N):"));
+        cbThpt = new JComboBox<>(optionsYN);
+        panel.add(cbThpt);
+
+        panel.add(new JLabel("SL THPT:"));
+        txtSlThpt = new JTextField("0");
+        panel.add(txtSlThpt);
+
+        panel.add(new JLabel("Xét VSAT (Y/N):"));
+        cbVsat = new JComboBox<>(optionsYN);
+        panel.add(cbVsat);
+
+        panel.add(new JLabel("SL VSAT:"));
+        txtSlVsat = new JTextField("0");
+        panel.add(txtSlVsat);
+
+        add(panel, BorderLayout.CENTER);
+
+        JPanel btnPanel = new JPanel();
+        JButton btnSave = new JButton("Lưu");
+        JButton btnCancel = new JButton("Hủy");
+
+        btnSave.addActionListener(e -> handleSave());
         btnCancel.addActionListener(e -> dispose());
 
-        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        btnPanel.setBackground(AppConfig.COLOR_WHITE);
         btnPanel.add(btnSave);
         btnPanel.add(btnCancel);
-
-        setLayout(new BorderLayout());
-        add(panel, BorderLayout.CENTER);
         add(btnPanel, BorderLayout.SOUTH);
     }
 
-    private void saveAction() {
-        if (txtMaNganh.getText().trim().isEmpty() || txtTenNganh.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập Mã và Tên ngành!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
+    private void fillData() {
+        txtMaNganh.setText(editData.getMaNganh());
+        txtTenNganh.setText(editData.getTenNganh());
+        txtToHopGoc.setText(editData.getToHopGoc());
+        txtChiTieu.setText(String.valueOf(editData.getChiTieu()));
+        txtDiemSan.setText(editData.getDiemSan() != null ? editData.getDiemSan().toString() : "0.0");
+        txtDiemChuan.setText(editData.getDiemTrungTuyen() != null ? editData.getDiemTrungTuyen().toString() : "0.0");
+        
+        cbTuyenThang.setSelectedItem(editData.getTuyenThang() != null ? editData.getTuyenThang() : "N");
+        cbDgnl.setSelectedItem(editData.getDgnl() != null ? editData.getDgnl() : "N");
+        cbThpt.setSelectedItem(editData.getThpt() != null ? editData.getThpt() : "N");
+        cbVsat.setSelectedItem(editData.getVsat() != null ? editData.getVsat() : "N");
 
+        txtSlXtt.setText(editData.getSlXtt() != null ? String.valueOf(editData.getSlXtt()) : "0");
+        txtSlDgnl.setText(editData.getSlDgnl() != null ? String.valueOf(editData.getSlDgnl()) : "0");
+        txtSlThpt.setText(editData.getSlThpt() != null ? editData.getSlThpt() : "0"); // Trong DB cột này là String
+        txtSlVsat.setText(editData.getSlVsat() != null ? String.valueOf(editData.getSlVsat()) : "0");
+
+        txtMaNganh.setEditable(false);
+    }
+
+    private void handleSave() {
         try {
-            nganhResult = new Nganh();
-            nganhResult.setMaNganh(txtMaNganh.getText().trim());
-            nganhResult.setTenNganh(txtTenNganh.getText().trim());
-            nganhResult.setToHopGoc(txtToHopGoc.getText().trim());
+            resultNganh = new Nganh();
             
-            // Ép kiểu các trường số
-nganhResult.setChiTieu(Integer.parseInt(txtChiTieu.getText().trim()));
-            nganhResult.setDiemSan(new java.math.BigDecimal(txtDiemSan.getText().trim()));
-            nganhResult.setDiemTrungTuyen(new java.math.BigDecimal(txtDiemTrungTuyen.getText().trim()));
+            if (editData != null) {
+                resultNganh.setIdNganh(editData.getIdNganh());
+            }
 
-            nganhResult.setTuyenThang((String) cbTuyenThang.getSelectedItem());
-            nganhResult.setDgnl((String) cbDgnl.getSelectedItem());
-            nganhResult.setThpt((String) cbThpt.getSelectedItem());
-            nganhResult.setVsat((String) cbVsat.getSelectedItem());
+            resultNganh.setMaNganh(txtMaNganh.getText().trim());
+            resultNganh.setTenNganh(txtTenNganh.getText().trim());
+            resultNganh.setToHopGoc(txtToHopGoc.getText().trim());
             
-            nganhResult.setSlXtt(Integer.parseInt(txtSlXtt.getText().trim()));
-            nganhResult.setSlDgnl(Integer.parseInt(txtSlDgnl.getText().trim()));
-            nganhResult.setSlVsat(Integer.parseInt(txtSlVsat.getText().trim()));
+            resultNganh.setChiTieu(Integer.parseInt(txtChiTieu.getText().trim()));
+            resultNganh.setDiemSan(new BigDecimal(txtDiemSan.getText().trim()));
+            resultNganh.setDiemTrungTuyen(new BigDecimal(txtDiemChuan.getText().trim()));
             
-            // Theo cấu trúc database init.sql của bạn, trường sl_thpt là kiểu varchar(45) thay vì int
-            // Nên mình để set thẳng text vào nhé
-            nganhResult.setSlThpt(txtSlThpt.getText().trim());
+            resultNganh.setTuyenThang((String) cbTuyenThang.getSelectedItem());
+            resultNganh.setDgnl((String) cbDgnl.getSelectedItem());
+            resultNganh.setThpt((String) cbThpt.getSelectedItem());
+            resultNganh.setVsat((String) cbVsat.getSelectedItem());
 
-            dispose(); // Đóng cửa sổ sau khi gán xong
+            resultNganh.setSlXtt(Integer.parseInt(txtSlXtt.getText().trim()));
+            resultNganh.setSlDgnl(Integer.parseInt(txtSlDgnl.getText().trim()));
+            resultNganh.setSlVsat(Integer.parseInt(txtSlVsat.getText().trim()));
+            resultNganh.setSlThpt(txtSlThpt.getText().trim()); // Entity khai báo cột này là String
 
+            dispose();
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập đúng định dạng số cho Chỉ tiêu, Điểm và Số lượng!", "Lỗi định dạng", JOptionPane.ERROR_MESSAGE);
-            nganhResult = null; // Tránh lưu rác
+            JOptionPane.showMessageDialog(this, "Lỗi: Các ô Chỉ tiêu, Điểm và Số lượng phải là SỐ!", "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Có lỗi xảy ra khi lưu dữ liệu!", "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     public Nganh getNganhResult() {
-        return nganhResult;
+        return resultNganh;
     }
 }

@@ -9,22 +9,29 @@ import com.ui.common.BaseTable;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
+import javax.swing.RowFilter;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.util.List;
 
 public class NganhPanel extends BasePanel {
     private DefaultTableModel defaultTableModel;
     private BaseTable baseTable;
-    private final NganhController controller; // Khai báo Controller
+    private final NganhController controller;
 
-    private BaseButton addButton, importButton, editButton, deleteButton;
+    // Khai báo thêm 2 nút import mới
+    private BaseButton addButton, importNganhBtn, importDiemSanBtn, importChiTieuBtn, editButton, deleteButton;
+    
+    private JTextField txtSearch;
+    private TableRowSorter<DefaultTableModel> rowSorter;
 
     public NganhPanel() {
         super(AppConfig.COLOR_BACKGROUND, 0);
         setLayout(new BorderLayout());
         initializeComponents();
         
-        // Gắn Controller vào Panel và gọi load data
         this.controller = new NganhController(this);
         this.controller.loadData();
         setupActionListeners();
@@ -44,12 +51,23 @@ public class NganhPanel extends BasePanel {
         titleLabel.setForeground(AppConfig.COLOR_TEXT_MAIN);
         headerPanel.add(titleLabel, BorderLayout.WEST);
 
+        // Khởi tạo các nút với màu sắc nhận diện khác nhau
+        importNganhBtn = new BaseButton(" Nhập Ngành Gốc ", new Color(40, 167, 69)); // Xanh lá
+        importDiemSanBtn = new BaseButton(" Nhập Điểm Sàn ", new Color(23, 162, 184)); // Xanh lơ
+        importChiTieuBtn = new BaseButton(" Nhập Chỉ Tiêu ", new Color(253, 126, 20)); // Cam
         addButton = new BaseButton(" + Thêm Ngành ");
-        importButton = new BaseButton(" Nhập Excel ", new Color(40, 167, 69));
+        
+        txtSearch = new JTextField();
+        txtSearch.setPreferredSize(new Dimension(180, 32));
+        txtSearch.setToolTipText("Nhập từ khóa tìm kiếm...");
         
         JPanel headerActionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         headerActionPanel.setOpaque(false);
-        headerActionPanel.add(importButton);
+        headerActionPanel.add(new JLabel("Tìm kiếm: "));
+        headerActionPanel.add(txtSearch);
+        headerActionPanel.add(importNganhBtn);
+        headerActionPanel.add(importDiemSanBtn);
+        headerActionPanel.add(importChiTieuBtn);
         headerActionPanel.add(addButton);
         
         headerPanel.add(headerActionPanel, BorderLayout.EAST);
@@ -70,6 +88,9 @@ public class NganhPanel extends BasePanel {
         };
         baseTable = new BaseTable(defaultTableModel);
         baseTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        
+        rowSorter = new TableRowSorter<>(defaultTableModel);
+        baseTable.setRowSorter(rowSorter);
         
         int[] widths = {100, 250, 100, 80, 80, 120, 100, 80, 80, 80, 80, 80, 80, 80};
         for(int i = 0; i < widths.length; i++) {
@@ -115,6 +136,28 @@ public class NganhPanel extends BasePanel {
         addButton.addActionListener(e -> controller.handleAdd());
         editButton.addActionListener(e -> controller.handleEdit());
         deleteButton.addActionListener(e -> controller.handleDelete());
-        importButton.addActionListener(e -> controller.handleImport());
+        
+        // Cấu hình sự kiện cho 3 nút Import riêng biệt
+        importNganhBtn.addActionListener(e -> controller.handleImport());
+        importDiemSanBtn.addActionListener(e -> controller.handleImportDiemSan());
+        importChiTieuBtn.addActionListener(e -> controller.handleImportChiTieu());
+        
+        txtSearch.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) { filterTable(); }
+            @Override
+            public void removeUpdate(DocumentEvent e) { filterTable(); }
+            @Override
+            public void changedUpdate(DocumentEvent e) { filterTable(); }
+        });
+    }
+    
+    private void filterTable() {
+        String text = txtSearch.getText();
+        if (text.trim().length() == 0) {
+            rowSorter.setRowFilter(null);
+        } else {
+            rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));
+        }
     }
 }
