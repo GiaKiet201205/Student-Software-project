@@ -31,7 +31,7 @@ public class NavBarPanel extends BasePanel {
 
     addNavButton("Ngành - Tổ Hợp", "NGANH_TOHOP");
     addNavButton("Điểm Thí Sinh", "DIEM_THI");
-
+    addNavButton("Bảng Quy Đổi", "BANG_QUY_DOI");
     addLogoutButton();
 
   }

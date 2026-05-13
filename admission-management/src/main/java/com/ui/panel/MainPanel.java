@@ -24,6 +24,7 @@ public class MainPanel extends JPanel {
     //Nam
     add(new NganhToHopPanel(), "NGANH_TOHOP");
     add(new DiemThiPanel(), "DIEM_THI");
+    add(new BangQuyDoiPanel(), "BANG_QUY_DOI");
   }
 
   public void showCard(String cardName) {
