@@ -528,6 +528,7 @@ public class ExcelImportDCXTService {
             if (diemUuTien == 0 && diemChungChi == 0) continue;
             
             double diemTong = diemUuTien + diemChungChi;
+            if (diemTong > 3) diemTong = 3;
             
             for (String maNganh : mapNV.get(cccd)) {
                 List<String[]> toHops = mapTH.get(maNganh);
