@@ -9,22 +9,29 @@ import com.ui.common.BaseTable;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
+import javax.swing.RowFilter;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.util.List;
 
 public class ToHopPanel extends BasePanel {
     private DefaultTableModel defaultTableModel;
     private BaseTable baseTable;
-    private final ToHopController controller; // Khai báo Controller
+    private final ToHopController controller;
 
     private BaseButton addButton, importButton, editButton, deleteButton;
+    
+    // Thêm các biến cho chức năng tìm kiếm
+    private JTextField txtSearch;
+    private TableRowSorter<DefaultTableModel> rowSorter;
 
     public ToHopPanel() {
         super(AppConfig.COLOR_BACKGROUND, 0);
         setLayout(new BorderLayout());
         initializeComponents();
         
-        // Gắn Controller vào Panel và gọi load data
         this.controller = new ToHopController(this);
         this.controller.loadData();
         setupActionListeners();
@@ -47,8 +54,15 @@ public class ToHopPanel extends BasePanel {
         addButton = new BaseButton(" + Thêm Tổ Hợp ");
         importButton = new BaseButton(" Nhập Excel ", new Color(40, 167, 69));
         
+        // Khởi tạo thanh tìm kiếm
+        txtSearch = new JTextField();
+        txtSearch.setPreferredSize(new Dimension(200, 32));
+        txtSearch.setToolTipText("Nhập từ khóa tìm kiếm...");
+        
         JPanel headerActionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         headerActionPanel.setOpaque(false);
+        headerActionPanel.add(new JLabel("Tìm kiếm: "));
+        headerActionPanel.add(txtSearch);
         headerActionPanel.add(importButton);
         headerActionPanel.add(addButton);
         
@@ -64,6 +78,9 @@ public class ToHopPanel extends BasePanel {
             public boolean isCellEditable(int row, int column) { return false; }
         };
         baseTable = new BaseTable(defaultTableModel);
+        
+        rowSorter = new TableRowSorter<>(defaultTableModel);
+        baseTable.setRowSorter(rowSorter);
         
         JScrollPane scrollPane = new JScrollPane(baseTable);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
@@ -85,7 +102,6 @@ public class ToHopPanel extends BasePanel {
         add(mainContentPanel, BorderLayout.CENTER);
     }
 
-    // Các hàm công khai (public) để Controller có thể giao tiếp với View
     public BaseTable getBaseTable() { return baseTable; }
     public DefaultTableModel getDefaultTableModel() { return defaultTableModel; }
 
@@ -96,11 +112,28 @@ public class ToHopPanel extends BasePanel {
         }
     }
 
-    // Gắn sự kiện: Bấm nút thì gọi Controller tương ứng
     private void setupActionListeners() {
         addButton.addActionListener(e -> controller.handleAdd());
         editButton.addActionListener(e -> controller.handleEdit());
         deleteButton.addActionListener(e -> controller.handleDelete());
         importButton.addActionListener(e -> controller.handleImport());
+        
+        txtSearch.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) { filterTable(); }
+            @Override
+            public void removeUpdate(DocumentEvent e) { filterTable(); }
+            @Override
+            public void changedUpdate(DocumentEvent e) { filterTable(); }
+        });
+    }
+
+    private void filterTable() {
+        String text = txtSearch.getText();
+        if (text.trim().length() == 0) {
+            rowSorter.setRowFilter(null);
+        } else {
+            rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));
+        }
     }
 }

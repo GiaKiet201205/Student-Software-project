@@ -10,15 +10,12 @@ import java.awt.Color;
 import java.awt.Font;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.math.BigDecimal;
-
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.config.AppConfig;
 import com.controller.DiemCongXetTuyenController;
 import com.entity.DiemCongXetTuyen;
+import com.service.ExcelImportDCXTService;
 import com.ui.common.BasePanel;
 import com.ui.common.BaseTable;
 import com.ui.data_form.DataFormDiemCongXetTuyen;
@@ -95,7 +92,7 @@ public class DiemCongXetTuyenPanel extends BasePanel {
         // Table
         BasePanel tablePanel = new BasePanel(AppConfig.COLOR_WHITE, 15);
         tablePanel.setLayout(new BorderLayout());
-        String[] columns = {"iddiemcong", "ts_cccd", "manganh", "matohop", "phuongthuc", "diemCC", "diemUtxt", "diemTong", "ghichu", "dc_keys"};
+        String[] columns = {"ID", "CCCD", "Mã ngành", "Mã tổ hợp", "Phương thức", "Điểm CC", "Điểm Utxt", "Điểm Tổng", "Ghi chú", "Keys"};
         model = new DefaultTableModel(columns, 0);
         table = new BaseTable(model);
 
@@ -118,7 +115,7 @@ public class DiemCongXetTuyenPanel extends BasePanel {
         BaseButton btnEdit = new BaseButton("Chỉnh sửa");
         BaseButton btnDelete = new BaseButton("Xóa", new Color(220, 53, 69));
         BaseButton btnReadExcel = new BaseButton("Đọc file", new Color(39, 174, 96));
-        BaseButton btnRefresh = new BaseButton("Tải lại danh sách", new Color(41, 128, 185));
+        BaseButton btnRefresh = new BaseButton("Tải lại", new Color(41, 128, 185));
 
         footer.add(btnEdit);
         footer.add(btnDelete);
@@ -305,59 +302,88 @@ public class DiemCongXetTuyenPanel extends BasePanel {
      }
     
     private void functionReadExcel() {
-        JFileChooser fileChooser = new JFileChooser();
-        int result = fileChooser.showOpenDialog(this);
+        JFileChooser chooser = new JFileChooser();
 
-        if (result == JFileChooser.APPROVE_OPTION) {
-            File file = fileChooser.getSelectedFile();
-            try (FileInputStream fis = new FileInputStream(file);
-                Workbook workbook = new XSSFWorkbook(fis)) {
-                Sheet sheet = workbook.getSheetAt(0);
-                int countError = 0;
-                for (int i = 1; i <= sheet.getLastRowNum(); i++) {
-                    Row row = sheet.getRow(i);
-                    if (row == null) continue;
+        try {
+            JOptionPane.showMessageDialog(this, "Chọn file DANH SÁCH THÍ SINH");
+            if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
+            File fileThiSinh = chooser.getSelectedFile();
 
-                    String cccd = row.getCell(0).getStringCellValue();
-                    String manganh = row.getCell(1).getStringCellValue();
-                    String matohop = row.getCell(2).getStringCellValue();
-                    String phuongthuc = row.getCell(3).getStringCellValue();
-                    double diemCC = row.getCell(4).getNumericCellValue();
-                    double diemUtxt = row.getCell(5).getNumericCellValue();
-                    double diemTong = row.getCell(6).getNumericCellValue();
-                    String ghichu = row.getCell(7).getStringCellValue();
-                    String dcKeys = row.getCell(8).getStringCellValue();
+            JOptionPane.showMessageDialog(this, "Chọn file ƯU TIÊN XÉT TUYỂN");
+            if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
+            File fileUT = chooser.getSelectedFile();
 
-                    if(validateInput(cccd, manganh, matohop, String.valueOf(diemCC), String.valueOf(diemUtxt), phuongthuc, String.valueOf(diemTong), dcKeys)){
-                        DiemCongXetTuyen entity = new DiemCongXetTuyen();
-                        entity.setCccd(cccd);
-                        entity.setMaNganh(manganh);
-                        entity.setMaToHop(matohop);
-                        entity.setPhuongThuc(phuongthuc);
-                        entity.setDiemCC(BigDecimal.valueOf(diemCC));
-                        entity.setDiemUuTienXT(BigDecimal.valueOf(diemUtxt));
-                        entity.setDiemTong(BigDecimal.valueOf(diemTong));
-                        entity.setGhiChu(ghichu);
-                        entity.setDcKeys(dcKeys);
+            JOptionPane.showMessageDialog(this, "Chọn file NGUYỆN VỌNG");
+            if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
+            File fileNV = chooser.getSelectedFile();
 
-                        controller.addDiemCongXetTuyen(entity);
-                    } else {
-                        countError++;
+            JOptionPane.showMessageDialog(this, "Chọn file TỔ HỢP MÔN");
+            if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
+            File fileTH = chooser.getSelectedFile();
+
+            // ===== Progress Dialog =====
+            JDialog progressDialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Đang xử lý...", true);
+            JProgressBar progressBar = new JProgressBar(0, 100);
+            progressBar.setStringPainted(true);
+            JLabel lblStatus = new JLabel("Đang khởi tạo...");
+            
+            progressDialog.setLayout(new BorderLayout());
+            progressDialog.add(progressBar, BorderLayout.CENTER);
+            progressDialog.add(lblStatus, BorderLayout.SOUTH);
+            progressDialog.setSize(400, 100);
+            progressDialog.setLocationRelativeTo(this);
+            
+            SwingWorker<Integer, String> worker = new SwingWorker<>() {
+                @Override
+                protected Integer doInBackground() throws Exception {
+                    ExcelImportDCXTService service = new ExcelImportDCXTService();
+                    
+                    return service.processAllWithProgress(fileThiSinh, fileUT, fileNV, fileTH, 
+                        progress -> {
+                            publish("Đang xử lý: " + progress + "%");
+                            progressBar.setValue(progress);
+                        },
+                        controller  
+                    );
+                }
+                
+                @Override
+                protected void process(List<String> chunks) {
+                    if (!chunks.isEmpty()) {
+                        lblStatus.setText(chunks.get(chunks.size() - 1));
                     }
                 }
-                JOptionPane.showMessageDialog(this, "Import Excel thành công! Số lỗi: " + countError);
-                loadTable();
-            } catch (Exception e) {
-                e.printStackTrace();
-                JOptionPane.showMessageDialog(this, "Lỗi đọc file Excel!");
-            }
+                
+                @Override
+                protected void done() {
+                    progressDialog.dispose();
+                    try {
+                        int count = get();
+                        JOptionPane.showMessageDialog(DiemCongXetTuyenPanel.this,
+                            "Import hoàn tất!\nĐã lưu " + count + " bản ghi vào database.",
+                            "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                        loadTable();  
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        JOptionPane.showMessageDialog(DiemCongXetTuyenPanel.this, 
+                            "Lỗi: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            };
+            
+            worker.execute();
+            progressDialog.setVisible(true);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Có lỗi xảy ra: " + e.getMessage());
         }
-    
     }
-
+    
     private void loadTable() {
         model.setRowCount(0);
         List<DiemCongXetTuyen> list = controller.getDiemCongXetTuyen();
+        if(list.isEmpty()) { return; }
         for(DiemCongXetTuyen dc : list){
             model.addRow(new Object[]{
                     dc.getIdDiemCong(),
@@ -397,7 +423,7 @@ public class DiemCongXetTuyenPanel extends BasePanel {
         }
         if(!diemUtxt.isEmpty()) {
             try {
-                if(Double.parseDouble(diemUtxt) < 0 || Double.parseDouble(diemUtxt) > 0.75) {
+                if(Double.parseDouble(diemUtxt) < 0 || Double.parseDouble(diemUtxt) > 2.75) {
                     return false;
                 }
             } catch (NumberFormatException e) {
@@ -405,7 +431,7 @@ public class DiemCongXetTuyenPanel extends BasePanel {
             }
         }
         try {
-            if(Double.parseDouble(diemTong) < 0 || Double.parseDouble(diemTong) > 32.75) {
+            if(Double.parseDouble(diemTong) < 0 || Double.parseDouble(diemTong) > 4.75) {
                 return false;
             }
         } catch (NumberFormatException e) {
