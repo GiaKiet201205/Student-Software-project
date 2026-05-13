@@ -300,17 +300,29 @@ public class NganhController {
     }
 
     // Hàm lấy data an toàn (Đã nâng cấp để giữ lại số thập phân cho Điểm Sàn)
-    private String getCellValueSafe(Cell cell) {
-        if (cell == null) return "";
-        if (cell.getCellType() == CellType.NUMERIC) {
+private String getCellValueSafe(Cell cell) {
+        if (cell == null) {
+            return "";
+        }
+
+        CellType cellType = cell.getCellType();
+        
+        if (cellType == CellType.FORMULA) {
+            cellType = cell.getCachedFormulaResultType();
+        }
+
+        if (cellType == CellType.NUMERIC) {
             double val = cell.getNumericCellValue();
-            // Nếu là số nguyên (VD: 40.0 -> 40), nếu là số thập phân (VD: 24.5 -> 24.5)
             if (val == (long) val) {
                 return String.valueOf((long) val);
             } else {
                 return String.valueOf(val);
             }
+        } else if (cellType == CellType.STRING) {
+            return cell.getStringCellValue().trim();
         }
-        return cell.getStringCellValue().trim();
+        
+        DataFormatter formatter = new DataFormatter();
+        return formatter.formatCellValue(cell).trim();
     }
 }
