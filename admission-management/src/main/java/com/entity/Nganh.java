@@ -67,5 +67,10 @@ public class Nganh {
   /** Số lượng THPT */
   @Column(name = "sl_thpt", length = 45)
   private String slThpt;
+
+  @Override
+  public String toString() {
+    return this.tenNganh;
+  }
 }
 

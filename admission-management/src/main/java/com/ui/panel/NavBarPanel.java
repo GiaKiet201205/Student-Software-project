@@ -19,7 +19,7 @@ public class NavBarPanel extends BasePanel {
     setPreferredSize(new Dimension(220, 0));
 
     addLogo();
-    addNavButton("Test Frame", "TEST FRAME");
+    addNavButton("Thống kê", "STATISTIC");
     addNavButton("Quản lý Ngành", "NGANH_PANEL");
     addNavButton("Quản lý Tổ hợp", "TOHOP_PANEL");
 
@@ -31,7 +31,7 @@ public class NavBarPanel extends BasePanel {
 
     addNavButton("Ngành - Tổ Hợp", "NGANH_TOHOP");
     addNavButton("Điểm Thí Sinh", "DIEM_THI");
-
+    addNavButton("Bảng Quy Đổi", "BANG_QUY_DOI");
     addLogoutButton();
 
   }
