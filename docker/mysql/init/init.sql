@@ -27,7 +27,7 @@ CREATE TABLE `xt_bangquydoi` (
   `d_diemc` decimal(6,2) DEFAULT NULL,
   `d_diemd` decimal(6,2) DEFAULT NULL,
   `d_maquydoi` varchar(45) DEFAULT NULL,
-  `d_phanvi` varchar(45) DEFAULT NULL,n
+  `d_phanvi` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`idqd`),
   UNIQUE KEY `d_maquydoi_UNIQUE` (`d_maquydoi`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -102,6 +102,8 @@ CREATE TABLE `xt_diemthixettuyen` (
   `NL1` decimal(8,2) DEFAULT NULL,
   `NK1` decimal(8,2) DEFAULT NULL,
   `NK2` decimal(8,2) DEFAULT NULL,
+  `NK3` decimal(8,2) DEFAULT NULL,
+  `NK4` decimal(8,2) DEFAULT NULL,
   PRIMARY KEY (`iddiemthi`),
   UNIQUE KEY `uk_cccd_phuongthuc` (`cccd`,`d_phuongthuc`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -216,6 +218,8 @@ CREATE TABLE `xt_nguyenvongxettuyen` (
   `nv_keys` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
   `tt_phuongthuc` varchar(45) DEFAULT NULL,
   `tt_thm` varchar(45) DEFAULT NULL,
+  `nv_matohop` varchar(45) DEFAULT NULL,
+  `nv_rank` int DEFAULT NULL,
   PRIMARY KEY (`idnv`),
   UNIQUE KEY `nv_keys_UNIQUE` (`nv_keys`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

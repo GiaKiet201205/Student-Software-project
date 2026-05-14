@@ -157,25 +157,32 @@ public class DiemThiXetTuyen {
    */
   public BigDecimal getDiemByMaMon(String maMon) {
     if (maMon == null) return BigDecimal.ZERO;
+    
+    // lấy điểm cao nhất giữa N1_THI và N1_CC
+    if ("N1".equalsIgnoreCase(maMon) || "NN".equalsIgnoreCase(maMon)) {
+        BigDecimal n1Thi = this.n1Thi != null ? this.n1Thi : BigDecimal.ZERO;
+        BigDecimal n1CC = this.n1CC != null ? this.n1CC : BigDecimal.ZERO;
+        return n1Thi.compareTo(n1CC) > 0 ? n1Thi : n1CC;
+    }
+    
     return switch (maMon.toUpperCase()) {
-      case "TO"   -> toan           != null ? toan           : BigDecimal.ZERO;
-      case "LI"   -> ly             != null ? ly             : BigDecimal.ZERO;
-      case "HO"   -> hoa            != null ? hoa            : BigDecimal.ZERO;
-      case "SI"   -> sinh           != null ? sinh           : BigDecimal.ZERO;
-      case "SU"   -> su             != null ? su             : BigDecimal.ZERO;
-      case "DI"   -> dia            != null ? dia            : BigDecimal.ZERO;
-      case "VA"   -> van            != null ? van            : BigDecimal.ZERO;
-      case "N1"   -> n1CC           != null ? n1CC           : BigDecimal.ZERO; // Luôn lấy N1_CC có lợi nhất
-      case "CNCN" -> cncn           != null ? cncn           : BigDecimal.ZERO;
-      case "CNNN" -> cnnn           != null ? cnnn           : BigDecimal.ZERO;
-      case "TI"   -> tinHoc         != null ? tinHoc         : BigDecimal.ZERO;
-      case "KTPL" -> ktpl           != null ? ktpl           : BigDecimal.ZERO;
-      case "NL1"  -> diemNangLuc    != null ? diemNangLuc    : BigDecimal.ZERO;
-      case "NK1"  -> diemNangKhieu1 != null ? diemNangKhieu1 : BigDecimal.ZERO;
-      case "NK2"  -> diemNangKhieu2 != null ? diemNangKhieu2 : BigDecimal.ZERO;
-      case "NK3"  -> diemNangKhieu3 != null ? diemNangKhieu3 : BigDecimal.ZERO;
-      case "NK4"  -> diemNangKhieu4 != null ? diemNangKhieu4 : BigDecimal.ZERO;
-      default     -> BigDecimal.ZERO;
+        case "TO"   -> toan           != null ? toan           : BigDecimal.ZERO;
+        case "LI"   -> ly             != null ? ly             : BigDecimal.ZERO;
+        case "HO"   -> hoa            != null ? hoa            : BigDecimal.ZERO;
+        case "SI"   -> sinh           != null ? sinh           : BigDecimal.ZERO;
+        case "SU"   -> su             != null ? su             : BigDecimal.ZERO;
+        case "DI"   -> dia            != null ? dia            : BigDecimal.ZERO;
+        case "VA"   -> van            != null ? van            : BigDecimal.ZERO;
+        case "CNCN" -> cncn           != null ? cncn           : BigDecimal.ZERO;
+        case "CNNN" -> cnnn           != null ? cnnn           : BigDecimal.ZERO;
+        case "TI"   -> tinHoc         != null ? tinHoc         : BigDecimal.ZERO;
+        case "KTPL" -> ktpl           != null ? ktpl           : BigDecimal.ZERO;
+        case "NL1"  -> diemNangLuc    != null ? diemNangLuc    : BigDecimal.ZERO;
+        case "NK1"  -> diemNangKhieu1 != null ? diemNangKhieu1 : BigDecimal.ZERO;
+        case "NK2"  -> diemNangKhieu2 != null ? diemNangKhieu2 : BigDecimal.ZERO;
+        case "NK3"  -> diemNangKhieu3 != null ? diemNangKhieu3 : BigDecimal.ZERO;
+        case "NK4"  -> diemNangKhieu4 != null ? diemNangKhieu4 : BigDecimal.ZERO;
+        default     -> BigDecimal.ZERO;
     };
   }
 }

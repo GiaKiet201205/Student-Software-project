@@ -1,7 +1,6 @@
 package com.ui.common;
 
 import com.config.AppConfig;
-import com.config.HibernateUtil;
 import javax.swing.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
