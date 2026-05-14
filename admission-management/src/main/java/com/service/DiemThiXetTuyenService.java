@@ -38,18 +38,22 @@ public class DiemThiXetTuyenService {
         final int COL_SBD = 2;          // Cột C
         final int COL_TOAN = 7;         // Cột H
         final int COL_VAN = 8;          // Cột I
-        final int COL_NGOAI_NGU = 9;    // Cột J
-        final int COL_LY = 10;          // Cột K
-        final int COL_HOA = 11;         // Cột L
-        final int COL_SINH = 12;        // Cột M
-        final int COL_SU = 13;          // Cột N
-        final int COL_DIA = 14;         // Cột O
-        final int COL_GDCD = 15;        // Cột P
+        final int COL_LY = 9;    // Cột J
+        final int COL_HOA = 10;          // Cột K
+        final int COL_SINH = 11;         // Cột L
+        final int COL_SU = 12;        // Cột M
+        final int COL_DIA = 13;          // Cột N
+        final int COL_GDCD = 14;         // Cột O
+        final int COL_NGOAI_NGU = 15;        // Cột P
         final int COL_DGNL = 16;        // Cột Q
-        final int COL_NK1 = 17;         // Cột R
-        final int COL_NK2 = 18;         // Cột S
-        final int COL_NK3 = 19;         // Cột T
-        final int COL_NK4 = 20;         // Cột U
+
+        final int COL_TI= 18;         // Cột S
+        final int COL_CNCN = 19;         // Cột T
+        final int COL_CNNN = 20;         // Cột U
+        final int COL_NK1 = 22;         // Cột W
+        final int COL_NK2 = 23; //Cột X
+        final int COL_NK3 = 24; //Cột Y
+        final int COL_NK4 = 25; //Cột Z
 
         try (FileInputStream fis = new FileInputStream(file);
              Workbook workbook = new XSSFWorkbook(fis)) {
@@ -75,15 +79,19 @@ public class DiemThiXetTuyenService {
 
                     profile.setToan(parseToBigDecimal(getCellValue(row.getCell(COL_TOAN))));
                     profile.setVan(parseToBigDecimal(getCellValue(row.getCell(COL_VAN))));
-                    profile.setN1Thi(parseToBigDecimal(getCellValue(row.getCell(COL_NGOAI_NGU))));
                     profile.setLy(parseToBigDecimal(getCellValue(row.getCell(COL_LY))));
                     profile.setHoa(parseToBigDecimal(getCellValue(row.getCell(COL_HOA))));
                     profile.setSinh(parseToBigDecimal(getCellValue(row.getCell(COL_SINH))));
                     profile.setSu(parseToBigDecimal(getCellValue(row.getCell(COL_SU))));
                     profile.setDia(parseToBigDecimal(getCellValue(row.getCell(COL_DIA))));
                     profile.setKtpl(parseToBigDecimal(getCellValue(row.getCell(COL_GDCD))));
+                    profile.setN1Thi(parseToBigDecimal(getCellValue(row.getCell(COL_NGOAI_NGU))));
+                    profile.setTinHoc(parseToBigDecimal(getCellValue(row.getCell(COL_TI))));
+                    profile.setCncn(parseToBigDecimal(getCellValue(row.getCell(COL_CNCN))));
+                    profile.setCnnn(parseToBigDecimal(getCellValue(row.getCell(COL_CNNN))));
 
-                    profile.setDiemNangLuc(parseToBigDecimal(getCellValue(row.getCell(COL_DGNL))));
+//
+//                    profile.setDiemNangLuc(parseToBigDecimal(getCellValue(row.getCell(COL_DGNL))));
                     profile.setDiemNangKhieu1(parseToBigDecimal(getCellValue(row.getCell(COL_NK1))));
                     profile.setDiemNangKhieu2(parseToBigDecimal(getCellValue(row.getCell(COL_NK2))));
                     profile.setDiemNangKhieu3(parseToBigDecimal(getCellValue(row.getCell(COL_NK3))));
