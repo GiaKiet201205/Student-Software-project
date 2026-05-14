@@ -1,6 +1,8 @@
 package com.service;
 
+import com.entity.DiemThiXetTuyen;
 import com.entity.ThiSinhXetTuyen25;
+import com.repository.DiemThiXetTuyenRepository;
 import com.repository.ThiSinhXetTuyen25Repository;
 
 import java.io.File;
@@ -17,6 +19,11 @@ import java.io.FileInputStream;
 
 public class ThiSinhXetTuyen25Service {
     private final ThiSinhXetTuyen25Repository repository = new ThiSinhXetTuyen25Repository();
+    private final DiemThiXetTuyenRepository diemThiXetTuyenRepository = new DiemThiXetTuyenRepository();
+
+    public DiemThiXetTuyen getDiemByCccdAndPhuongThuc(String cccd, String phuongThuc) {
+        return diemThiXetTuyenRepository.findByCccdAndPhuongThuc(cccd, phuongThuc);
+    }
 
     public List<ThiSinhXetTuyen25> getAll() {
         return repository.findAll();

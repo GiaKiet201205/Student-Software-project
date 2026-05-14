@@ -1,5 +1,6 @@
 package com.controller;
 
+import com.entity.DiemThiXetTuyen;
 import com.entity.ThiSinhXetTuyen25;
 import com.service.ThiSinhXetTuyen25Service;
 
@@ -9,6 +10,10 @@ import java.util.List;
 public class ThiSinhXetTuyen25Controller {
 
     private final ThiSinhXetTuyen25Service service = new ThiSinhXetTuyen25Service();
+
+    public DiemThiXetTuyen getDiemThiByCccdAndPhuongThuc(String cccd, String phuongThuc) {
+        return service.getDiemByCccdAndPhuongThuc(cccd, phuongThuc);
+    }
 
     public List<ThiSinhXetTuyen25> getAllByPage(int page, int pageSize) {
         return service.getAllByPage(page, pageSize);

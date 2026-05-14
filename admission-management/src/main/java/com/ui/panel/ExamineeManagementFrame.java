@@ -7,6 +7,7 @@ import com.ui.common.BaseButton;
 import com.ui.common.BasePanel;
 import com.ui.common.BaseTable;
 import com.ui.dialog.EditExamineeDialog;
+import com.ui.dialog.XemThiSinhDialog;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -20,7 +21,7 @@ import java.awt.Window;
 public class ExamineeManagementFrame extends BasePanel {
 
     private final ThiSinhXetTuyen25Controller controller = new ThiSinhXetTuyen25Controller();
-    private BaseButton btnAdd, btnDelete, btnEdit, btnImport, btnSearch, btnPrev, btnNext;
+    private BaseButton btnAdd, btnDelete, btnEdit, btnImport, btnSearch, btnPrev, btnNext, btnView;
     private JTextField txtSearch;
     private BaseTable table;
     private DefaultTableModel model;
@@ -119,6 +120,7 @@ public class ExamineeManagementFrame extends BasePanel {
         btnNext = new BaseButton("›");
         btnEdit = new BaseButton("Chỉnh sửa");
         btnDelete = new BaseButton("Xóa người dùng", new Color(220, 53, 69));
+        btnView = new BaseButton("Xem chi tiết");
 
         footer.add(paginationPanel, BorderLayout.CENTER);
         footer.add(actionFooterPanel, BorderLayout.EAST);
@@ -127,6 +129,7 @@ public class ExamineeManagementFrame extends BasePanel {
         paginationPanel.add(btnNext);
         actionFooterPanel.add(btnEdit);
 //        actionFooterPanel.add(btnDelete);
+        actionFooterPanel.add(btnView);
         mainContent.add(footer, BorderLayout.SOUTH);
 
         add(mainContent, BorderLayout.CENTER);
@@ -143,6 +146,10 @@ public class ExamineeManagementFrame extends BasePanel {
 
         btnDelete.addActionListener(e -> {
             deleteUser();
+        });
+
+        btnView.addActionListener(e -> {
+            viewUser();
         });
 
         btnEdit.addActionListener(e -> {
@@ -226,6 +233,21 @@ public class ExamineeManagementFrame extends BasePanel {
         dialog.setVisible(true);
 
         loadData();
+    }
+
+    private void viewUser(){
+        int selectedRow = table.getSelectedRow();
+
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(null, "Chọn 1 dòng trước");
+            return;
+        }
+
+        Integer id = Integer.parseInt(table.getValueAt(selectedRow, 0).toString());
+        String cccd = table.getValueAt(selectedRow, 1).toString();
+
+        XemThiSinhDialog dialog = new XemThiSinhDialog(id, true);
+        dialog.setVisible(true);
     }
 
     private void searchUser(){
