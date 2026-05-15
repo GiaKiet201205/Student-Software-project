@@ -19,7 +19,7 @@ public class NavBarPanel extends BasePanel {
     setPreferredSize(new Dimension(220, 0));
 
     addLogo();
-    addNavButton("Test Frame", "TEST FRAME");
+    addNavButton("Thống kê", "STATISTIC");
     addNavButton("Quản lý Ngành", "NGANH_PANEL");
     addNavButton("Quản lý Tổ hợp", "TOHOP_PANEL");
 

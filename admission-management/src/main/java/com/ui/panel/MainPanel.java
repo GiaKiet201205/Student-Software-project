@@ -10,7 +10,7 @@ public class MainPanel extends JPanel {
     cardLayout = new CardLayout();
     setLayout(cardLayout);
 
-    add(new TestFrame(), "TEST FRAME");
+    add(new ThongKeMainPanel(), "STATISTIC");
     add(new DiemCongXetTuyenPanel(), "EXTRA POINTS");
     add(new NguyenVongXetTuyenPanel(), "APPLICATION REFERENCES");
     add(new NganhToHopPanel(), "NGANH_TOHOP");
