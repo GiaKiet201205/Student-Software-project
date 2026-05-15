@@ -63,9 +63,9 @@ public class DiemThiPanel extends BasePanel {
         JPopupMenu popupImport = new JPopupMenu();
 
         // Định nghĩa 3 chức năng nạp điểm
-        JMenuItem itemTHPT = new JMenuItem("1. Nạp điểm THPT (Cấu trúc Ngang)");
-        JMenuItem itemDGNL = new JMenuItem("2. Nạp điểm ĐGNL (Cấu trúc Dọc)");
-        JMenuItem itemVSAT = new JMenuItem("3. Nạp điểm V-SAT (Cấu trúc Dọc)");
+        JMenuItem itemTHPT = new JMenuItem("1. Nạp điểm THPT ");
+        JMenuItem itemDGNL = new JMenuItem("2. Nạp điểm ĐGNL ");
+        JMenuItem itemVSAT = new JMenuItem("3. Nạp điểm V-SAT ");
 
         // Truyền (Loại File, Mã Phương Thức) xuống hàm xử lý
         itemTHPT.addActionListener(e -> functionImportExcel("THPT", "3"));
@@ -77,10 +77,24 @@ public class DiemThiPanel extends BasePanel {
         popupImport.add(itemVSAT);
 
         btnImport.addActionListener(e -> popupImport.show(btnImport, 0, btnImport.getHeight()));
-
-        BaseButton addButton = new BaseButton("Thêm mới");
-
         actionPanel.add(btnImport);
+        BaseButton addButton = new BaseButton("Thêm mới");
+        JPopupMenu popupCreate = new JPopupMenu();
+
+        // Định nghĩa 3 chức năng nạp điểm
+        JMenuItem itemcreateTHPT = new JMenuItem("1. Tạo điểm THPT ");
+        JMenuItem itemcreateDGNL = new JMenuItem("2. Tạo điểm ĐGNL ");
+        JMenuItem itemcreateVSAT = new JMenuItem("3. Tạo điểm V-SAT ");
+
+        itemcreateTHPT.addActionListener(e-> functionAddData());
+        itemcreateDGNL.addActionListener(e -> functionAddData());
+        itemcreateVSAT.addActionListener(e -> functionAddData());
+
+        popupCreate.add(itemcreateTHPT);
+        popupCreate.add(itemcreateDGNL);
+        popupCreate.add(itemcreateVSAT);
+
+        btnImport.addActionListener(e -> popupCreate.show(addButton, 0, addButton.getHeight()));
         actionPanel.add(addButton);
         header.add(actionPanel, BorderLayout.EAST);
         contentPanel.add(header, BorderLayout.NORTH);
@@ -193,24 +207,30 @@ public class DiemThiPanel extends BasePanel {
     // =====================================================================
 
     private void functionAddData() {
-        DataFormDiemThi form = new DataFormDiemThi();
-        form.txtId.setText("Tự động tạo");
-        form.txtId.setEditable(false);
+        DataFormDiemThi dataFormDiemThi = new DataFormDiemThi();
+//        dataFormDiemThi.txtId.setText("Tự động tạo");
+        dataFormDiemThi.txtId.setEditable(false);
+        dataFormDiemThi.cbxPhuongThuc.setSelectedIndex(0);
+        dataFormDiemThi.lockIdentificationFields(false);
+            dataFormDiemThi.btnSave.addActionListener(e -> {
+                try {
+                    // Sử dụng hàm getEntityFromForm (đã có logic dịch ComboBox bên dưới)
+                    DiemThiXetTuyen entity = getEntityFromForm(dataFormDiemThi);
 
-        form.btnSave.addActionListener(e -> {
-            try {
-                DiemThiXetTuyen entity = getEntityFromForm(form);
-                // Giả định Controller có hàm add()
-                if(controller.add(entity)) {
-                    JOptionPane.showMessageDialog(form, "Thêm mới điểm thí sinh thành công!");
-                    loadTable();
-                    form.dispose();
+                    if (controller.add(entity)) {
+                        JOptionPane.showMessageDialog(dataFormDiemThi, "Thêm mới điểm thí sinh thành công!");
+                        loadTable(); // Cập nhật lại danh sách trên giao diện
+                        dataFormDiemThi.dispose();
+                    }
+                } catch (IllegalArgumentException ex) {
+                    // Bắt các lỗi nghiệp vụ như: Trùng CCCD, thiếu trường bắt buộc
+                    JOptionPane.showMessageDialog(dataFormDiemThi, ex.getMessage(), "Thông báo", JOptionPane.WARNING_MESSAGE);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(dataFormDiemThi, "Lỗi hệ thống: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
                 }
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(form, "Lỗi nhập liệu: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
-            }
+
         });
-        form.setVisible(true);
+            dataFormDiemThi.setVisible(true);
     }
 
     private void functionEditData() {
@@ -226,7 +246,7 @@ public class DiemThiPanel extends BasePanel {
 
         DataFormDiemThi form = new DataFormDiemThi();
         fillFormWithEntity(form, entity);
-
+        form.lockIdentificationFields(true);
         form.btnSave.addActionListener(e -> {
             try {
                 DiemThiXetTuyen updatedEntity = getEntityFromForm(form);
@@ -281,10 +301,17 @@ public class DiemThiPanel extends BasePanel {
     // =====================================================================
 
     private DiemThiXetTuyen getEntityFromForm(DataFormDiemThi form) {
+        int index = form.cbxPhuongThuc.getSelectedIndex();
+        String maPhuongThuc = switch (index){
+            case 0 -> "3"; //THPT
+            case 1 -> "4";  //DGNL
+            case 2 -> "5";  //VSAT
+            default -> "3"; //Mặc định là THPT
+        };
         return DiemThiXetTuyen.builder()
                 .cccd(form.txtCccd.getText().trim())
                 .soBaoDanh(form.txtSbd.getText().trim())
-                .phuongThuc(form.txtPhuongThuc.getText().trim())
+                .phuongThuc(maPhuongThuc)
                 .toan(parseBD(form.txtTO.getText()))
                 .ly(parseBD(form.txtLI.getText()))
                 .hoa(parseBD(form.txtHO.getText()))
@@ -312,8 +339,15 @@ public class DiemThiPanel extends BasePanel {
         form.txtId.setEditable(false);
         form.txtCccd.setText(entity.getCccd() != null ? entity.getCccd() : "");
         form.txtSbd.setText(entity.getSoBaoDanh() != null ? entity.getSoBaoDanh() : "");
-        form.txtPhuongThuc.setText(entity.getPhuongThuc() != null ? entity.getPhuongThuc() : "");
-
+        String pt = entity.getPhuongThuc();
+        if (pt != null) {
+            switch (pt) {
+                case "3" -> form.cbxPhuongThuc.setSelectedIndex(0); // Xét điểm THPT
+                case "4" -> form.cbxPhuongThuc.setSelectedIndex(1); // ĐGNL
+                case "5" -> form.cbxPhuongThuc.setSelectedIndex(2); // V-SAT
+                default -> form.cbxPhuongThuc.setSelectedIndex(-1);
+            }
+        }
         form.txtTO.setText(formatBD(entity.getToan()));
         form.txtLI.setText(formatBD(entity.getLy()));
         form.txtHO.setText(formatBD(entity.getHoa()));
