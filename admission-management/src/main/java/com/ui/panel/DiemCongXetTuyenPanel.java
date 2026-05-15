@@ -6,9 +6,6 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 
 import java.awt.*;
-import java.awt.Color;
-import java.awt.Font;
-
 import java.io.File;
 import java.math.BigDecimal;
 
@@ -313,6 +310,10 @@ public class DiemCongXetTuyenPanel extends BasePanel {
             if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
             File fileUT = chooser.getSelectedFile();
 
+            JOptionPane.showMessageDialog(this, "Chọn file QUY ĐỔI TIẾNG ANH");
+            if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
+            File fileTA = chooser.getSelectedFile();
+
             JOptionPane.showMessageDialog(this, "Chọn file NGUYỆN VỌNG");
             if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
             File fileNV = chooser.getSelectedFile();
@@ -338,7 +339,7 @@ public class DiemCongXetTuyenPanel extends BasePanel {
                 protected Integer doInBackground() throws Exception {
                     ExcelImportDCXTService service = new ExcelImportDCXTService();
                     
-                    return service.processAllWithProgress(fileThiSinh, fileUT, fileNV, fileTH, 
+                    return service.processAllWithProgress(fileThiSinh, fileUT, fileTA, fileNV, fileTH, 
                         progress -> {
                             publish("Đang xử lý: " + progress + "%");
                             progressBar.setValue(progress);

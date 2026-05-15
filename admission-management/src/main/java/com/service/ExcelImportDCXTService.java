@@ -121,6 +121,33 @@ public class ExcelImportDCXTService {
         return map;
     }
 
+    private Map<String, Double> readTA(File file) {
+        Map<String, Double> map = new HashMap<>();
+        try (FileInputStream fis = new FileInputStream(file);
+                Workbook wb = new XSSFWorkbook(fis)) {
+
+            Sheet sheet = wb.getSheetAt(0);
+            Row headerRow = sheet.getRow(0);
+            Map<String, Integer> header = getHeaderMap(headerRow);
+
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (row == null) continue;
+
+                String raw = getCellString(row, header, "CCCD");
+                String cccd = normalizeCCCD(raw);
+
+                Double diem = getCellDouble(row, header, "Điểm cộng");
+                if (cccd != null && diem != null) {
+                    map.put(cccd.trim(), diem);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return map;
+    }
+
     private Map<String, List<String>> readNguyenVong(File file) {
         Map<String, List<String>> map = new HashMap<>();       
         try (FileInputStream fis = new FileInputStream(file);
@@ -471,6 +498,7 @@ public class ExcelImportDCXTService {
     public int processAllWithProgress(
             File fThiSinh,
             File fUT,
+            File fTA,
             File fNV,
             File fToHop,
             java.util.function.Consumer<Integer> progressCallback,
@@ -481,6 +509,7 @@ public class ExcelImportDCXTService {
         
         Map<String, ThiSinh> mapTS = null;
         Map<String, Double> mapUT = null;
+        Map<String, Double> mapTA = null;
         Map<String, List<String>> mapNV = null;
         Map<String, List<String[]>> mapTH = null;
         
@@ -493,6 +522,10 @@ public class ExcelImportDCXTService {
             mapUT = readUuTien(fUT);
             System.gc();
             
+            if (progressCallback != null) progressCallback.accept(30);
+            mapTA = readTA(fTA);
+            System.gc();
+
             if (progressCallback != null) progressCallback.accept(40);
             mapTS = readThiSinh(fThiSinh);
             System.gc();
@@ -522,13 +555,16 @@ public class ExcelImportDCXTService {
             
             double diemUuTien = tinhDiemUuTien(ts.khuVuc, ts.doiTuong);
             
-            Double diemChungChi = mapUT.get(cccd);
-            if (diemChungChi == null) diemChungChi = 0.0;
-
-            if (diemUuTien == 0 && diemChungChi == 0) continue;
+            Double diemKhuyenKhich = mapUT.get(cccd);
+            Double diemTA = mapTA.get(cccd);
+            Double diemChungChi;
+            if (diemKhuyenKhich == null && diemTA == null) diemChungChi = 0.0;
+            else if (diemKhuyenKhich == null) diemChungChi = diemTA;
+            else if (diemTA == null) diemChungChi = diemKhuyenKhich;
+            else diemChungChi = diemKhuyenKhich + diemTA;
             
             double diemTong = diemUuTien + diemChungChi;
-            if (diemTong > 3) diemTong = 3;
+            if (diemTong >= 3) diemTong = 3;
             
             for (String maNganh : mapNV.get(cccd)) {
                 List<String[]> toHops = mapTH.get(maNganh);
