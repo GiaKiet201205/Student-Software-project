@@ -325,7 +325,6 @@ public class NguyenVongImportService {
         return results;
     }
 
-    // Helper lấy điểm V-SAT theo môn
     private BigDecimal getDiemByMon(DiemThiXetTuyen diemThi, String mon) {
         return switch (mon.toUpperCase()) {
             case "TO" -> diemThi.getToan();
@@ -336,7 +335,6 @@ public class NguyenVongImportService {
             case "DI" -> diemThi.getDia();
             case "VA" -> diemThi.getVan();
             case "NN", "N1" -> {
-                // Lấy điểm cao nhất giữa N1_THI và N1_CC
                 BigDecimal n1Thi = diemThi.getN1Thi() != null ? diemThi.getN1Thi() : BigDecimal.ZERO;
                 BigDecimal n1CC = diemThi.getN1CC() != null ? diemThi.getN1CC() : BigDecimal.ZERO;
                 yield n1Thi.compareTo(n1CC) > 0 ? n1Thi : n1CC;

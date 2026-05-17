@@ -13,9 +13,7 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Service xuất điểm chuẩn trực tiếp từ database
- */
+
 public class DiemChuanExportService {
 
     private final NguyenVongXetTuyenController nguyenVongController;
@@ -26,13 +24,8 @@ public class DiemChuanExportService {
         this.nganhToHopController = new NganhToHopController();
     }
 
-    /**
-     * Xuất file điểm chuẩn
-     * @param outputFile File đầu ra
-     * @throws Exception Nếu không có dữ liệu hoặc lỗi ghi file
-     */
+ 
     public void exportDiemChuan(File outputFile) throws Exception {
-        // 1. Lấy danh sách thí sinh trúng tuyển (YES) từ database
         List<NguyenVongXetTuyen> allRecords = nguyenVongController.getNguyenVongXetTuyen();
         
         List<NguyenVongXetTuyen> trungTuyen = allRecords.stream()
@@ -43,7 +36,6 @@ public class DiemChuanExportService {
             throw new Exception("Không có dữ liệu thí sinh trúng tuyển! Vui lòng chạy xét tuyển trước.");
         }
         
-        // 2. Tính điểm chuẩn cho từng ngành (điểm thấp nhất trong số thí sinh trúng tuyển)
         Map<String, BigDecimal> diemChuanMap = new HashMap<>();
         Map<String, List<NguyenVongXetTuyen>> trungTuyenTheoNganh = trungTuyen.stream()
                 .collect(Collectors.groupingBy(NguyenVongXetTuyen::getMaNganh));
@@ -57,7 +49,6 @@ public class DiemChuanExportService {
             diemChuanMap.put(maNganh, diemThapNhat);
         }
         
-        // 3. Lấy danh sách tổ hợp của từng ngành từ bảng xt_nganh_tohop
         List<NganhToHop> allNganhToHop = nganhToHopController.getAll();
         Map<String, List<String>> toHopTheoNganh = allNganhToHop.stream()
                 .collect(Collectors.groupingBy(
@@ -65,7 +56,7 @@ public class DiemChuanExportService {
                     Collectors.mapping(NganhToHop::getMaToHop, Collectors.toList())
                 ));
         
-        // 4. Tạo file Excel
+        //  Tạo file Excel
         try (Workbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("Điểm chuẩn 2025");
             

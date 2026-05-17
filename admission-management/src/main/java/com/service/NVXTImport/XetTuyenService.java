@@ -35,10 +35,6 @@ public class XetTuyenService {
         this.nguyenVongController = new NguyenVongXetTuyenController();
     }
 
-    // =========================================================================
-    // 1. LOAD CHỈ TIÊU
-    // =========================================================================
-
     public void loadChiTieu(File file) throws Exception {
         try (FileInputStream fis = new FileInputStream(file);
              Workbook wb = new XSSFWorkbook(fis)) {
@@ -59,10 +55,6 @@ public class XetTuyenService {
         int totalChiTieu = chiTieuMap.values().stream().mapToInt(Integer::intValue).sum();
         System.out.println("✓ Tổng chỉ tiêu: " + totalChiTieu);
     }
-
-    // =========================================================================
-    // 2. XÉT TUYỂN CHÍNH 
-    // =========================================================================
 
     public void xetTuyen() {
         System.out.println("\n=== BẮT ĐẦU XÉT TUYỂN ===");
@@ -147,7 +139,7 @@ public class XetTuyenService {
                 }
             }
 
-            // --- 2b. Cập nhật dangGiuCho và phát hiện thay đổi ---
+            //  Cập nhật dangGiuCho và phát hiện thay đổi ---
             for (Map.Entry<String, NguyenVongXetTuyen> e : nvTotNhat.entrySet()) {
                 String cccd = e.getKey();
                 NguyenVongXetTuyen nvMoi = e.getValue();
@@ -158,7 +150,7 @@ public class XetTuyenService {
                 }
             }
 
-            // --- 2c. Xóa khỏi doDuKien những NV mà thí sinh KHÔNG chọn ---
+            //  Xóa khỏi doDuKien những NV mà thí sinh KHÔNG chọn ---
             // (thí sinh đỗ dự kiến ở NV2 nhưng đang giữ NV1 → nhả NV2)
             // Sau đó bổ sung người kế tiếp vào ngành vừa nhả
             Set<Integer> dangGiuIdNv = dangGiuCho.values().stream()
@@ -269,10 +261,6 @@ public class XetTuyenService {
         System.out.printf("⏱ Thời gian xử lý: %.2f giây%n", elapsed / 1000.0);
     }
 
-    // =========================================================================
-    // 4. LỌC TỔ HỢP & PHƯƠNG THỨC
-    // =========================================================================
-
     /**
      * Lọc tổ hợp: chỉ giữ 1 tổ hợp có điểm cao nhất cho mỗi (CCCD + Mã ngành + Phương thức).
      * Các bản ghi còn lại bị xóa khỏi DB.
@@ -347,9 +335,6 @@ public class XetTuyenService {
         return result;
     }
 
-    // =========================================================================
-    // 6. TIỆN ÍCH
-    // =========================================================================
 
     private void updateBatchOptimized(List<NguyenVongXetTuyen> list) {
         if (list.isEmpty()) return;
