@@ -48,11 +48,9 @@ public class NguyenVongXetTuyenController {
         List<NguyenVongXetTuyen> result = new java.util.ArrayList<>();
         for (NguyenVongXetTuyen nv : service.getAll()) {
             if (nv.getIdNv() != null && nv.getIdNv().toString().equals(keyString)
-                || nv.getPhuongThuc() != null && nv.getPhuongThuc().toLowerCase().equals(keyString.toLowerCase())
                 || nv.getKetQua() != null && nv.getKetQua().toLowerCase().equals(keyString.toLowerCase())
                 || nv.getCccd() != null && nv.getCccd().toLowerCase().equals(keyString.toLowerCase())
                 || nv.getMaNganh() != null && nv.getMaNganh().toLowerCase().equals(keyString.toLowerCase())
-                || nv.getKetQua() != null && nv.getKetQua().toLowerCase().equals(keyString.toLowerCase())
             ) {
                 result.add(nv);
             }

@@ -6,6 +6,7 @@ import com.controller.NguyenVongXetTuyenController;
 import com.entity.DiemCongXetTuyen;
 import com.entity.DiemThiXetTuyen;
 import com.entity.NguyenVongXetTuyen;
+import com.service.NVXTImport.converter.DgnlScoreConverter;
 import com.service.NVXTImport.converter.VsatScoreConverter;
 import com.service.NVXTImport.model.ImportResult;
 import com.service.NVXTImport.model.NguyenVongRaw;
@@ -23,18 +24,15 @@ import java.util.function.Consumer;
 
 public class NguyenVongImportService {
 
-    private static int debugLogCount = 0;
     private static final int BATCH_SIZE = 500;
     private static final BigDecimal THRESHOLD = new BigDecimal("22.5");
     private static final BigDecimal MAX_SCORE = new BigDecimal("30");
-    private static final BigDecimal DGNL_MAX = new BigDecimal("1200");
-    private static final BigDecimal FACTOR_DIVISOR = new BigDecimal("7.5"); // Hệ số chia
-
-
+    
     private final DiemThiXetTuyenController diemThiController;
     private final DiemCongXetTuyenController diemCongController;
     private final NguyenVongXetTuyenController nguyenVongController;
     private final ToHopProcessor toHopProcessor;
+    private final DgnlScoreConverter dgnlConverter = new DgnlScoreConverter();
     private final VsatScoreConverter vsatConverter = new VsatScoreConverter();
 
     private final Map<String, DiemThiXetTuyen> diemThiByKey = new ConcurrentHashMap<>();
@@ -65,8 +63,8 @@ public class NguyenVongImportService {
         System.out.println("✓ Đọc được " + rawList.size() + " nguyện vọng từ file");
 
         callback(callback, 25);
-        ImportResult result = new ImportResult();  // 🔥 TẠO result mới
-        processAndSave(rawList, result, callback); // 🔥 TRUYỀN result vào
+        ImportResult result = new ImportResult();  
+        processAndSave(rawList, result, callback); 
 
         result.setElapsedTime(System.currentTimeMillis() - startTime);
         System.out.println("=== KẾT QUẢ: " + result.getSummary());
@@ -236,14 +234,19 @@ public class NguyenVongImportService {
             String phuongThuc = diemThi.getPhuongThuc();
             
             if ("4".equals(phuongThuc)) {
-                // ==================== ĐGNL ====================
-                BigDecimal thxt = convertDgnlTo30(diemThi.getDiemNangLuc());
-                if (thxt.compareTo(BigDecimal.ZERO) > 0) {
+                 List<String[]> toHops = toHopProcessor.getToHopsForNganh(raw.getMaNganh());
+                
+                for (String[] toHop : toHops) {
+                    String maToHop = toHop[0];                   
+                    // Quy đổi điểm NL1 sang thang 30 theo tổ hợp
+                    BigDecimal thxt = dgnlConverter.convert("DGNL", maToHop, diemThi.getDiemNangLuc());
+                    if (thxt.compareTo(BigDecimal.ZERO) == 0) continue;
+                    
                     BigDecimal utqd = calculateUuTienQuyDinh(thxt, diemCong);
                     BigDecimal diemXetTuyen = thxt.add(utqd);
                     
                     NguyenVongXetTuyen nv = buildNguyenVongEntity(
-                        raw, phuongThuc, "NL1", thxt, utqd, diemCong, diemXetTuyen
+                        raw, phuongThuc, maToHop, thxt, utqd, diemCong, diemXetTuyen
                     );
                     results.add(nv);
                 }
@@ -340,14 +343,6 @@ public class NguyenVongImportService {
             }
             default -> BigDecimal.ZERO;
         };
-    }
-
-    private BigDecimal convertDgnlTo30(BigDecimal dgnlScore) {
-        if (dgnlScore == null || dgnlScore.compareTo(BigDecimal.ZERO) == 0) {
-            return BigDecimal.ZERO;
-        }
-        return dgnlScore.multiply(MAX_SCORE).divide(DGNL_MAX, 4, RoundingMode.HALF_UP)
-                .setScale(2, RoundingMode.HALF_UP);
     }
 
     private BigDecimal calculateUuTienQuyDinh(BigDecimal thxt, BigDecimal diemCong) {
