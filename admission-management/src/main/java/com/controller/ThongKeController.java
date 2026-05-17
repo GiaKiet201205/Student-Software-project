@@ -2,8 +2,10 @@ package com.controller;
 
 import com.dto.ChartData;
 import com.dto.ThongKeNVDTO;
+import com.dto.ThongKeSL;
 import com.entity.Nganh;
 import com.service.ThongKeNVExporter;
+import com.service.ThongKeSLExporter;
 import com.service.ThongKeService;
 import com.ui.panel.ThongKeMainPanel;
 
@@ -38,6 +40,11 @@ public class ThongKeController {
     public void handleExportThongKe() {
         List<ThongKeNVDTO> data = thongKeService.getThongKeNguyenVong();
         ThongKeNVExporter.exportWithChooser(data, this.mainPanel);
+    }
+
+    public void handleExportSoLuongTrungTuyenTheoPTNganh() {
+        List<ThongKeSL> data = thongKeService.getThongKeSoLuongTrungTuyenTheoPTNganh();
+        ThongKeSLExporter.exportWithChooser(data, this.mainPanel);
     }
 
     public void xuLyKhiDoiNganh(Integer idNganh) {

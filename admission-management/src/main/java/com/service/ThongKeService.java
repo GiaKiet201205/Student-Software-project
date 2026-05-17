@@ -2,6 +2,7 @@ package com.service;
 
 import com.dto.ChartData;
 import com.dto.ThongKeNVDTO;
+import com.dto.ThongKeSL;
 import com.entity.Nganh;
 import com.repository.NganhRepository;
 import com.repository.ThongKeRepository;
@@ -95,6 +96,29 @@ public class ThongKeService {
         return result;
     }
 
+    public List<ThongKeSL> getThongKeSoLuongTrungTuyenTheoPTNganh() {
+        List<Object[]> rows = thongKeRepository.thongKeSoLuongTrungTuyenTheoPTNganh();
+        List<ThongKeSL> result = new ArrayList<>();
+
+        for (int i = 0; i < rows.size(); i++) {
+            Object[] r = rows.get(i);
+            ThongKeSL dto = new ThongKeSL();
+            dto.setStt(i + 1);
+            dto.setMaNganh((String) r[0]);
+            dto.setTenNganh((String) r[1]);
+            dto.setSoLuongPT3(toLong(r[2]));
+            dto.setSoLuongPT4(toLong(r[3]));
+            dto.setSoLuongPT5(toLong(r[4]));
+            dto.setSoLuongTong(dto.getSoLuongPT3()
+                    + dto.getSoLuongPT4()
+                    + dto.getSoLuongPT5());
+            result.add(dto);
+        }
+
+        result.add(buildDongTongSL(result));
+        return result;
+    }
+
     private ThongKeNVDTO buildDongTong(List<ThongKeNVDTO> list) {
         ThongKeNVDTO t = new ThongKeNVDTO();
         t.setStt(0);
@@ -110,6 +134,19 @@ public class ThongKeService {
         t.setNv5         (list.stream().mapToLong(ThongKeNVDTO::getNv5).sum());
         t.setNvLon5      (list.stream().mapToLong(ThongKeNVDTO::getNvLon5).sum());
         t.setTongTatCaNV (list.stream().mapToLong(ThongKeNVDTO::getTongTatCaNV).sum());
+        return t;
+    }
+
+    private ThongKeSL buildDongTongSL(List<ThongKeSL> list) {
+        ThongKeSL t = new ThongKeSL();
+        t.setStt(0);
+        t.setMaNganh("");
+        t.setTenNganh("Tổng");
+        t.setIsDongTong(true);
+        t.setSoLuongPT3(list.stream().mapToLong(ThongKeSL::getSoLuongPT3).sum());
+        t.setSoLuongPT4(list.stream().mapToLong(ThongKeSL::getSoLuongPT4).sum());
+        t.setSoLuongPT5(list.stream().mapToLong(ThongKeSL::getSoLuongPT5).sum());
+        t.setSoLuongTong(list.stream().mapToLong(ThongKeSL::getSoLuongTong).sum());
         return t;
     }
 

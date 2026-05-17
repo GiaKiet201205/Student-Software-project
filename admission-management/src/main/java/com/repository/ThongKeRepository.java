@@ -59,4 +59,24 @@ public class ThongKeRepository extends BaseRepository<ThiSinhXetTuyen25> {
         }
     }
 
+    public List<Object[]> thongKeSoLuongTrungTuyenTheoPTNganh() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = """
+                SELECT
+                    n.maNganh,
+                    n.tenNganh,
+                    SUM(CASE WHEN nv.phuongThuc = '3' AND UPPER(nv.ketQua) = 'YES' THEN 1 ELSE 0 END),
+                    SUM(CASE WHEN nv.phuongThuc = '4' AND UPPER(nv.ketQua) = 'YES' THEN 1 ELSE 0 END),
+                    SUM(CASE WHEN nv.phuongThuc = '5' AND UPPER(nv.ketQua) = 'YES' THEN 1 ELSE 0 END)
+                FROM Nganh n
+                LEFT JOIN NguyenVongXetTuyen nv ON nv.maNganh = n.maNganh
+                GROUP BY n.maNganh, n.tenNganh
+                ORDER BY n.maNganh ASC
+                """;
+            return session.createQuery(hql, Object[].class).getResultList();
+        } catch (Exception e) {
+            throw new AppException("Lỗi khi thống kê số lượng trúng tuyển theo phương thức/ngành!", e);
+        }
+    }
+
 }
