@@ -67,6 +67,7 @@ public class NganhToHopPanel extends BasePanel {
                     searchField.setForeground(Color.BLACK);
                 }
             }
+
             @Override
             public void focusLost(java.awt.event.FocusEvent evt) {
                 if (searchField.getText().isEmpty()) {
@@ -89,7 +90,7 @@ public class NganhToHopPanel extends BasePanel {
 
         BasePanel tablePanel = new BasePanel(AppConfig.COLOR_WHITE, 15);
         tablePanel.setLayout(new BorderLayout());
-        String[] columns = {"ID", "Mã Ngành", "Mã Tổ Hợp", "Môn 1", "Môn 2", "Môn 3", "Độ Lệch"};
+        String[] columns = { "ID", "Mã Ngành", "Mã Tổ Hợp", "Môn 1", "Môn 2", "Môn 3", "Độ Lệch" };
         model = new DefaultTableModel(columns, 0);
         table = new BaseTable(model);
 
@@ -136,13 +137,14 @@ public class NganhToHopPanel extends BasePanel {
         form.btnSave.addActionListener(e -> {
             try {
                 NganhToHop entity = getEntityFromForm(form);
-                if(controller.add(entity)) {
+                if (controller.add(entity)) {
                     JOptionPane.showMessageDialog(form, "Thêm mới thành công!");
                     loadTable();
                     form.dispose();
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(form, "Lỗi nhập liệu: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(form, "Lỗi nhập liệu: " + ex.getMessage(), "Lỗi",
+                        JOptionPane.ERROR_MESSAGE);
             }
         });
         form.setVisible(true);
@@ -151,13 +153,15 @@ public class NganhToHopPanel extends BasePanel {
     private void functionEditData() {
         int selectedRow = table.getSelectedRow();
         if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn một dòng để chỉnh sửa.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn một dòng để chỉnh sửa.", "Lỗi",
+                    JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         Integer id = Integer.parseInt(model.getValueAt(selectedRow, 0).toString());
         NganhToHop entity = controller.getById(id);
-        if(entity == null) return;
+        if (entity == null)
+            return;
 
         DataFormNganhToHop form = new DataFormNganhToHop();
         fillFormWithEntity(form, entity);
@@ -166,13 +170,14 @@ public class NganhToHopPanel extends BasePanel {
             try {
                 NganhToHop updatedEntity = getEntityFromForm(form);
                 updatedEntity.setId(id); // Giữ nguyên ID cũ
-                if(controller.update(updatedEntity)) {
+                if (controller.update(updatedEntity)) {
                     JOptionPane.showMessageDialog(form, "Cập nhật thành công!");
                     loadTable();
                     form.dispose();
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(form, "Lỗi nhập liệu: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(form, "Lỗi nhập liệu: " + ex.getMessage(), "Lỗi",
+                        JOptionPane.ERROR_MESSAGE);
             }
         });
         form.setVisible(true);
@@ -185,11 +190,12 @@ public class NganhToHopPanel extends BasePanel {
             return;
         }
 
-        int confirm = JOptionPane.showConfirmDialog(this, "Xác nhận xóa dữ liệu này?", "Cảnh báo", JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(this, "Xác nhận xóa dữ liệu này?", "Cảnh báo",
+                JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
             Integer id = Integer.parseInt(model.getValueAt(selectedRow, 0).toString());
             NganhToHop entity = controller.getById(id);
-            if(entity != null && controller.delete(entity)) {
+            if (entity != null && controller.delete(entity)) {
                 JOptionPane.showMessageDialog(this, "Đã xóa thành công!");
                 loadTable();
             }
@@ -198,7 +204,7 @@ public class NganhToHopPanel extends BasePanel {
 
     private void functionSearchData() {
         String keyString = searchField.getText();
-        if(keyString.isEmpty() || keyString.equals("Nhập mã ngành/tổ hợp để tìm kiếm...")) {
+        if (keyString.isEmpty() || keyString.equals("Nhập mã ngành/tổ hợp để tìm kiếm...")) {
             loadTable();
             return;
         }
@@ -213,8 +219,8 @@ public class NganhToHopPanel extends BasePanel {
 
     private void renderTableData(List<NganhToHop> list) {
         model.setRowCount(0);
-        for(NganhToHop item : list) {
-            model.addRow(new Object[]{
+        for (NganhToHop item : list) {
+            model.addRow(new Object[] {
                     item.getId(),
                     item.getMaNganh(),
                     item.getMaToHop(),
@@ -277,6 +283,7 @@ public class NganhToHopPanel extends BasePanel {
         form.txtDoLech.setText(entity.getDoLech() != null ? entity.getDoLech().toString() : "0.0");
         form.txtDoLech.setForeground(Color.BLACK); // Hủy trạng thái mờ khi edit
     }
+
     // ================== HÀM ĐỌC FILE EXCEL NGÀNH - TỔ HỢP ==================
     private void functionReadExcel() {
         JFileChooser fileChooser = new JFileChooser();
@@ -285,7 +292,8 @@ public class NganhToHopPanel extends BasePanel {
         if (result == JFileChooser.APPROVE_OPTION) {
             java.io.File file = fileChooser.getSelectedFile();
             try (java.io.FileInputStream fis = new java.io.FileInputStream(file);
-                 org.apache.poi.ss.usermodel.Workbook workbook = new org.apache.poi.xssf.usermodel.XSSFWorkbook(fis)) {
+                    org.apache.poi.ss.usermodel.Workbook workbook = new org.apache.poi.xssf.usermodel.XSSFWorkbook(
+                            fis)) {
 
                 org.apache.poi.ss.usermodel.Sheet sheet = workbook.getSheetAt(0);
                 int countSuccess = 0;
@@ -294,17 +302,21 @@ public class NganhToHopPanel extends BasePanel {
                 // Bỏ qua dòng tiêu đề (Dòng 0), bắt đầu từ dòng 1
                 for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                     org.apache.poi.ss.usermodel.Row row = sheet.getRow(i);
-                    if (row == null) continue;
+                    if (row == null)
+                        continue;
 
                     try {
                         // Đọc theo chuẩn form Excel "tohopmon.xlsx"
                         String maNganh = getCellValueAsString(row.getCell(1)); // Cột index 1: MANGANH
-                        if(maNganh.isEmpty()) continue; // Bỏ qua dòng trống
+                        if (maNganh.isEmpty())
+                            continue; // Bỏ qua dòng trống
 
-                        String maToHopRaw = getCellValueAsString(row.getCell(3)); // Cột index 3: VD "B03(TO-3,VA-3,SI-1)"
-                        String tbKeys = getCellValueAsString(row.getCell(4));     // Cột index 4: tb_keys
-                        String maToHop = getCellValueAsString(row.getCell(5));    // Cột index 5: TEN_TO_HOP (VD "B03")
-                        BigDecimal doLech = parseBigDecimal(getCellValueAsString(row.getCell(7))); // Cột index 7: Độ lệch
+                        String maToHopRaw = getCellValueAsString(row.getCell(3)); // Cột index 3: VD
+                                                                                  // "B03(TO-3,VA-3,SI-1)"
+                        String tbKeys = getCellValueAsString(row.getCell(4)); // Cột index 4: tb_keys
+                        String maToHop = getCellValueAsString(row.getCell(5)); // Cột index 5: TEN_TO_HOP (VD "B03")
+                        BigDecimal doLech = parseBigDecimal(getCellValueAsString(row.getCell(7))); // Cột index 7: Độ
+                                                                                                   // lệch
 
                         String m1 = "", m2 = "", m3 = "";
                         Byte hs1 = 1, hs2 = 1, hs3 = 1;
@@ -321,24 +333,28 @@ public class NganhToHopPanel extends BasePanel {
                             if (subjects.length > 0) {
                                 String[] parts = subjects[0].split("-"); // Cắt bằng dấu gạch ngang (VD: TO-3)
                                 m1 = normalizeSubjectCode(parts[0].trim()); // Lấy Tên môn
-                                if (parts.length > 1) hs1 = parseByte(parts[1].trim()); // Lấy Hệ số
+                                if (parts.length > 1)
+                                    hs1 = parseByte(parts[1].trim()); // Lấy Hệ số
                             }
                             // Môn 2
                             if (subjects.length > 1) {
                                 String[] parts = subjects[1].split("-");
                                 m2 = normalizeSubjectCode(parts[0].trim());
-                                if (parts.length > 1) hs2 = parseByte(parts[1].trim());
+                                if (parts.length > 1)
+                                    hs2 = parseByte(parts[1].trim());
                             }
                             // Môn 3
                             if (subjects.length > 2) {
                                 String[] parts = subjects[2].split("-");
                                 m3 = normalizeSubjectCode(parts[0].trim());
-                                if (parts.length > 1) hs3 = parseByte(parts[1].trim());
+                                if (parts.length > 1)
+                                    hs3 = parseByte(parts[1].trim());
                             }
                         }
 
                         // Nếu trong file Excel quên không có cột tb_keys, code tự động sinh ra
-                        if(tbKeys.isEmpty()) tbKeys = maNganh + "_" + maToHop;
+                        if (tbKeys.isEmpty())
+                            tbKeys = maNganh + "_" + maToHop;
 
                         // --- MAPPING DỮ LIỆU VÀO DATABASE ---
                         NganhToHop entity = NganhToHop.builder()
@@ -368,7 +384,7 @@ public class NganhToHopPanel extends BasePanel {
                                 .build();
 
                         // ================= LOGIC UPSERT (THÊM HOẶC CẬP NHẬT) =================
-// 1. Tìm xem tbKeys này đã có trong DB chưa (Tận dụng hàm search có sẵn)
+                        // 1. Tìm xem tbKeys này đã có trong DB chưa (Tận dụng hàm search có sẵn)
                         List<NganhToHop> existingList = controller.search(tbKeys);
                         NganhToHop existingEntity = null;
 
@@ -382,7 +398,7 @@ public class NganhToHopPanel extends BasePanel {
                             }
                         }
 
-// 2. Ra quyết định Update hay Insert
+                        // 2. Ra quyết định Update hay Insert
                         if (existingEntity != null) {
                             // ĐÃ TỒN TẠI -> Gắn ID của dòng cũ vào entity mới và gọi hàm Update
                             entity.setId(existingEntity.getId());
@@ -406,12 +422,14 @@ public class NganhToHopPanel extends BasePanel {
                     }
                 }
 
-                JOptionPane.showMessageDialog(this, "Import Excel hoàn tất!\nThành công: " + countSuccess + " dòng\nLỗi/Trùng lặp: " + countError + " dòng");
+                JOptionPane.showMessageDialog(this, "Import Excel hoàn tất!\nThành công: " + countSuccess
+                        + " dòng\nLỗi/Trùng lặp: " + countError + " dòng");
                 loadTable(); // Tải lại giao diện bảng
 
             } catch (Exception e) {
                 e.printStackTrace();
-                JOptionPane.showMessageDialog(this, "Lỗi đọc file! Hãy đảm bảo bạn đang chọn file chuẩn .xlsx", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Lỗi đọc file! Hãy đảm bảo bạn đang chọn file chuẩn .xlsx", "Lỗi",
+                        JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -425,55 +443,80 @@ public class NganhToHopPanel extends BasePanel {
 
     // 2. Hàm tự động đồng bộ mã môn cũ (GD) sang mã môn mới (KTPL)
     private String normalizeSubjectCode(String code) {
-        if (code == null) return "";
+        if (code == null)
+            return "";
         code = code.trim().toUpperCase();
-        if (code.equals("GD") || code.equals("GDCD")) return "KTPL"; // Giáo dục công dân -> Kinh tế pháp luật
+        if (code.equals("GD") || code.equals("GDCD"))
+            return "KTPL"; // Giáo dục công dân -> Kinh tế pháp luật
         return code;
     }
 
-    // 3. Hàm kiểm tra môn tiêu chuẩn (Nếu không phải môn tiêu chuẩn, sẽ bật cờ KHÁC = 1)
+    // 3. Hàm kiểm tra môn tiêu chuẩn (Nếu không phải môn tiêu chuẩn, sẽ bật cờ KHÁC
+    // = 1)
     private boolean isStandardSubject(String code) {
-        if(code == null || code.isEmpty()) return true;
-        String[] standards = {"N1", "TO", "LI", "HO", "SI", "VA", "SU", "DI", "TI", "KTPL"};
-        for(String s : standards) {
-            if(s.equals(code)) return true;
+        if (code == null || code.isEmpty())
+            return true;
+        String[] standards = { "N1", "TO", "LI", "HO", "SI", "VA", "SU", "DI", "TI", "KTPL" };
+        for (String s : standards) {
+            if (s.equals(code))
+                return true;
         }
         return false;
     }
 
     // 4. Hàm đọc Cell an toàn (Chống sập do ép kiểu sai trong Excel)
     private String getCellValueAsString(org.apache.poi.ss.usermodel.Cell cell) {
-        if (cell == null) return "";
+        if (cell == null)
+            return "";
         switch (cell.getCellType()) {
-            case STRING: return cell.getStringCellValue().trim();
+            case STRING:
+                return cell.getStringCellValue().trim();
             case NUMERIC:
                 double val = cell.getNumericCellValue();
-                if (val == (long) val) return String.format("%d", (long) val);
-                else return String.format("%s", val);
-            default: return "";
+                if (val == (long) val)
+                    return String.format("%d", (long) val);
+                else
+                    return String.format("%s", val);
+            default:
+                return "";
         }
     }
 
     // 5. Hàm ép kiểu số an toàn
     private Byte parseByte(String text) {
-        if(text == null || text.trim().isEmpty()) return 1;
-        try { return Byte.parseByte(text.trim()); } catch(Exception e) { return 1; }
+        if (text == null || text.trim().isEmpty())
+            return 1;
+        try {
+            return Byte.parseByte(text.trim());
+        } catch (Exception e) {
+            return 1;
+        }
     }
 
     private BigDecimal parseBigDecimal(String text) {
-        if(text == null || text.trim().isEmpty() || text.trim().equals("0.0")) return BigDecimal.ZERO;
-        try { return new BigDecimal(text.trim()); } catch(Exception e) { return BigDecimal.ZERO; }
+        if (text == null || text.trim().isEmpty() || text.trim().equals("0.0"))
+            return BigDecimal.ZERO;
+        try {
+            return new BigDecimal(text.trim());
+        } catch (Exception e) {
+            return BigDecimal.ZERO;
+        }
     }
+
     // Map ngược mã về tên đầy đủ để hiển thị lại form Edit
     private String getSubjectNameByCode(String code) {
-        if (code == null || code.trim().isEmpty()) return "Không chọn";
+        if (code == null || code.trim().isEmpty())
+            return "Không chọn";
         for (String opt : DataFormNganhToHop.SUBJECT_OPTIONS) {
-            if (opt.contains("(" + code + ")")) return opt;
+            if (opt.contains("(" + code + ")"))
+                return opt;
         }
         return "Không chọn";
     }
+
     private String getSubjectCode(String fullName) {
-        if (fullName == null || fullName.equals("Không chọn")) return "";
+        if (fullName == null || fullName.equals("Không chọn"))
+            return "";
         int start = fullName.indexOf("(");
         int end = fullName.indexOf(")");
         if (start != -1 && end != -1) {

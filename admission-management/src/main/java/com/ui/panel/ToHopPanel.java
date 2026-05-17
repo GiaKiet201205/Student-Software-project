@@ -10,7 +10,6 @@ import com.ui.common.BaseTable;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
-import javax.swing.RowFilter;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
@@ -22,8 +21,7 @@ public class ToHopPanel extends BasePanel {
     private final ToHopController controller;
 
     private BaseButton addButton, importButton, editButton, deleteButton;
-    
-    // Thêm các biến cho chức năng tìm kiếm
+
     private JTextField txtSearch;
     private TableRowSorter<DefaultTableModel> rowSorter;
 
@@ -31,7 +29,7 @@ public class ToHopPanel extends BasePanel {
         super(AppConfig.COLOR_BACKGROUND, 0);
         setLayout(new BorderLayout());
         initializeComponents();
-        
+
         this.controller = new ToHopController(this);
         this.controller.loadData();
         setupActionListeners();
@@ -53,35 +51,43 @@ public class ToHopPanel extends BasePanel {
 
         addButton = new BaseButton(" + Thêm Tổ Hợp ");
         importButton = new BaseButton(" Nhập Excel ", new Color(40, 167, 69));
-        
+
         // Khởi tạo thanh tìm kiếm
         txtSearch = new JTextField();
         txtSearch.setPreferredSize(new Dimension(200, 32));
         txtSearch.setToolTipText("Nhập từ khóa tìm kiếm...");
-        
+
         JPanel headerActionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         headerActionPanel.setOpaque(false);
-        headerActionPanel.add(new JLabel("Tìm kiếm: "));
+        headerActionPanel.add(new JLabel("Tìm "));
         headerActionPanel.add(txtSearch);
         headerActionPanel.add(importButton);
         headerActionPanel.add(addButton);
-        
+
         headerPanel.add(headerActionPanel, BorderLayout.EAST);
         mainContentPanel.add(headerPanel, BorderLayout.NORTH);
 
         BasePanel tablePanel = new BasePanel(AppConfig.COLOR_WHITE, 15);
         tablePanel.setLayout(new BorderLayout());
 
-        String[] cols = {"Mã Tổ Hợp", "Tên Tổ Hợp", "Môn Thi Thứ 1", "Môn Thi Thứ 2", "Môn Thi Thứ 3"};
+        String[] cols = { "Mã Tổ Hợp", "Tên Tổ Hợp", "Môn Thi Thứ 1", "Môn Thi Thứ 2", "Môn Thi Thứ 3" };
         defaultTableModel = new DefaultTableModel(cols, 0) {
             @Override
-            public boolean isCellEditable(int row, int column) { return false; }
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
         };
         baseTable = new BaseTable(defaultTableModel);
-        
+
+        javax.swing.table.JTableHeader tableHeader = baseTable.getTableHeader();
+        tableHeader.setOpaque(false);
+        tableHeader.setBackground(AppConfig.COLOR_PRIMARY);
+        tableHeader.setForeground(Color.WHITE);
+        tableHeader.setFont(new Font("Segoe UI", Font.BOLD, 14));
+
         rowSorter = new TableRowSorter<>(defaultTableModel);
         baseTable.setRowSorter(rowSorter);
-        
+
         JScrollPane scrollPane = new JScrollPane(baseTable);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getViewport().setBackground(AppConfig.COLOR_WHITE);
@@ -91,10 +97,10 @@ public class ToHopPanel extends BasePanel {
 
         JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         footerPanel.setOpaque(false);
-        
+
         editButton = new BaseButton("Chỉnh sửa");
         deleteButton = new BaseButton("Xóa tổ hợp", AppConfig.COLOR_DANGER);
-        
+
         footerPanel.add(editButton);
         footerPanel.add(deleteButton);
         mainContentPanel.add(footerPanel, BorderLayout.SOUTH);
@@ -102,13 +108,19 @@ public class ToHopPanel extends BasePanel {
         add(mainContentPanel, BorderLayout.CENTER);
     }
 
-    public BaseTable getBaseTable() { return baseTable; }
-    public DefaultTableModel getDefaultTableModel() { return defaultTableModel; }
+    public BaseTable getBaseTable() {
+        return baseTable;
+    }
+
+    public DefaultTableModel getDefaultTableModel() {
+        return defaultTableModel;
+    }
 
     public void hienThiDuLieuLenBang(List<ToHopMonThi> list) {
         defaultTableModel.setRowCount(0);
         for (ToHopMonThi toHop : list) {
-            defaultTableModel.addRow(new Object[]{toHop.getMaToHop(), toHop.getTenToHop(), toHop.getMon1(), toHop.getMon2(), toHop.getMon3()});
+            defaultTableModel.addRow(new Object[] { toHop.getMaToHop(), toHop.getTenToHop(), toHop.getMon1(),
+                    toHop.getMon2(), toHop.getMon3() });
         }
     }
 
@@ -117,14 +129,22 @@ public class ToHopPanel extends BasePanel {
         editButton.addActionListener(e -> controller.handleEdit());
         deleteButton.addActionListener(e -> controller.handleDelete());
         importButton.addActionListener(e -> controller.handleImport());
-        
+
         txtSearch.getDocument().addDocumentListener(new DocumentListener() {
             @Override
-            public void insertUpdate(DocumentEvent e) { filterTable(); }
+            public void insertUpdate(DocumentEvent e) {
+                filterTable();
+            }
+
             @Override
-            public void removeUpdate(DocumentEvent e) { filterTable(); }
+            public void removeUpdate(DocumentEvent e) {
+                filterTable();
+            }
+
             @Override
-            public void changedUpdate(DocumentEvent e) { filterTable(); }
+            public void changedUpdate(DocumentEvent e) {
+                filterTable();
+            }
         });
     }
 

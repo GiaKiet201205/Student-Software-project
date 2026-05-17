@@ -36,26 +36,46 @@ public class ThongKeRepository extends BaseRepository<ThiSinhXetTuyen25> {
     public List<Object[]> thongKeNguyenVongTheoNganh() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             String hql = """
-                SELECT
-                    n.maNganh,
-                    n.tenNganh,
-                    n.chiTieu,
-                    SUM(CASE WHEN nv.thuTu BETWEEN 1 AND 5 THEN 1 ELSE 0 END),
-                    SUM(CASE WHEN nv.thuTu = 1 THEN 1 ELSE 0 END),
-                    SUM(CASE WHEN nv.thuTu = 2 THEN 1 ELSE 0 END),
-                    SUM(CASE WHEN nv.thuTu = 3 THEN 1 ELSE 0 END),
-                    SUM(CASE WHEN nv.thuTu = 4 THEN 1 ELSE 0 END),
-                    SUM(CASE WHEN nv.thuTu = 5 THEN 1 ELSE 0 END),
-                    SUM(CASE WHEN nv.thuTu > 5  THEN 1 ELSE 0 END),
-                    COUNT(nv.idNv)
-                FROM Nganh n
-                LEFT JOIN NguyenVongXetTuyen nv ON nv.maNganh = n.maNganh
-                GROUP BY n.maNganh, n.tenNganh, n.chiTieu
-                ORDER BY n.maNganh ASC
-                """;
+                    SELECT
+                        n.maNganh,
+                        n.tenNganh,
+                        n.chiTieu,
+                        SUM(CASE WHEN nv.thuTu BETWEEN 1 AND 5 THEN 1 ELSE 0 END),
+                        SUM(CASE WHEN nv.thuTu = 1 THEN 1 ELSE 0 END),
+                        SUM(CASE WHEN nv.thuTu = 2 THEN 1 ELSE 0 END),
+                        SUM(CASE WHEN nv.thuTu = 3 THEN 1 ELSE 0 END),
+                        SUM(CASE WHEN nv.thuTu = 4 THEN 1 ELSE 0 END),
+                        SUM(CASE WHEN nv.thuTu = 5 THEN 1 ELSE 0 END),
+                        SUM(CASE WHEN nv.thuTu > 5  THEN 1 ELSE 0 END),
+                        COUNT(nv.idNv)
+                    FROM Nganh n
+                    LEFT JOIN NguyenVongXetTuyen nv ON nv.maNganh = n.maNganh
+                    GROUP BY n.maNganh, n.tenNganh, n.chiTieu
+                    ORDER BY n.maNganh ASC
+                    """;
             return session.createQuery(hql, Object[].class).getResultList();
         } catch (Exception e) {
             throw new AppException("Lỗi khi thống kê nguyện vọng theo ngành!", e);
+        }
+    }
+
+    public List<Object[]> thongKeSLTrungTuyenPTNganh() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = """
+                    SELECT
+                        nv.maNganh,
+                        n.tenNganh,
+                        nv.phuongThuc,
+                        COUNT(nv.idNv)
+                    FROM NguyenVongXetTuyen nv
+                    LEFT JOIN Nganh n ON nv.maNganh = n.maNganh
+                    WHERE nv.ketQua = 'YES'
+                    GROUP BY nv.maNganh, n.tenNganh, nv.phuongThuc
+                    ORDER BY nv.maNganh ASC, nv.phuongThuc ASC
+                    """;
+            return session.createQuery(hql, Object[].class).getResultList();
+        } catch (Exception e) {
+            throw new AppException("Lỗi khi thống kê số lượng trúng tuyển theo phương thức và ngành", e);
         }
     }
 

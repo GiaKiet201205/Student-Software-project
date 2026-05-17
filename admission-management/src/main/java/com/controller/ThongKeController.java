@@ -2,9 +2,11 @@ package com.controller;
 
 import com.dto.ChartData;
 import com.dto.ThongKeNVDTO;
+import com.dto.ThongKeSLTrungTuyenDTO;
 import com.entity.Nganh;
 import com.service.ThongKeNVExporter;
 import com.service.ThongKeService;
+import com.service.ThongKeSLTrungTuyenExporter;
 import com.ui.panel.ThongKeMainPanel;
 
 import javax.swing.*;
@@ -42,5 +44,15 @@ public class ThongKeController {
 
     public void xuLyKhiDoiNganh(Integer idNganh) {
 
+    }
+
+    public void handleExportSLTrungTuyenPTNganh() {
+        List<ThongKeSLTrungTuyenDTO> data = thongKeService.getThongKeSLTrungTuyenPTNganh();
+        if (data.isEmpty()) {
+            JOptionPane.showMessageDialog(mainPanel, "Không có dữ liệu trúng tuyển để xuất.", "Thông báo",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        ThongKeSLTrungTuyenExporter.exportWithChooser(data, this.mainPanel);
     }
 }
