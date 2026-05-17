@@ -12,306 +12,358 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+/**
+ * Mỗi vòng lặp:
+ *   1. Duyệt đồng loạt tất cả thí sinh chưa có chỗ (theo thứ tự NV ưu tiên).
+ *   2. Ai đủ điểm & còn chỉ tiêu → được "giữ tạm" ở nguyện vọng đó.
+ *   3. Nếu một thí sinh đang giữ tạm ở NV thấp hơn nhưng vừa được chấp nhận
+ *      ở NV cao hơn → nhả chỗ ở NV thấp, chỉ tiêu đó được hoàn lại.
+ *   4. Người xếp ngay sau được đẩy lên lấp chỗ trống.
+ *   5. Lặp đến khi không còn thay đổi nào (hội tụ).
+ *
+ * Kết quả: mỗi thí sinh chỉ trúng tuyển tại đúng 1 nguyện vọng cao nhất
+ * mà họ đủ điều kiện
+ */
 public class XetTuyenService {
 
     private final NguyenVongXetTuyenController nguyenVongController;
-    
-    // Map: mã ngành + phương thức -> Map<tổ hợp, điểm chuẩn>
-    private final Map<String, Map<String, BigDecimal>> diemChuanTheoToHop = new ConcurrentHashMap<>();
-    
-    // Map: mã ngành -> chỉ tiêu
-    private final Map<String, Integer> chiTieuMap = new ConcurrentHashMap<>();
+
+    /** Chỉ tiêu gốc của từng ngành (maNganh -> chiTieu) */
+    private Map<String, Integer> chiTieuMap = new ConcurrentHashMap<>();
 
     public XetTuyenService() {
         this.nguyenVongController = new NguyenVongXetTuyenController();
     }
 
-    public void loadDiemChuan(File fileThpt, File fileDgnl, File fileVsat) throws Exception {
-        loadDiemChuanFromFile(fileThpt, "3");
-        loadDiemChuanFromFile(fileDgnl, "4");
-        loadDiemChuanFromFile(fileVsat, "5");
-        System.out.println("✓ Đã load điểm chuẩn: " + diemChuanTheoToHop.size() + " ngành");
-    }
-    
+    // =========================================================================
+    // 1. LOAD CHỈ TIÊU
+    // =========================================================================
+
     public void loadChiTieu(File file) throws Exception {
         try (FileInputStream fis = new FileInputStream(file);
              Workbook wb = new XSSFWorkbook(fis)) {
-            
+
             Sheet sheet = wb.getSheetAt(0);
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
                 if (row == null) continue;
-                
+
                 String maNganh = getCellString(row.getCell(1));
                 if (maNganh == null || maNganh.isEmpty()) continue;
-                
+
                 int chiTieu = (int) getCellDouble(row.getCell(3));
                 chiTieuMap.put(maNganh, chiTieu);
             }
         }
         System.out.println("✓ Đã load chỉ tiêu: " + chiTieuMap.size() + " ngành");
+        int totalChiTieu = chiTieuMap.values().stream().mapToInt(Integer::intValue).sum();
+        System.out.println("✓ Tổng chỉ tiêu: " + totalChiTieu);
     }
-    
-    private void loadDiemChuanFromFile(File file, String phuongThuc) throws Exception {
-        try (FileInputStream fis = new FileInputStream(file);
-             Workbook wb = new XSSFWorkbook(fis)) {
-            
-            Sheet sheet = wb.getSheetAt(0);
-            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
-                Row row = sheet.getRow(i);
-                if (row == null) continue;
-                
-                String maNganh = getCellString(row.getCell(1));
-                if (maNganh == null || maNganh.isEmpty()) continue;
-                
-                String toHopList = getCellString(row.getCell(3));
-                if (toHopList == null || toHopList.isEmpty()) continue;
-                
-                BigDecimal diemChuan = BigDecimal.valueOf(getCellDouble(row.getCell(4)));
-                
-                String key = maNganh + "_" + phuongThuc;
-                Map<String, BigDecimal> toHopMap = diemChuanTheoToHop.computeIfAbsent(key, k -> new HashMap<>());
-                
-                String[] toHops = toHopList.split("[;, ]+");
-                for (String toHop : toHops) {
-                    toHop = toHop.trim();
-                    if (!toHop.isEmpty()) {
-                        // Lấy điểm chuẩn cao nhất nếu có nhiều dòng cho cùng tổ hợp
-                        BigDecimal existing = toHopMap.get(toHop);
-                        if (existing == null || diemChuan.compareTo(existing) > 0) {
-                            toHopMap.put(toHop, diemChuan);
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
-    /**
-     * Quy trình xét tuyển:
-     * 1. Lọc tổ hợp: mỗi (CCCD + Mã ngành + Phương thức) chỉ giữ 1 tổ hợp tốt nhất
-     * 2. Lọc phương thức: mỗi (CCCD + Mã ngành) chỉ giữ 1 phương thức tốt nhất
-     * 3. Xét điểm chuẩn: xác định thí sinh đạt sàn (DAT_SAN)
-     * 4. Xếp hạng theo ngành: sắp xếp theo điểm giảm dần
-     * 5. Xét chỉ tiêu: xác định YES/NO dựa trên hạng và chỉ tiêu
-     * 6. Xét thứ tự nguyện vọng: mỗi thí sinh chỉ giữ 1 YES duy nhất
-     * 7. Cập nhật database
-     */
+
+    // =========================================================================
+    // 2. XÉT TUYỂN CHÍNH 
+    // =========================================================================
+
     public void xetTuyen() {
-        System.out.println("=== BẮT ĐẦU XÉT TUYỂN ===");
+        System.out.println("\n=== BẮT ĐẦU XÉT TUYỂN ===");
         long startTime = System.currentTimeMillis();
-        
+
+        // --- Chuẩn bị: Lấy dữ liệu & lọc trùng tổ hợp / phương thức ---
         List<NguyenVongXetTuyen> allNguyenVong = nguyenVongController.getNguyenVongXetTuyen();
-        System.out.println("Tổng số nguyện vọng (các tổ hợp): " + allNguyenVong.size());
-        
-        // ==================== BƯỚC 1: LỌC TỔ HỢP ====================
-        List<NguyenVongXetTuyen> afterToHopFilter = filterBestToHop(allNguyenVong);
-        System.out.println("Sau lọc tổ hợp: " + afterToHopFilter.size());
-        
-        // ==================== BƯỚC 2: LỌC PHƯƠNG THỨC ====================
-        List<NguyenVongXetTuyen> afterMethodFilter = filterBestPhuongThuc(afterToHopFilter);
-        System.out.println("Sau lọc phương thức: " + afterMethodFilter.size());
-        
-        // ==================== BƯỚC 3: XÉT ĐIỂM CHUẨN (đánh dấu DAT_SAN) ====================
-        for (NguyenVongXetTuyen nv : afterMethodFilter) {
-            String key = nv.getMaNganh() + "_" + nv.getPhuongThuc();
-            Map<String, BigDecimal> toHopDiemChuan = diemChuanTheoToHop.getOrDefault(key, new HashMap<>());
-            BigDecimal diemChuan = toHopDiemChuan.get(nv.getMaToHop());
-            
-            if (diemChuan == null) {
-                nv.setKetQua("NO_DIEM_CHUAN");
-            } else if (nv.getDiemXetTuyen().compareTo(diemChuan) >= 0) {
-                nv.setKetQua("DAT_SAN");  // Đạt sàn, chưa phải trúng tuyển
-            } else {
-                nv.setKetQua("NO");
-            }
-        }
-        
-        // ==================== BƯỚC 4: XẾP HẠNG THEO NGÀNH ====================
-        // Chỉ xếp hạng những thí sinh đạt sàn (DAT_SAN)
-        Map<String, List<NguyenVongXetTuyen>> byNganh = afterMethodFilter.stream()
-                .filter(nv -> "DAT_SAN".equals(nv.getKetQua()))
+        List<NguyenVongXetTuyen> afterFilter = filterBestToHop(allNguyenVong);
+        afterFilter = filterBestPhuongThuc(afterFilter);
+        System.out.println("✓ Tổng nguyện vọng sau lọc: " + afterFilter.size());
+
+        int maxThuTu = afterFilter.stream()
+                .mapToInt(NguyenVongXetTuyen::getThuTu)
+                .max().orElse(0);
+
+        // =====================================================================
+        // BƯỚC 1: Mỗi ngành xét tuyển độc lập theo điểm — BỎ QUA thứ tự NV
+        // =====================================================================
+        // Gom tất cả NV của cùng 1 ngành lại, sắp xếp điểm giảm dần,
+        // quét từ trên xuống đến hết chỉ tiêu → đánh dấu "đỗ dự kiến".
+        // Một thí sinh điểm cao có thể "đỗ dự kiến" ở nhiều ngành cùng lúc.
+        //
+        // idNv -> true nếu NV này nằm trong top chỉ tiêu của ngành đó
+        Set<Integer> doDuKien = new HashSet<>();
+
+        // Nhóm tất cả NV theo ngành
+        Map<String, List<NguyenVongXetTuyen>> nvTheoNganh = afterFilter.stream()
                 .collect(Collectors.groupingBy(NguyenVongXetTuyen::getMaNganh));
-        
-        for (List<NguyenVongXetTuyen> nvList : byNganh.values()) {
-            // Sắp xếp theo điểm giảm dần (cao nhất lên đầu)
-            nvList.sort((a, b) -> b.getDiemXetTuyen().compareTo(a.getDiemXetTuyen()));
-            for (int i = 0; i < nvList.size(); i++) {
-                nvList.get(i).setThuTuXetTuyen(i + 1);
+
+        for (Map.Entry<String, List<NguyenVongXetTuyen>> entry : nvTheoNganh.entrySet()) {
+            String maNganh = entry.getKey();
+            int chiTieu = chiTieuMap.getOrDefault(maNganh, 0);
+            if (chiTieu <= 0) continue;
+
+            // Sắp xếp theo điểm GIẢM DẦN — thứ tự NV không quan trọng ở bước này
+            List<NguyenVongXetTuyen> sorted = entry.getValue().stream()
+                    .sorted(Comparator.comparing(NguyenVongXetTuyen::getDiemXetTuyen).reversed())
+                    .collect(Collectors.toList());
+
+            // Quét từ trên xuống đến hết chỉ tiêu
+            int dem = 0;
+            for (NguyenVongXetTuyen nv : sorted) {
+                if (dem >= chiTieu) break;
+                doDuKien.add(nv.getIdNv());
+                dem++;
             }
         }
-        
-        // ==================== BƯỚC 5: XÉT CHỈ TIÊU ====================
-        // Tạo bản sao chỉ tiêu để theo dõi số lượng còn lại
-        Map<String, Integer> remainingChiTieu = new ConcurrentHashMap<>(chiTieuMap);
-        
-        for (List<NguyenVongXetTuyen> nvList : byNganh.values()) {
-            String maNganh = nvList.get(0).getMaNganh();
-            int chiTieu = remainingChiTieu.getOrDefault(maNganh, 0);
-            
-            for (int i = 0; i < nvList.size(); i++) {
-                NguyenVongXetTuyen nv = nvList.get(i);
-                if (i < chiTieu) {
-                    nv.setKetQua("YES");
+
+        System.out.println("✓ Bước 1 xong — số lượt đỗ dự kiến: " + doDuKien.size()
+                + " (1 thí sinh có thể đỗ nhiều ngành)");
+
+        // =====================================================================
+        // BƯỚC 2: Lọc ảo — dùng thứ tự NV để chọn 1 ngành duy nhất
+        // =====================================================================
+        // Với mỗi thí sinh đang "đỗ dự kiến" ở nhiều ngành:
+        //   → Chỉ giữ ngành có thứ tự NV ưu tiên CAO NHẤT (thuTu nhỏ nhất)
+        //   → Nhả chỗ ở các ngành còn lại
+        //   → Người xếp sau trong ngành vừa nhả được đẩy lên (nếu đang đỗ dự kiến)
+        // Lặp đến khi không còn thay đổi (hội tụ).
+        //
+        // CCCD -> NV đang được giữ chỗ chính thức (NV ưu tiên cao nhất mà thí sinh đỗ dự kiến)
+        Map<String, NguyenVongXetTuyen> dangGiuCho = new HashMap<>();
+
+        boolean changed = true;
+        int vong = 0;
+        int maxVong = maxThuTu + 10;
+
+        while (changed && vong < maxVong) {
+            changed = false;
+            vong++;
+
+            //  Với mỗi thí sinh: tìm NV ưu tiên cao nhất mà họ đang đỗ dự kiến ---
+            // Nhóm các NV đỗ dự kiến theo CCCD
+            Map<String, NguyenVongXetTuyen> nvTotNhat = new HashMap<>();
+            for (NguyenVongXetTuyen nv : afterFilter) {
+                if (!doDuKien.contains(nv.getIdNv())) continue;
+                String cccd = nv.getCccd();
+                NguyenVongXetTuyen cur = nvTotNhat.get(cccd);
+                // Giữ NV có thuTu nhỏ nhất (ưu tiên cao nhất)
+                if (cur == null || nv.getThuTu() < cur.getThuTu()) {
+                    nvTotNhat.put(cccd, nv);
+                }
+            }
+
+            // --- 2b. Cập nhật dangGiuCho và phát hiện thay đổi ---
+            for (Map.Entry<String, NguyenVongXetTuyen> e : nvTotNhat.entrySet()) {
+                String cccd = e.getKey();
+                NguyenVongXetTuyen nvMoi = e.getValue();
+                NguyenVongXetTuyen nvCu = dangGiuCho.get(cccd);
+                if (nvCu == null || !nvCu.getIdNv().equals(nvMoi.getIdNv())) {
+                    dangGiuCho.put(cccd, nvMoi);
+                    changed = true;
+                }
+            }
+
+            // --- 2c. Xóa khỏi doDuKien những NV mà thí sinh KHÔNG chọn ---
+            // (thí sinh đỗ dự kiến ở NV2 nhưng đang giữ NV1 → nhả NV2)
+            // Sau đó bổ sung người kế tiếp vào ngành vừa nhả
+            Set<Integer> dangGiuIdNv = dangGiuCho.values().stream()
+                    .map(NguyenVongXetTuyen::getIdNv)
+                    .collect(Collectors.toSet());
+
+            // Với mỗi CCCD đang giữ chỗ: xóa các NV đỗ dự kiến khác của họ khỏi doDuKien
+            Map<String, Integer> chiTieuDangDung = new HashMap<>();
+            for (NguyenVongXetTuyen nv : dangGiuCho.values()) {
+                chiTieuDangDung.merge(nv.getMaNganh(), 1, Integer::sum);
+            }
+
+            // Tìm các ngành còn chỗ trống (chỉ tiêu gốc > số đang giữ)
+            // và bổ sung thí sinh điểm cao tiếp theo chưa đỗ dự kiến ở ngành đó
+            Set<String> cccdDaDuoc = dangGiuCho.keySet();
+
+            for (Map.Entry<String, List<NguyenVongXetTuyen>> entry : nvTheoNganh.entrySet()) {
+                String maNganh = entry.getKey();
+                int chiTieuGoc = chiTieuMap.getOrDefault(maNganh, 0);
+                int dangDung = chiTieuDangDung.getOrDefault(maNganh, 0);
+                int conTrong = chiTieuGoc - dangDung;
+                if (conTrong <= 0) continue;
+
+                // Lấy danh sách thí sinh của ngành này, sắp xếp điểm giảm dần
+                // Chỉ xét những người CHƯA có chỗ tạm (chưa đỗ dự kiến ở ngành nào được giữ)
+                List<NguyenVongXetTuyen> ungVien = entry.getValue().stream()
+                        .filter(nv -> !doDuKien.contains(nv.getIdNv())) // chưa đỗ dự kiến ngành này
+                        .filter(nv -> !cccdDaDuoc.contains(nv.getCccd())) // chưa có chỗ tạm nào
+                        .sorted(Comparator.comparing(NguyenVongXetTuyen::getDiemXetTuyen).reversed())
+                        .collect(Collectors.toList());
+
+                for (int i = 0; i < conTrong && i < ungVien.size(); i++) {
+                    doDuKien.add(ungVien.get(i).getIdNv());
+                    changed = true;
+                }
+            }
+
+            // Xóa khỏi doDuKien các NV của thí sinh đã có chỗ tạm nhưng không phải NV đang giữ
+            for (NguyenVongXetTuyen nv : afterFilter) {
+                if (!doDuKien.contains(nv.getIdNv())) continue;
+                String cccd = nv.getCccd();
+                NguyenVongXetTuyen nvGiu = dangGiuCho.get(cccd);
+                if (nvGiu != null && !nvGiu.getIdNv().equals(nv.getIdNv())) {
+                    doDuKien.remove(nv.getIdNv());
+                    changed = true;
+                }
+            }
+
+            System.out.println("[Vòng " + vong + "] Đang giữ chỗ: " + dangGiuCho.size() + " thí sinh");
+        }
+
+        System.out.println("\n✓ Hội tụ sau " + vong + " vòng lặp");
+
+        // --- Bước 6: Xác định kết quả cuối cùng ---
+        //
+        // Quy tắc gán kết quả cho từng nguyện vọng của mỗi thí sinh:
+        //
+        //   NV1  NV2  NV3(YES)  NV4  NV5
+        //   NO   NO   YES       KHONG_XET  KHONG_XET
+        //
+        //   - YES      : NV mà thí sinh trúng tuyển (nguyện vọng giữ chỗ cuối cùng)
+        //   - NO       : các NV có ưu tiên CAO HƠN NV đạt (thuTu < thuTu_NV_dat)
+        //                → thí sinh đã xét nhưng không đủ điều kiện (hết chỉ tiêu / dưới sàn)
+        //   - KHONG_XET: các NV có ưu tiên THẤP HƠN NV đạt (thuTu > thuTu_NV_dat)
+        //                → không cần xét vì đã trúng ở NV ưu tiên cao hơn rồi
+        //   - Thí sinh trượt HOÀN TOÀN (không có NV nào đạt): tất cả NV đều là NO
+
+        // Map CCCD -> NV đạt (để tra thuTu của NV đạt)
+        Map<String, NguyenVongXetTuyen> nvDatTheoCccd = new HashMap<>(dangGiuCho);
+
+        // Gán kết quả cho toàn bộ nguyện vọng
+        List<NguyenVongXetTuyen> ketQua = new ArrayList<>();
+        for (NguyenVongXetTuyen nv : afterFilter) {
+            String cccd = nv.getCccd();
+            NguyenVongXetTuyen nvDat = nvDatTheoCccd.get(cccd);
+
+            if (nvDat == null) {
+                // Thí sinh trượt hoàn toàn → tất cả NV đều NO
+                nv.setKetQua("NO");
+
+            } else if (nv.getIdNv().equals(nvDat.getIdNv())) {
+                // Đúng NV trúng tuyển
+                nv.setKetQua("YES");
+
+            } else if (nv.getThuTu() < nvDat.getThuTu()) {
+                // NV ưu tiên cao hơn NV đạt → thí sinh đã xét nhưng trượt
+                nv.setKetQua("NO");
+
                 } else {
-                    nv.setKetQua("NO");
-                }
+                // NV ưu tiên thấp hơn NV đạt → không cần xét
+                nv.setKetQua("KHONG_XET");
             }
+
+            ketQua.add(nv);
         }
-        
-        // ==================== BƯỚC 6: XÉT THỨ TỰ NGUYỆN VỌNG ====================
-        // Quan trọng: Xử lý theo thứ tự ưu tiên của từng thí sinh
-        Map<String, List<NguyenVongXetTuyen>> byCccd = afterMethodFilter.stream()
-                .collect(Collectors.groupingBy(NguyenVongXetTuyen::getCccd));
-        
-        // Đếm lại chỉ tiêu thực tế sau khi xét thứ tự NV
-        Map<String, Integer> actualChiTieu = new ConcurrentHashMap<>(chiTieuMap);
-        
-        for (List<NguyenVongXetTuyen> nvList : byCccd.values()) {
-            // Sắp xếp theo thứ tự nguyện vọng tăng dần (1, 2, 3...)
-            nvList.sort(Comparator.comparing(NguyenVongXetTuyen::getThuTu));
-            
-            boolean daTrungTuyen = false;
-            
-            for (NguyenVongXetTuyen nv : nvList) {
-                if (daTrungTuyen) {
-                    // Đã trúng tuyển nguyện vọng trước, các NV sau không xét
-                    nv.setKetQua("KHONG_XET");
-                } else if ("YES".equals(nv.getKetQua())) {
-                    // Kiểm tra còn chỉ tiêu không
-                    String maNganh = nv.getMaNganh();
-                    int chiTieuConLai = actualChiTieu.getOrDefault(maNganh, 0);
-                    
-                    if (chiTieuConLai > 0) {
-                        actualChiTieu.put(maNganh, chiTieuConLai - 1);
-                        daTrungTuyen = true;
-                    } else {
-                        nv.setKetQua("NO");
-                    }
-                }
-            }
-        }
-        
-        // ==================== BƯỚC 7: CẬP NHẬT DATABASE ====================
-        updateBatchOptimized(afterMethodFilter);
-        
-        // ==================== BƯỚC 8: THỐNG KÊ ====================
-        Map<String, Long> thongKe = afterMethodFilter.stream()
+        // --- Bước 8: Lưu kết quả vào DB ---
+        updateBatchOptimized(ketQua);
+
+        // --- Thống kê ---
+        Map<String, Long> thongKe = ketQua.stream()
                 .collect(Collectors.groupingBy(NguyenVongXetTuyen::getKetQua, Collectors.counting()));
-        
+
+        long elapsed = System.currentTimeMillis() - startTime;
         System.out.println("\n=== KẾT QUẢ XÉT TUYỂN ===");
-        thongKe.forEach((ketQua, count) -> System.out.println("  " + ketQua + ": " + count));
-        
-        long yesCount = thongKe.getOrDefault("YES", 0L);
-        System.out.println("\n TỔNG SỐ TRÚNG TUYỂN: " + yesCount);
-        System.out.println("Tổng thời gian: " + (System.currentTimeMillis() - startTime) + "ms");
+        System.out.println(" ĐẠT (YES)            : " + thongKe.getOrDefault("YES", 0L));
+        System.out.println(" TRƯỢT (NO)            : " + thongKe.getOrDefault("NO", 0L));
+        System.out.println(" KHÔNG XÉT (KHONG_XET) : " + thongKe.getOrDefault("KHONG_XET", 0L));
+        System.out.printf("⏱ Thời gian xử lý: %.2f giây%n", elapsed / 1000.0);
     }
-    
+
+    // =========================================================================
+    // 4. LỌC TỔ HỢP & PHƯƠNG THỨC
+    // =========================================================================
+
     /**
-     * Lọc tổ hợp: chỉ giữ 1 tổ hợp có điểm cao nhất cho mỗi (CCCD + Mã ngành + Phương thức)
+     * Lọc tổ hợp: chỉ giữ 1 tổ hợp có điểm cao nhất cho mỗi (CCCD + Mã ngành + Phương thức).
+     * Các bản ghi còn lại bị xóa khỏi DB.
      */
     private List<NguyenVongXetTuyen> filterBestToHop(List<NguyenVongXetTuyen> allNguyenVong) {
         Map<String, List<NguyenVongXetTuyen>> groupByKey = allNguyenVong.stream()
-                .collect(Collectors.groupingBy(nv -> 
-                    nv.getCccd() + "_" + nv.getMaNganh() + "_" + nv.getPhuongThuc()));
-        
+                .collect(Collectors.groupingBy(nv ->
+                        nv.getCccd() + "_" + nv.getMaNganh() + "_" + nv.getPhuongThuc()));
+
         List<NguyenVongXetTuyen> result = new ArrayList<>();
         List<Integer> idsToDelete = new ArrayList<>();
-        
+
         for (List<NguyenVongXetTuyen> nvList : groupByKey.values()) {
             if (nvList.isEmpty()) continue;
-            
-            String maNganh = nvList.get(0).getMaNganh();
-            String phuongThuc = nvList.get(0).getPhuongThuc();
-            String key = maNganh + "_" + phuongThuc;
-            Map<String, BigDecimal> toHopDiemChuan = diemChuanTheoToHop.getOrDefault(key, new HashMap<>());
-            
-            // Lọc các tổ hợp có trong danh sách xét tuyển
-            List<NguyenVongXetTuyen> validList = nvList.stream()
-                    .filter(nv -> nv.getMaToHop() != null && toHopDiemChuan.containsKey(nv.getMaToHop()))
-                    .collect(Collectors.toList());
-            
-            if (validList.isEmpty()) {
-                // Không có tổ hợp nào được xét tuyển, giữ bản ghi đầu tiên
-                result.add(nvList.get(0));
-                for (int i = 1; i < nvList.size(); i++) {
-                    idsToDelete.add(nvList.get(i).getIdNv());
-                }
-            } else {
-                // Chọn tổ hợp có điểm cao nhất
-                NguyenVongXetTuyen best = validList.stream()
-                        .max(Comparator.comparing(NguyenVongXetTuyen::getDiemXetTuyen))
-                        .orElse(validList.get(0));
-                result.add(best);
-                
-                for (NguyenVongXetTuyen nv : nvList) {
-                    if (nv != best) {
-                        idsToDelete.add(nv.getIdNv());
-                    }
-                }
-            }
-        }
-        
-        // Xóa các bản ghi không được chọn
-        if (!idsToDelete.isEmpty()) {
-            nguyenVongController.deleteByIds(idsToDelete);
-            System.out.println("Đã xóa " + idsToDelete.size() + " bản ghi tổ hợp không được chọn");
-        }
-        
-        return result;
-    }
-    
-    /**
-     * Lọc phương thức: chỉ giữ 1 phương thức có điểm cao nhất cho mỗi (CCCD + Mã ngành)
-     */
-    private List<NguyenVongXetTuyen> filterBestPhuongThuc(List<NguyenVongXetTuyen> list) {
-        Map<String, List<NguyenVongXetTuyen>> groupByCccdNganh = list.stream()
-                .collect(Collectors.groupingBy(nv -> nv.getCccd() + "_" + nv.getMaNganh()));
-        
-        List<NguyenVongXetTuyen> result = new ArrayList<>();
-        List<Integer> idsToDelete = new ArrayList<>();
-        
-        for (List<NguyenVongXetTuyen> nvList : groupByCccdNganh.values()) {
-            if (nvList.isEmpty()) continue;
-            
-            if (nvList.size() == 1) {
-                result.add(nvList.get(0));
-                continue;
-            }
-            
-            // Chọn phương thức có điểm xét tuyển cao nhất
+
             NguyenVongXetTuyen best = nvList.stream()
                     .max(Comparator.comparing(NguyenVongXetTuyen::getDiemXetTuyen))
                     .orElse(nvList.get(0));
             result.add(best);
-            
+
             for (NguyenVongXetTuyen nv : nvList) {
-                if (nv != best) {
+                if (!nv.getIdNv().equals(best.getIdNv())) {
                     idsToDelete.add(nv.getIdNv());
                 }
             }
         }
-        
+
         if (!idsToDelete.isEmpty()) {
             nguyenVongController.deleteByIds(idsToDelete);
-            System.out.println("Đã xóa " + idsToDelete.size() + " bản ghi phương thức không được chọn");
+            System.out.println("✓ Đã xóa " + idsToDelete.size() + " bản ghi tổ hợp không được chọn");
         }
-        
+
         return result;
     }
-    
+
+    /**
+     * Lọc phương thức: chỉ giữ 1 phương thức có điểm cao nhất cho mỗi (CCCD + Mã ngành).
+     * Các bản ghi còn lại bị xóa khỏi DB.
+     */
+    private List<NguyenVongXetTuyen> filterBestPhuongThuc(List<NguyenVongXetTuyen> list) {
+        Map<String, List<NguyenVongXetTuyen>> groupByCccdNganh = list.stream()
+                .collect(Collectors.groupingBy(nv -> nv.getCccd() + "_" + nv.getMaNganh()));
+
+        List<NguyenVongXetTuyen> result = new ArrayList<>();
+        List<Integer> idsToDelete = new ArrayList<>();
+
+        for (List<NguyenVongXetTuyen> nvList : groupByCccdNganh.values()) {
+            if (nvList.isEmpty()) continue;
+
+            if (nvList.size() == 1) {
+                result.add(nvList.get(0));
+                continue;
+            }
+
+            NguyenVongXetTuyen best = nvList.stream()
+                    .max(Comparator.comparing(NguyenVongXetTuyen::getDiemXetTuyen))
+                    .orElse(nvList.get(0));
+            result.add(best);
+
+            for (NguyenVongXetTuyen nv : nvList) {
+                if (!nv.getIdNv().equals(best.getIdNv())) {
+                    idsToDelete.add(nv.getIdNv());
+                }
+            }
+        }
+
+        if (!idsToDelete.isEmpty()) {
+            nguyenVongController.deleteByIds(idsToDelete);
+            System.out.println("✓ Đã xóa " + idsToDelete.size() + " bản ghi phương thức không được chọn");
+        }
+
+        return result;
+    }
+
+    // =========================================================================
+    // 6. TIỆN ÍCH
+    // =========================================================================
+
     private void updateBatchOptimized(List<NguyenVongXetTuyen> list) {
         if (list.isEmpty()) return;
         nguyenVongController.updateBatch(list);
+        System.out.println("✓ Đã cập nhật " + list.size() + " bản ghi vào DB");
     }
-    
+
     private String getCellString(Cell cell) {
         if (cell == null) return null;
         DataFormatter formatter = new DataFormatter();
         String value = formatter.formatCellValue(cell).trim();
         return value.isEmpty() ? null : value;
     }
-    
+
     private double getCellDouble(Cell cell) {
         if (cell == null) return 0;
         DataFormatter formatter = new DataFormatter();

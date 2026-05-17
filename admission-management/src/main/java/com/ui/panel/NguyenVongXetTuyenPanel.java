@@ -4,6 +4,7 @@ import java.util.List;
 import com.config.AppConfig;
 import com.controller.NguyenVongXetTuyenController;
 import com.entity.NguyenVongXetTuyen;
+import com.service.NVXTImport.DiemChuanExportService;
 import com.service.NVXTImport.NguyenVongImportService;
 import com.service.NVXTImport.XetTuyenService;
 import com.service.NVXTImport.model.ImportResult;
@@ -16,18 +17,15 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.apache.poi.ss.usermodel.Row;
-
 import java.awt.*;
 import java.io.File;
-import java.io.FileInputStream;
 import java.math.BigDecimal;
 
 public class NguyenVongXetTuyenPanel extends BasePanel {
     private NguyenVongXetTuyenController controller = new NguyenVongXetTuyenController();
+    private XetTuyenService xetTuyenService = null;
+    /** Nút xuất điểm chuẩn — chỉ bật sau khi xét tuyển hoàn tất */
+    private BaseButton btnExportDiemChuan;
 
     JTextField searchField;
     BaseTable table;
@@ -141,11 +139,14 @@ public class NguyenVongXetTuyenPanel extends BasePanel {
         BaseButton btnReadExcel = new BaseButton("Đọc file", new Color(39,174,96));
         BaseButton btnEdit = new BaseButton("Chỉnh sửa");
         BaseButton btnDelete = new BaseButton("Xóa", new Color(220,53,69));
+        btnExportDiemChuan = new BaseButton("Xuất điểm chuẩn", new Color(41,128,185));
+        btnExportDiemChuan.setEnabled(false); // chỉ bật sau khi xét tuyển xong
 
         footer.add(btnEdit);
         footer.add(btnDelete);
         footer.add(btnReadExcel);
         footer.add(btnXetTuyen);
+        footer.add(btnExportDiemChuan);
 
         contentPanel.add(footer,BorderLayout.SOUTH);
 
@@ -156,6 +157,7 @@ public class NguyenVongXetTuyenPanel extends BasePanel {
         btnReadExcel.addActionListener(e -> functionReadExcel());
         btnXetTuyen.addActionListener(e -> functionXetTuyen());
         btnRefresh.addActionListener(e -> loadTable());
+        btnExportDiemChuan.addActionListener(e -> functionExportDiemChuan());
 
         add(contentPanel,BorderLayout.CENTER);
     }
@@ -164,7 +166,10 @@ public class NguyenVongXetTuyenPanel extends BasePanel {
     public void loadTable(){
         model.setRowCount(0);
         List<NguyenVongXetTuyen> list = controller.getNguyenVongXetTuyen();
-        if(list.isEmpty()) { return; }
+        if(list.isEmpty()) { 
+            btnExportDiemChuan.setEnabled(false); 
+            return; 
+        }
         list.forEach(nv -> {
             model.addRow(new Object[]{
                     nv.getIdNv(),
@@ -181,6 +186,7 @@ public class NguyenVongXetTuyenPanel extends BasePanel {
                     nv.getTtThm()
             });
         });
+        btnExportDiemChuan.setEnabled(hasValidXetTuyenResults());
     }
 
     //TODO: chức năng thêm, sửa, xóa, tìm kiếm, đọc file excel, 
@@ -401,40 +407,31 @@ public class NguyenVongXetTuyenPanel extends BasePanel {
 
     private void functionXetTuyen() {
         JFileChooser chooser = new JFileChooser();
-        
+
         try {
-            JOptionPane.showMessageDialog(this, "Chọn file ĐIỂM CHUẨN THPT");
-            if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
-            File fileThpt = chooser.getSelectedFile();
-            
-            JOptionPane.showMessageDialog(this, "Chọn file ĐIỂM CHUẨN ĐGNL");
-            if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
-            File fileDgnl = chooser.getSelectedFile();
-            
-            JOptionPane.showMessageDialog(this, "Chọn file ĐIỂM CHUẨN V-SAT");
-            if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
-            File fileVsat = chooser.getSelectedFile();
-            
             JOptionPane.showMessageDialog(this, "Chọn file CHỈ TIÊU");
             if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
             File fileChiTieu = chooser.getSelectedFile();
-            
+
             JDialog progressDialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Đang xét tuyển...", true);
+            JLabel statusLabel = new JLabel("Đang xử lý, vui lòng chờ...", SwingConstants.CENTER);
+            statusLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
             JProgressBar progressBar = new JProgressBar();
             progressBar.setIndeterminate(true);
-            progressDialog.add(progressBar);
-            progressDialog.setSize(300, 80);
+            progressDialog.setLayout(new BorderLayout(0, 8));
+            progressDialog.add(statusLabel, BorderLayout.CENTER);
+            progressDialog.add(progressBar, BorderLayout.SOUTH);
+            progressDialog.setSize(340, 90);
             progressDialog.setLocationRelativeTo(this);
-            
+
             SwingWorker<Void, Void> worker = new SwingWorker<>() {
                 @Override
                 protected Void doInBackground() throws Exception {
-                    XetTuyenService service = new XetTuyenService();
-                    service.loadDiemChuan(fileThpt, fileDgnl, fileVsat);
-                    service.loadChiTieu(fileChiTieu);
-                    service.xetTuyen();
+                    xetTuyenService = new XetTuyenService();
+                    xetTuyenService.loadChiTieu(fileChiTieu);
+                    xetTuyenService.xetTuyen();
                     return null;
-                }
+                }    
                 
                 @Override
                 protected void done() {
@@ -445,14 +442,89 @@ public class NguyenVongXetTuyenPanel extends BasePanel {
                     loadTable();
                 }
             };
-            
+
             worker.execute();
             progressDialog.setVisible(true);
-            
+
         } catch (Exception e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Lỗi: " + e.getMessage());
+            JOptionPane.showMessageDialog(this, "Lỗi: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private void functionExportDiemChuan() {
+        if (!hasValidXetTuyenResults()) {
+            JOptionPane.showMessageDialog(this,
+                "Chưa có kết quả xét tuyển trong hệ thống!\n"
+                + "Vui lòng chạy xét tuyển trước.",
+                "Chưa có dữ liệu", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("Lưu file điểm chuẩn");
+        chooser.setSelectedFile(new File("diem_chuan_result.xlsx"));
+
+        if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) return;
+
+        File outputFile = chooser.getSelectedFile();
+        if (!outputFile.getName().toLowerCase().endsWith(".xlsx")) {
+            outputFile = new File(outputFile.getAbsolutePath() + ".xlsx");
+        }
+
+        final File finalOutputFile = outputFile;
+
+        // Progress dialog
+        JDialog progressDialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Đang xuất...", true);
+        JProgressBar progressBar = new JProgressBar();
+        progressBar.setIndeterminate(true);
+        progressDialog.add(progressBar);
+        progressDialog.setSize(280, 70);
+        progressDialog.setLocationRelativeTo(this);
+
+        SwingWorker<Void, Void> worker = new SwingWorker<>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                DiemChuanExportService exportService = new DiemChuanExportService();
+                exportService.exportDiemChuan(finalOutputFile);
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                progressDialog.dispose();
+                try {
+                    get();
+                    JOptionPane.showMessageDialog(
+                        NguyenVongXetTuyenPanel.this,
+                        "<html><b>Xuất điểm chuẩn thành công!</b><br>"
+                        + "File đã lưu tại:<br><i>" + finalOutputFile.getAbsolutePath() + "</i></html>",
+                        "Thành công", JOptionPane.INFORMATION_MESSAGE
+                    );
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(
+                        NguyenVongXetTuyenPanel.this,
+                        "Lỗi khi xuất file:\n" + ex.getMessage(),
+                        "Lỗi", JOptionPane.ERROR_MESSAGE
+                    );
+                }
+            }
+        };
+
+        worker.execute();
+        progressDialog.setVisible(true);
+    }
+
+    private boolean hasValidXetTuyenResults() {
+        List<NguyenVongXetTuyen> list = controller.getNguyenVongXetTuyen();
+        if (list.isEmpty()) return false;
+        
+        // Kiểm tra xem có bản ghi nào có kết quả khác "CHUA_XET" không
+        return list.stream()
+                .anyMatch(nv -> nv.getKetQua() != null 
+                        && !"CHUA_XET".equals(nv.getKetQua())
+                        && !nv.getKetQua().trim().isEmpty());
     }
 
     //kiểm tra dữ liệu nhập vào
