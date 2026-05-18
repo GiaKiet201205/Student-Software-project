@@ -16,10 +16,4 @@ public class HibernateUtil {
       throw new AppException("Lỗi khởi tạo SessionFactory", ex);
     }
   }
-
-    public static void shutdown() {
-    if (sessionFactory != null && !sessionFactory.isClosed()) {
-      sessionFactory.close();
-    }
-  }
 }

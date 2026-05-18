@@ -405,16 +405,4 @@ public class ExamineeManagementFrame extends BasePanel {
             loadingDialog = null;
         }
     }
-
-    public static void main(String[] args) {
-        JFrame frame = new JFrame("User Management");
-
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(800, 600);
-
-        frame.add(new ExamineeManagementFrame());
-
-        frame.setLocationRelativeTo(null); // center
-        frame.setVisible(true);
-    }
 }

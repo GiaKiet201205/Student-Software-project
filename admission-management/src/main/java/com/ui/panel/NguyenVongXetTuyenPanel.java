@@ -1,5 +1,6 @@
 package com.ui.panel;
 
+import java.math.RoundingMode;
 import java.util.List;
 import com.config.AppConfig;
 import com.controller.NguyenVongXetTuyenController;
@@ -170,22 +171,20 @@ public class NguyenVongXetTuyenPanel extends BasePanel {
             btnExportDiemChuan.setEnabled(false); 
             return; 
         }
-        list.forEach(nv -> {
-            model.addRow(new Object[]{
-                    nv.getIdNv(),
-                    nv.getCccd(),
-                    nv.getMaNganh(),
-                    nv.getThuTu(),
-                    nv.getDiemThXT(),
-                    nv.getDiemUuTienQD(),
-                    nv.getDiemCong(),
-                    nv.getDiemXetTuyen(),
-                    nv.getKetQua(),
-                    nv.getNvKeys(),
-                    nv.getPhuongThuc(),
-                    nv.getTtThm()
-            });
-        });
+        list.forEach(nv -> model.addRow(new Object[]{
+                nv.getIdNv(),
+                nv.getCccd(),
+                nv.getMaNganh(),
+                nv.getThuTu(),
+                nv.getDiemThXT().setScale(2, RoundingMode.HALF_UP),
+                nv.getDiemUuTienQD().setScale(2, RoundingMode.HALF_UP),
+                nv.getDiemCong().setScale(2, RoundingMode.HALF_UP),
+                nv.getDiemXetTuyen().setScale(2, RoundingMode.HALF_UP),
+                nv.getKetQua(),
+                nv.getNvKeys(),
+                nv.getPhuongThuc(),
+                nv.getTtThm()
+        }));
         btnExportDiemChuan.setEnabled(hasValidXetTuyenResults());
     }
 
