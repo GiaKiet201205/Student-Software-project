@@ -44,7 +44,7 @@ public class ThiSinhXetTuyen25RowMapper implements RowMapper<ThiSinhXetTuyen25> 
             ts.setKhuVuc(khuVuc.trim());
         }
         ts.setDienThoai("0123456789");
-        ts.setPassword(hoTen.trim().trim().toLowerCase().replaceAll("[_\\s]+", "") + "123");
+        ts.setPassword(ngaySinh.trim().replaceAll("/", ""));
         ts.setUpdatedAt(LocalDate.now());
 
         return ts;
