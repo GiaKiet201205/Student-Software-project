@@ -26,5 +26,16 @@ services:
     depends_on:
       - mysql
 
+  backend:
+    build:
+      context: ../web
+      dockerfile: Dockerfile
+    container_name: spring-web
+    ports:
+      - "8081:8081"
+
+    depends_on:
+      - mysql
+
 volumes:
   mysql_data:
