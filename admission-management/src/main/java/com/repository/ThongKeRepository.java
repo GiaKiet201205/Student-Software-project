@@ -1,6 +1,7 @@
 package com.repository;
 
 import com.config.HibernateUtil;
+import com.dto.ThiSinhTrungTuyenDTO;
 import com.dto.ThongKeNVDTO;
 import com.entity.ThiSinhXetTuyen25;
 import com.exception.AppException;
@@ -76,6 +77,38 @@ public class ThongKeRepository extends BaseRepository<ThiSinhXetTuyen25> {
             return session.createQuery(hql, Object[].class).getResultList();
         } catch (Exception e) {
             throw new AppException("Lỗi khi thống kê số lượng trúng tuyển theo phương thức và ngành", e);
+        }
+    }
+
+    public List<ThiSinhTrungTuyenDTO> getThiSinhTrungTuyenTheoNganh(String maNganh) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = """
+                    SELECT
+                        ts.cccd,
+                        ts.ho,
+                        ts.ten,
+                        ts.ngaySinh,
+                        ts.email,
+                        ts.dienThoai,
+                        ts.gioiTinh,
+                        ts.noiSinh
+                    FROM NguyenVongXetTuyen nv
+                    JOIN ThiSinhXetTuyen25 ts ON nv.cccd = ts.cccd
+                    WHERE nv.maNganh = :maNganh
+                      AND nv.ketQua = 'YES'
+                    GROUP BY ts.cccd, ts.ho, ts.ten, ts.ngaySinh, ts.email, ts.dienThoai, ts.gioiTinh, ts.noiSinh
+                    ORDER BY ts.ho ASC, ts.ten ASC
+                    """;
+            List<Object[]> rows = session.createQuery(hql, Object[].class)
+                    .setParameter("maNganh", maNganh)
+                    .getResultList();
+            return rows.stream()
+                    .map(ThiSinhTrungTuyenDTO::new)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            System.err.println("DEBUG: Exception in getThiSinhTrungTuyenTheoNganh: " + e.getMessage());
+            e.printStackTrace();
+            throw new AppException("Lỗi khi lấy danh sách thí sinh trúng tuyển theo ngành", e);
         }
     }
 

@@ -1,9 +1,11 @@
 package com.controller;
 
 import com.dto.ChartData;
+import com.dto.ThiSinhTrungTuyenDTO;
 import com.dto.ThongKeNVDTO;
 import com.dto.ThongKeSLTrungTuyenDTO;
 import com.entity.Nganh;
+import com.service.ThiSinhTrungTuyenNganhExporter;
 import com.service.ThongKeNVExporter;
 import com.service.ThongKeService;
 import com.service.ThongKeSLTrungTuyenExporter;
@@ -54,5 +56,27 @@ public class ThongKeController {
             return;
         }
         ThongKeSLTrungTuyenExporter.exportWithChooser(data, this.mainPanel);
+    }
+
+    public void handleExportDSTTTheoNganh(Nganh selectedNganh) {
+        // Kiểm tra nganh được chọn
+        if (selectedNganh == null || selectedNganh.getIdNganh() == 0) {
+            JOptionPane.showMessageDialog(mainPanel, 
+                    "Vui lòng chọn một ngành để xuất danh sách thí sinh trúng tuyển.",
+                    "Thông báo", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        // Lấy danh sách thí sinh trúng tuyển theo ngành
+        List<ThiSinhTrungTuyenDTO> data = thongKeService.getThiSinhTrungTuyenTheoNganh(selectedNganh.getMaNganh());
+        if (data.isEmpty()) {
+            JOptionPane.showMessageDialog(mainPanel, 
+                    "Không có thí sinh trúng tuyển cho ngành: " + selectedNganh.getTenNganh(),
+                    "Thông báo", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        // Xuất file Excel
+        ThiSinhTrungTuyenNganhExporter.exportWithChooser(data, selectedNganh.getTenNganh(), mainPanel);
     }
 }

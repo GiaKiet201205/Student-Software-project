@@ -1,6 +1,7 @@
 package com.service;
 
 import com.dto.ChartData;
+import com.dto.ThiSinhTrungTuyenDTO;
 import com.dto.ThongKeNVDTO;
 import com.dto.ThongKeSLTrungTuyenDTO;
 import com.entity.Nganh;
@@ -133,5 +134,9 @@ public class ThongKeService {
             result.add(dto);
         }
         return result;
+    }
+
+    public List<ThiSinhTrungTuyenDTO> getThiSinhTrungTuyenTheoNganh(String maNganh) {
+        return thongKeRepository.getThiSinhTrungTuyenTheoNganh(maNganh);
     }
 }

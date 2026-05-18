@@ -29,7 +29,7 @@ public class ThiSinhXetTuyen25RowMapper implements RowMapper<ThiSinhXetTuyen25> 
 
 
         ThiSinhXetTuyen25 ts = new ThiSinhXetTuyen25();
-        ts.setCccd(cccd.trim());
+        ts.setCccd(parts.length > 1 ? parts[1].trim() : "");
         ts.setSoBaoDanh(cccd.trim());
         ts.setHo(parts.length > 0 ? parts[0].trim() : "");
         ts.setTen(parts.length > 1 ? parts[1].trim() : "");
