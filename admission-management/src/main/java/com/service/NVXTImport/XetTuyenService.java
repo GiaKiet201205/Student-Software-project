@@ -148,14 +148,7 @@ public class XetTuyenService {
                     dangGiuCho.put(cccd, nvMoi);
                     changed = true;
                 }
-            }
-
-            //  Xóa khỏi doDuKien những NV mà thí sinh KHÔNG chọn ---
-            // (thí sinh đỗ dự kiến ở NV2 nhưng đang giữ NV1 → nhả NV2)
-            // Sau đó bổ sung người kế tiếp vào ngành vừa nhả
-            Set<Integer> dangGiuIdNv = dangGiuCho.values().stream()
-                    .map(NguyenVongXetTuyen::getIdNv)
-                    .collect(Collectors.toSet());
+            }      
 
             // Với mỗi CCCD đang giữ chỗ: xóa các NV đỗ dự kiến khác của họ khỏi doDuKien
             Map<String, Integer> chiTieuDangDung = new HashMap<>();
