@@ -1,0 +1,170 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng nhập - Tra cứu Tuyển sinh</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .login-container {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        padding: 40px;
+        width: 100%;
+        max-width: 400px;
+      }
+
+      .login-header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .login-header h1 {
+        color: #2c3e50;
+        font-size: 28px;
+        margin-bottom: 10px;
+      }
+
+      .login-header p {
+        color: #7f8c8d;
+        font-size: 14px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        color: #2c3e50;
+        font-weight: 500;
+      }
+
+      input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #bdc3c7;
+        border-radius: 4px;
+        font-size: 14px;
+        transition: border-color 0.3s;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .btn-login {
+        width: 100%;
+        padding: 12px;
+        background-color: #667eea;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        margin-top: 20px;
+      }
+
+      .btn-login:hover {
+        background-color: #5568d3;
+      }
+
+      .error-message {
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 12px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        border: 1px solid #f5c6cb;
+      }
+
+      .help-text {
+        margin-top: 15px;
+        padding: 15px;
+        background-color: #e7f3ff;
+        border-left: 4px solid #3498db;
+        border-radius: 4px;
+        font-size: 13px;
+        color: #0c5460;
+      }
+
+      .help-text strong {
+        display: block;
+        margin-bottom: 8px;
+        color: #004085;
+      }
+
+      .help-text p {
+        margin: 5px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login-container">
+      <div class="login-header">
+        <h1>🎓 Tra cứu Tuyển sinh</h1>
+        <p>Hệ thống xét tuyển Đại học</p>
+      </div>
+
+      <div th:if="${error}" class="error-message" th:text="${error}"></div>
+
+      <form th:action="@{/authenticate}" method="post">
+        <div class="form-group">
+          <label for="cccd">Số CCCD/CMND</label>
+          <input
+            type="text"
+            id="cccd"
+            name="cccd"
+            required
+            placeholder="Nhập số CCCD"
+            maxlength="20"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="password">Mật khẩu (Ngày sinh: ddMMyyyy)</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            required
+            placeholder="Ví dụ: 01012005"
+          />
+        </div>
+
+        <button type="submit" class="btn-login">Đăng nhập</button>
+      </form>
+
+      <div class="help-text">
+        <strong>💡 Hướng dẫn đăng nhập:</strong>
+        <p><strong>Username:</strong> Số CCCD/CMND của bạn</p>
+        <p><strong>Password:</strong> Ngày sinh dạng ddMMyyyy</p>
+        <p style="margin-top: 10px"><em>Ví dụ:</em></p>
+        <p>- CCCD: 079203001234</p>
+        <p>- Ngày sinh: 01/01/2005</p>
+        <p>- Mật khẩu: 01012005</p>
+      </div>
+    </div>
+  </body>
+</html>
