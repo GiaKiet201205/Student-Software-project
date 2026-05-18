@@ -32,7 +32,7 @@ public class NguyenVongController {
         
         // Thống kê: số nguyện vọng đạt/không
         long countDat = nguyenVongs.stream()
-                .filter(nv -> "Đạt".equals(nv.getKetQua()))
+                .filter(nv -> "yes".equals(nv.getKetQua()))
                 .count();
         long countKhong = nguyenVongs.size() - countDat;
         
