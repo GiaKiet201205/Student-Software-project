@@ -108,6 +108,11 @@ public class ThongKeMainPanel extends BasePanel {
             controller.handleExportThongKe();
         });
 
+        xuatDSTTTheoNganh.addActionListener(e -> {
+            Nganh selected = (Nganh) cbNganh.getSelectedItem();
+            controller.handleExportDSTTTheoNganh(selected);
+        });
+
         xuatDSTTTheoPT.addActionListener(e -> {
             controller.handleExportSLTrungTuyenPTNganh();
         });
