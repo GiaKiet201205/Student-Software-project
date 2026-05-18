@@ -108,6 +108,10 @@ public class ThongKeMainPanel extends BasePanel {
             controller.handleExportThongKe();
         });
 
+        xuatDSTTTheoPT.addActionListener(e -> {
+            controller.handleExportSLTrungTuyenPTNganh();
+        });
+
     }
 
     public void setCbNganh(List<Nganh> listNganh) {

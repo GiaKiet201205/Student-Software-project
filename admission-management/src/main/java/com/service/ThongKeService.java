@@ -2,6 +2,7 @@ package com.service;
 
 import com.dto.ChartData;
 import com.dto.ThongKeNVDTO;
+import com.dto.ThongKeSLTrungTuyenDTO;
 import com.entity.Nganh;
 import com.repository.NganhRepository;
 import com.repository.ThongKeRepository;
@@ -76,18 +77,18 @@ public class ThongKeService {
         for (int i = 0; i < rows.size(); i++) {
             Object[] r = rows.get(i);
             ThongKeNVDTO dto = new ThongKeNVDTO();
-            dto.setStt          (i + 1);
-            dto.setMaXetTuyen   ((String)  r[0]);
-            dto.setTenMaXetTuyen((String)  r[1]);
-            dto.setChiTieu2025  (toLong(r[2]));
-            dto.setTongNV15     (toLong(r[3]));
-            dto.setNv1          (toLong(r[4]));
-            dto.setNv2          (toLong(r[5]));
-            dto.setNv3          (toLong(r[6]));
-            dto.setNv4          (toLong(r[7]));
-            dto.setNv5          (toLong(r[8]));
-            dto.setNvLon5       (toLong(r[9]));
-            dto.setTongTatCaNV  (toLong(r[10]));
+            dto.setStt(i + 1);
+            dto.setMaXetTuyen((String) r[0]);
+            dto.setTenMaXetTuyen((String) r[1]);
+            dto.setChiTieu2025(toLong(r[2]));
+            dto.setTongNV15(toLong(r[3]));
+            dto.setNv1(toLong(r[4]));
+            dto.setNv2(toLong(r[5]));
+            dto.setNv3(toLong(r[6]));
+            dto.setNv4(toLong(r[7]));
+            dto.setNv5(toLong(r[8]));
+            dto.setNvLon5(toLong(r[9]));
+            dto.setTongTatCaNV(toLong(r[10]));
             result.add(dto);
         }
 
@@ -101,19 +102,36 @@ public class ThongKeService {
         t.setMaXetTuyen("");
         t.setTenMaXetTuyen("Tổng");
         t.setIsDongTong(true);
-        t.setChiTieu2025 (list.stream().mapToLong(ThongKeNVDTO::getChiTieu2025).sum());
-        t.setTongNV15    (list.stream().mapToLong(ThongKeNVDTO::getTongNV15).sum());
-        t.setNv1         (list.stream().mapToLong(ThongKeNVDTO::getNv1).sum());
-        t.setNv2         (list.stream().mapToLong(ThongKeNVDTO::getNv2).sum());
-        t.setNv3         (list.stream().mapToLong(ThongKeNVDTO::getNv3).sum());
-        t.setNv4         (list.stream().mapToLong(ThongKeNVDTO::getNv4).sum());
-        t.setNv5         (list.stream().mapToLong(ThongKeNVDTO::getNv5).sum());
-        t.setNvLon5      (list.stream().mapToLong(ThongKeNVDTO::getNvLon5).sum());
-        t.setTongTatCaNV (list.stream().mapToLong(ThongKeNVDTO::getTongTatCaNV).sum());
+        t.setChiTieu2025(list.stream().mapToLong(ThongKeNVDTO::getChiTieu2025).sum());
+        t.setTongNV15(list.stream().mapToLong(ThongKeNVDTO::getTongNV15).sum());
+        t.setNv1(list.stream().mapToLong(ThongKeNVDTO::getNv1).sum());
+        t.setNv2(list.stream().mapToLong(ThongKeNVDTO::getNv2).sum());
+        t.setNv3(list.stream().mapToLong(ThongKeNVDTO::getNv3).sum());
+        t.setNv4(list.stream().mapToLong(ThongKeNVDTO::getNv4).sum());
+        t.setNv5(list.stream().mapToLong(ThongKeNVDTO::getNv5).sum());
+        t.setNvLon5(list.stream().mapToLong(ThongKeNVDTO::getNvLon5).sum());
+        t.setTongTatCaNV(list.stream().mapToLong(ThongKeNVDTO::getTongTatCaNV).sum());
         return t;
     }
 
     private long toLong(Object o) {
         return o == null ? 0L : ((Number) o).longValue();
+    }
+
+    public List<ThongKeSLTrungTuyenDTO> getThongKeSLTrungTuyenPTNganh() {
+        List<Object[]> rows = thongKeRepository.thongKeSLTrungTuyenPTNganh();
+
+        List<ThongKeSLTrungTuyenDTO> result = new ArrayList<>();
+        for (int i = 0; i < rows.size(); i++) {
+            Object[] r = rows.get(i);
+            ThongKeSLTrungTuyenDTO dto = new ThongKeSLTrungTuyenDTO();
+            dto.setStt(i + 1);
+            dto.setMaNganh((String) r[0]);
+            dto.setTenNganh((String) r[1]);
+            dto.setPhuongThuc((String) r[2]);
+            dto.setSoLuongTrungTuyen(((Number) r[3]).longValue());
+            result.add(dto);
+        }
+        return result;
     }
 }

@@ -10,7 +10,6 @@ import com.ui.common.BaseTable;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
-import javax.swing.RowFilter;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
@@ -23,7 +22,7 @@ public class NganhPanel extends BasePanel {
 
     // Khai báo thêm 2 nút import mới
     private BaseButton addButton, importNganhBtn, importDiemSanBtn, importChiTieuBtn, editButton, deleteButton;
-    
+
     private JTextField txtSearch;
     private TableRowSorter<DefaultTableModel> rowSorter;
 
@@ -31,7 +30,7 @@ public class NganhPanel extends BasePanel {
         super(AppConfig.COLOR_BACKGROUND, 0);
         setLayout(new BorderLayout());
         initializeComponents();
-        
+
         this.controller = new NganhController(this);
         this.controller.loadData();
         setupActionListeners();
@@ -56,20 +55,20 @@ public class NganhPanel extends BasePanel {
         importDiemSanBtn = new BaseButton(" Nhập Điểm Sàn ", new Color(23, 162, 184)); // Xanh lơ
         importChiTieuBtn = new BaseButton(" Nhập Chỉ Tiêu ", new Color(253, 126, 20)); // Cam
         addButton = new BaseButton(" + Thêm Ngành ");
-        
+
         txtSearch = new JTextField();
         txtSearch.setPreferredSize(new Dimension(180, 32));
         txtSearch.setToolTipText("Nhập từ khóa tìm kiếm...");
-        
+
         JPanel headerActionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         headerActionPanel.setOpaque(false);
-        headerActionPanel.add(new JLabel("Tìm kiếm: "));
+        headerActionPanel.add(new JLabel("Tìm"));
         headerActionPanel.add(txtSearch);
         headerActionPanel.add(importNganhBtn);
         headerActionPanel.add(importDiemSanBtn);
         headerActionPanel.add(importChiTieuBtn);
         headerActionPanel.add(addButton);
-        
+
         headerPanel.add(headerActionPanel, BorderLayout.EAST);
         mainContentPanel.add(headerPanel, BorderLayout.NORTH);
 
@@ -77,27 +76,35 @@ public class NganhPanel extends BasePanel {
         tablePanel.setLayout(new BorderLayout());
 
         String[] cols = {
-            "Mã Ngành", "Tên Ngành", "Tổ Hợp Gốc", "Chỉ Tiêu", 
-            "Điểm Sàn", "Điểm Trúng Tuyển", "Tuyển Thẳng", 
-            "ĐGNL", "THPT", "V-SAT", "SL XTT", "SL ĐGNL", "SL V-SAT", "SL THPT"
+                "Mã Ngành", "Tên Ngành", "Tổ Hợp Gốc", "Chỉ Tiêu",
+                "Điểm Sàn", "Điểm Trúng Tuyển", "Tuyển Thẳng",
+                "ĐGNL", "THPT", "V-SAT", "SL XTT", "SL ĐGNL", "SL V-SAT", "SL THPT"
         };
-        
+
         defaultTableModel = new DefaultTableModel(cols, 0) {
             @Override
-            public boolean isCellEditable(int row, int column) { return false; }
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
         };
         baseTable = new BaseTable(defaultTableModel);
         baseTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        
+
+        javax.swing.table.JTableHeader headerTable = baseTable.getTableHeader();
+        headerTable.setBackground(AppConfig.COLOR_PRIMARY);
+        headerTable.setForeground(Color.WHITE);
+        headerTable.setFont(new Font("Segoe UI", Font.BOLD, 14));
+
         rowSorter = new TableRowSorter<>(defaultTableModel);
         baseTable.setRowSorter(rowSorter);
-        
-        int[] widths = {100, 250, 100, 80, 80, 120, 100, 80, 80, 80, 80, 80, 80, 80};
-        for(int i = 0; i < widths.length; i++) {
+
+        int[] widths = { 100, 250, 100, 80, 80, 120, 100, 80, 80, 80, 80, 80, 80, 80 };
+        for (int i = 0; i < widths.length; i++) {
             baseTable.getColumnModel().getColumn(i).setPreferredWidth(widths[i]);
         }
 
-        JScrollPane scrollPane = new JScrollPane(baseTable, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        JScrollPane scrollPane = new JScrollPane(baseTable, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getViewport().setBackground(AppConfig.COLOR_WHITE);
 
@@ -117,17 +124,22 @@ public class NganhPanel extends BasePanel {
         add(mainContentPanel, BorderLayout.CENTER);
     }
 
-    public BaseTable getBaseTable() { return baseTable; }
-    public DefaultTableModel getDefaultTableModel() { return defaultTableModel; }
+    public BaseTable getBaseTable() {
+        return baseTable;
+    }
+
+    public DefaultTableModel getDefaultTableModel() {
+        return defaultTableModel;
+    }
 
     public void hienThiDuLieuLenBang(List<Nganh> list) {
         defaultTableModel.setRowCount(0);
         for (Nganh nganh : list) {
-            defaultTableModel.addRow(new Object[]{
-                nganh.getMaNganh(), nganh.getTenNganh(), nganh.getToHopGoc(),
-                nganh.getChiTieu(), nganh.getDiemSan(), nganh.getDiemTrungTuyen(),
-                nganh.getTuyenThang(), nganh.getDgnl(), nganh.getThpt(), nganh.getVsat(),
-                nganh.getSlXtt(), nganh.getSlDgnl(), nganh.getSlVsat(), nganh.getSlThpt()
+            defaultTableModel.addRow(new Object[] {
+                    nganh.getMaNganh(), nganh.getTenNganh(), nganh.getToHopGoc(),
+                    nganh.getChiTieu(), nganh.getDiemSan(), nganh.getDiemTrungTuyen(),
+                    nganh.getTuyenThang(), nganh.getDgnl(), nganh.getThpt(), nganh.getVsat(),
+                    nganh.getSlXtt(), nganh.getSlDgnl(), nganh.getSlVsat(), nganh.getSlThpt()
             });
         }
     }
@@ -136,22 +148,30 @@ public class NganhPanel extends BasePanel {
         addButton.addActionListener(e -> controller.handleAdd());
         editButton.addActionListener(e -> controller.handleEdit());
         deleteButton.addActionListener(e -> controller.handleDelete());
-        
+
         // Cấu hình sự kiện cho 3 nút Import riêng biệt
         importNganhBtn.addActionListener(e -> controller.handleImport());
         importDiemSanBtn.addActionListener(e -> controller.handleImportDiemSan());
         importChiTieuBtn.addActionListener(e -> controller.handleImportChiTieu());
-        
+
         txtSearch.getDocument().addDocumentListener(new DocumentListener() {
             @Override
-            public void insertUpdate(DocumentEvent e) { filterTable(); }
+            public void insertUpdate(DocumentEvent e) {
+                filterTable();
+            }
+
             @Override
-            public void removeUpdate(DocumentEvent e) { filterTable(); }
+            public void removeUpdate(DocumentEvent e) {
+                filterTable();
+            }
+
             @Override
-            public void changedUpdate(DocumentEvent e) { filterTable(); }
+            public void changedUpdate(DocumentEvent e) {
+                filterTable();
+            }
         });
     }
-    
+
     private void filterTable() {
         String text = txtSearch.getText();
         if (text.trim().length() == 0) {
